@@ -77,13 +77,13 @@ const currentPath = Astro.url.pathname;
   </nav>
 
   <!-- Overlay menú mobile -->
-  <div id="mobile-menu" class="fixed inset-0 z-50 hidden lg:hidden bg-zinc-900/95 backdrop-blur-lg">
-    <div class="fixed inset-y-0 right-0 w-full sm:max-w-sm p-6 overflow-y-auto bg-zinc-900 sm:ring-1 sm:ring-gray-100/10">
+  <div id="mobile-menu" class="fixed inset-0 z-50 hidden lg:hidden bg-obscure">
+    <div class="fixed inset-y-0 right-0 w-full sm:max-w-sm overflow-y-auto bg-obscure sm:ring-1 sm:ring-gray-100/10">
       <!-- Header del menú -->
-      <div class="flex items-center justify-between">
-        <a href="/" class="-m-1.5 p-1.5">
+      <div class="flex items-center justify-between h-[72px] px-6">
+        <a href="/" class="flex items-center">
           <span class="sr-only">MUGA</span>
-          <img src="/logo/logo.png" alt="" class="h-8 w-auto" />
+          <img src="/logo/logo.png" alt="" class="h-8 w-8 border border-accent/50 hover:border-accent transition-all duration-500 border-dashed" />
         </a>
         <button id="close-mobile-menu" class="-m-2.5 rounded-md p-2.5 text-gray-200">
           <span class="sr-only">Close menu</span>
@@ -94,7 +94,7 @@ const currentPath = Astro.url.pathname;
       </div>
 
       <!-- Links -->
-      <div class="mt-6 flow-root">
+      <div class="mt-6 px-6 pb-6 flow-root">
         <div class="-my-6 divide-y divide-white/10">
           <div class="space-y-2 py-6">
             <a href="/productos" class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5">Productos</a>
@@ -178,5 +178,3 @@ const currentPath = Astro.url.pathname;
   // Ejecutar en carga inicial del DOM
   document.addEventListener('DOMContentLoaded', initNavbarBehavior);
 </script>
-
-
