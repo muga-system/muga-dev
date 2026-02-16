@@ -1,0 +1,85 @@
+---
+import Layout from "../../layouts/layout.astro";
+import Navigation from "../../components/ui/Navigation/Navigation.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb/Breadcrumb.astro";
+import PageHeroSection from "../../components/HeroSection/PageHeroSection.astro";
+import ArrowLink from "../../components/ui/Button/ArrowLink.astro";
+import type { BreadcrumbItem } from "../../types";
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  {
+    label: "Contacto",
+    href: "/contacto",
+    active: false,
+  },
+  {
+    label: "Enviado",
+    href: "/contacto/enviado",
+    active: true,
+  },
+];
+---
+
+<Layout title="Consulta enviada | MUGA" description="Confirmación de envío del formulario de contacto">
+  <Navigation>
+    <Breadcrumb items={breadcrumbItems} />
+  </Navigation>
+  <div class="hidden lg:block">
+    <Breadcrumb items={breadcrumbItems} />
+  </div>
+
+  <PageHeroSection
+    title="Solicitud Enviada"
+    description="Recibimos tu consulta correctamente."
+    textAlign="center"
+    showBadge={true}
+    badgeText="OK"
+  />
+
+  <section class="relative px-6 lg:px-8 py-24">
+    <div class="mx-auto max-w-3xl">
+      <div class="bg-muga-dark-800/50 border border-white/5 p-8 text-center">
+        <div class="w-12 h-12 bg-accent/10 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-6 h-6 text-accent"
+            aria-hidden="true"
+          >
+            <path d="M20 6L9 17l-5-5"></path>
+          </svg>
+        </div>
+
+        <h2 class="text-2xl font-light text-white mb-4">Gracias por escribirnos</h2>
+        <p class="text-muga-neutral max-w-xl mx-auto mb-8">
+          Tu mensaje ya fue recibido por nuestro equipo. Te vamos a contactar con una primera respuesta en breve.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
+          <div class="border border-white/10 p-4">
+            <p class="text-accent text-xs font-mono uppercase tracking-wider mb-2">Estado</p>
+            <p class="text-white text-sm">Recibido</p>
+          </div>
+          <div class="border border-white/10 p-4">
+            <p class="text-accent text-xs font-mono uppercase tracking-wider mb-2">Siguiente paso</p>
+            <p class="text-white text-sm">Revisión inicial</p>
+          </div>
+          <div class="border border-white/10 p-4">
+            <p class="text-accent text-xs font-mono uppercase tracking-wider mb-2">Canal</p>
+            <p class="text-white text-sm">Email de contacto</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <ArrowLink href="/productos" text="Ver productos" />
+          <ArrowLink href="/contacto" text="Enviar otro mensaje" />
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>

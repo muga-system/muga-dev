@@ -137,7 +137,15 @@ import "../styles/bento.css";
           </div>
         </div>
 
-        <form id="contact-form" method="POST" action="https://formspree.io/f/mnngbqnb" class="space-y-6">
+        <form
+          id="contact-form"
+          method="POST"
+          action="https://hook.us2.make.com/d2244ejjygfwjirzirv7xg5j8olpv8cd"
+          accept-charset="UTF-8"
+          class="space-y-6"
+        >
+          <input type="hidden" name="created_at" value="" />
+          <input type="hidden" name="success_url" value="http://localhost:4321/contacto/enviado" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="name" class="block text-sm font-medium text-white mb-2">Nombre</label>
@@ -161,6 +169,19 @@ import "../styles/bento.css";
                 required
               />
             </div>
+          </div>
+
+          <div>
+            <label for="phone" class="block text-sm font-medium text-white mb-2">Teléfono</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              class="w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white placeholder-graylight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              placeholder="+54 9 11 1234-5678"
+              autocomplete="tel"
+              inputmode="tel"
+            />
           </div>
 
           <div>
@@ -190,6 +211,11 @@ import "../styles/bento.css";
             ></textarea>
           </div>
 
+          <input type="hidden" name="page" value="" />
+          <input type="hidden" name="source" value="website" />
+          <input type="hidden" name="status" value="new" />
+          <input type="hidden" name="ip" value="" />
+
           <div class="text-center">
             <button
               type="submit"
@@ -210,69 +236,6 @@ import "../styles/bento.css";
 
 <script src="../scripts/bento-grid.ts"></script>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('contact-form') as HTMLFormElement;
-    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-    const btnText = document.getElementById('btn-text') as HTMLSpanElement;
-    const btnArrow = document.getElementById('btn-arrow') as HTMLSpanElement;
-    const btnSpinner = document.getElementById('btn-spinner') as HTMLDivElement;
-    const formMessages = document.getElementById('form-messages') as HTMLDivElement;
-    const successMessage = document.getElementById('success-message') as HTMLDivElement;
-    const errorMessage = document.getElementById('error-message') as HTMLDivElement;
-
-    if (!form || !submitBtn || !btnText || !btnArrow || !btnSpinner || !formMessages || !successMessage || !errorMessage) {
-      console.error('No se encontraron todos los elementos del formulario');
-      return;
-    }
-
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-
-      // Mostrar loading state
-      submitBtn.disabled = true;
-      btnText.textContent = 'Enviando...';
-      btnArrow.classList.add('hidden');
-      btnSpinner.classList.remove('hidden');
-
-      // Ocultar mensajes anteriores
-      formMessages.classList.add('hidden');
-      successMessage.classList.add('hidden');
-      errorMessage.classList.add('hidden');
-
-      try {
-        const formData = new FormData(form);
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          // Éxito
-          formMessages.classList.remove('hidden');
-          successMessage.classList.remove('hidden');
-          form.reset();
-        } else {
-          throw new Error('Error en el envío');
-        }
-      } catch (error) {
-        // Error
-        formMessages.classList.remove('hidden');
-        errorMessage.classList.remove('hidden');
-      } finally {
-        // Restaurar estado del botón
-        submitBtn.disabled = false;
-        btnText.textContent = 'Enviar consulta';
-        btnArrow.classList.remove('hidden');
-        btnSpinner.classList.add('hidden');
-      }
-    });
-  });
-</script>
-
 <style>
   /* Estilos para el select */
   select {
@@ -289,4 +252,3 @@ import "../styles/bento.css";
     color: white !important;
   }
 </style>
-
