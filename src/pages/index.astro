@@ -141,11 +141,12 @@ import "../styles/bento.css";
           id="contact-form"
           method="POST"
           action="https://hook.us2.make.com/d2244ejjygfwjirzirv7xg5j8olpv8cd"
+          target="make-webhook-target"
           accept-charset="UTF-8"
           class="space-y-6"
         >
           <input type="hidden" name="created_at" value="" />
-          <input type="hidden" name="success_url" value="http://localhost:4321/contacto/enviado" />
+          <input type="hidden" name="success_url" value="/contacto/enviado" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="name" class="block text-sm font-medium text-white mb-2">Nombre</label>
@@ -228,6 +229,7 @@ import "../styles/bento.css";
             </button>
           </div>
         </form>
+        <iframe id="make-webhook-target" name="make-webhook-target" class="hidden" aria-hidden="true"></iframe>
       </div>
     </div>
   </section>
@@ -235,6 +237,7 @@ import "../styles/bento.css";
 </Layout>
 
 <script src="../scripts/bento-grid.ts"></script>
+<script src="../scripts/contact-form-redirect.ts"></script>
 
 <style>
   /* Estilos para el select */

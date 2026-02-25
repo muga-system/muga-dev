@@ -75,11 +75,12 @@ const breadcrumbItems: BreadcrumbItem[] = [
           id="contact-form"
           method="POST"
           action="https://hook.us2.make.com/d2244ejjygfwjirzirv7xg5j8olpv8cd"
+          target="make-webhook-target"
           accept-charset="UTF-8"
           class="space-y-6"
         >
           <input type="hidden" name="created_at" value="" />
-          <input type="hidden" name="success_url" value="http://localhost:4321/contacto/enviado" />
+          <input type="hidden" name="success_url" value="/contacto/enviado" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="name" class="block text-sm font-medium text-white mb-2">Nombre</label>
@@ -108,7 +109,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <div>
             <label for="phone" class="block text-sm font-medium text-white mb-2">Teléfono</label>
             <input
-              type="text"
+              type="tel"
               id="phone"
               name="phone"
               class="w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white placeholder-graylight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
@@ -162,6 +163,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
             </button>
           </div>
         </form>
+        <iframe id="make-webhook-target" name="make-webhook-target" class="hidden" aria-hidden="true"></iframe>
       </div>
 
       <div class="text-center mt-12">
@@ -190,5 +192,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
       color: white !important;
     }
   </style>
+
+  <script src="../scripts/contact-form-redirect.ts"></script>
 
 </Layout>
