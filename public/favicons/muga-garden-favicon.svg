@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <path d="
+    M80 420
+    L140 300
+    L200 420
+    L256 250
+    L312 420
+    L372 300
+    L432 420
+    Z
+  " fill="#F2EEF7"/>
+</svg>

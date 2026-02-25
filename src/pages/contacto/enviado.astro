@@ -29,8 +29,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
   </div>
 
   <PageHeroSection
-    title="Solicitud Enviada"
-    description="Recibimos tu consulta correctamente."
+    title="Formulario Enviado"
+    description="Recibimos tu consulta correctamente. Revisá tu email para confirmar los próximos pasos."
     textAlign="center"
     showBadge={true}
     badgeText="OK"
@@ -57,7 +57,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
         <h2 class="text-2xl font-light text-white mb-4">Gracias por escribirnos</h2>
         <p class="text-muga-neutral max-w-xl mx-auto mb-8">
-          Tu mensaje ya fue recibido por nuestro equipo. Te vamos a contactar con una primera respuesta en breve.
+          Tu formulario se envió correctamente. Revisá tu email de contacto y te responderemos a la brevedad.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
@@ -67,7 +67,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </div>
           <div class="border border-white/10 p-4">
             <p class="text-accent text-xs font-mono uppercase tracking-wider mb-2">Siguiente paso</p>
-            <p class="text-white text-sm">Revisión inicial</p>
+            <p class="text-white text-sm">Revisá tu email</p>
           </div>
           <div class="border border-white/10 p-4">
             <p class="text-accent text-xs font-mono uppercase tracking-wider mb-2">Canal</p>
@@ -75,10 +75,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <ArrowLink href="/" text="Ir al inicio" />
-          <ArrowLink href="/productos" text="Ver productos" />
-          <ArrowLink href="/contacto" text="Enviar otro mensaje" />
+        <div class="flex items-center justify-center">
+          <ArrowLink href="/" text="Volver a la home" />
         </div>
       </div>
     </div>
