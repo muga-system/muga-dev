@@ -1,32 +1,61 @@
 ---
 // Footer.astro - Componente de pie de página
-import ArrowLink from "../Button/ArrowLink.astro";
 export interface Props {}
+
+const year = new Date().getFullYear();
+
+const primaryLinks = [
+  { href: "/productos", label: "Productos" },
+  { href: "/caracteristicas", label: "Características" },
+  { href: "/portafolio", label: "Portafolio" },
+  { href: "/modelo-negocio", label: "Modelo de Negocio" },
+  { href: "/contacto", label: "Contacto" },
+];
 ---
 
-<footer class="bg-muga-dark-800/50 mt-12">
-  <div class="mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="flex justify-center">
-      <ArrowLink
-        href="/modelo-negocio"
-        text="Modelo de Negocio"
-        textColor="text-accent hover:text-blue-500"
-      />
+<footer class="mt-20 border-t border-white/10 bg-obscure">
+  <div class="mx-auto max-w-7xl px-6 py-14 lg:px-8">
+    <div class="flex flex-col gap-8 border-b border-white/10 pb-10 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="text-xs font-mono uppercase tracking-[0.18em] text-accent">MUGA DEV</p>
+        <h2 class="mt-3 max-w-xl text-xl font-semibold leading-tight text-white sm:text-2xl">
+          Sitios claros, rápidos y mantenibles.
+        </h2>
+        <p class="mt-3 max-w-xl text-sm text-graylight">
+          Arquitectura web con criterio técnico y diseño consistente.
+        </p>
+      </div>
+      <a
+        href="/contacto"
+        class="inline-flex w-fit items-center gap-2 border border-accent px-4 py-2 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-obscure"
+      >
+        Iniciar proyecto
+        <span aria-hidden="true">→</span>
+      </a>
     </div>
-    <p class="text-xs text-muga-neutral font-light text-center">
-      Parte de MUGA — estudio digital independiente.
-    </p>
-    <div class="text-center text-sm text-muga-neutral my-10">
+
+    <nav aria-label="Enlaces del sitio" class="py-8">
+      <ul class="flex flex-wrap items-center gap-x-6 gap-y-3">
+        {primaryLinks.map((link) => (
+          <li>
+            <a href={link.href} class="text-sm text-graylight transition-colors hover:text-white">
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-graylight sm:flex-row sm:items-center sm:justify-between">
       <p>
-        <span class="font-mono">{new Date().getFullYear()}</span>
-        <span class="font-medium text-accent">MUGA</span>.
+        <span class="font-mono">{year}</span>
+        <span class="ml-1 font-semibold text-accent">MUGA</span> - Estudio digital independiente.
       </p>
-      <p class="text-sm text-muga-neutral">
-        ¿Buscás diseño o motion? <a
-          href="https://muga.studio"
-          class="text-accent hover:text-blue-500 transition-colors">MUGA STUDIO</a>
-      </p>
-      <p class="text-xs text-graylight font-mono">Versión 1.1.0</p>
+      <div class="flex items-center gap-4">
+        <a href="https://muga.studio" class="transition-colors hover:text-white">MUGA Studio</a>
+        <span class="hidden h-3 w-px bg-white/20 sm:inline-block"></span>
+        <p class="font-mono">Version 1.1.0</p>
+      </div>
     </div>
   </div>
 </footer>
