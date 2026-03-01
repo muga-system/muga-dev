@@ -24,70 +24,81 @@ const breadcrumbItems: BreadcrumbItem[] = [
   <PageHeroSection
     title="AWNG"
     description="Arquitectura Web de Nueva Generación"
-    textAlign="center"
+    textAlign="left"
     showBadge={true}
     badgeText="MUGA"
   />
 
   <section class="relative px-6 lg:px-8 py-24">
-    <div class="mx-auto max-w-4xl text-center">
-      <div class="space-y-12">
-        <!-- Tecnología -->
-        <div>
-          <h3 class="text-sm font-mono text-accent uppercase tracking-wider mb-4">Tecnología</h3>
-          <p class="text-2xl font-light text-white">
-            Astro + TailwindCSS + TypeScript
-          </p>
-          <p class="text-muga-neutral mt-2">
-            Herramientas modernas para un sitio rápido y fácil de mantener.
+    <div class="mx-auto max-w-7xl space-y-16">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-7">
+          <p class="text-accent text-xs font-mono uppercase tracking-[0.2em] mb-4">Nosotros</p>
+          <h2 class="text-3xl sm:text-4xl font-light text-white leading-tight mb-5">
+            Diseñamos arquitectura web con criterio técnico y foco en resultados.
+          </h2>
+          <p class="text-muga-neutral text-lg max-w-2xl">
+            No vendemos páginas aisladas. Construimos sistemas web mantenibles, rápidos y medibles para que tu negocio pueda escalar sin rehacer todo cada seis meses.
           </p>
         </div>
 
-        <!-- KPI -->
-        <div>
-          <h3 class="text-sm font-mono text-accent uppercase tracking-wider mb-4">Qué garantizamos</h3>
-          <p class="text-muga-neutral mb-6">
-            Medimos velocidad, accesibilidad y estabilidad para que tu sitio cargue rápido, sea fácil de usar y esté siempre disponible.
+        <aside class="lg:col-span-5 border border-white/10 bg-muga-dark-800/40 p-6">
+          <p class="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-3">Cómo lo hacemos</p>
+          <p class="text-white text-2xl font-light mb-4">Astro + TailwindCSS + TypeScript</p>
+          <ul class="space-y-2 text-sm text-muga-neutral">
+            <li>Arquitectura modular desde el inicio.</li>
+            <li>Métricas definidas antes de desarrollar.</li>
+            <li>Entrega con documentación y continuidad técnica.</li>
+          </ul>
+        </aside>
+      </div>
+
+      <div>
+        <div class="mb-6">
+          <p class="text-accent text-xs font-mono uppercase tracking-[0.2em] mb-3">Qué garantizamos</p>
+          <p class="text-muga-neutral max-w-3xl">
+            Definimos objetivos técnicos desde el inicio y reportamos métricas claras para que sepas exactamente qué estás recibiendo.
           </p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-0">
-            <div class="bg-zinc-800/30 p-6 rounded-none text-center border border-zinc-700/50">
-              <p class="text-white font-medium mb-4">Velocidad</p>
-              <ul class="text-muga-neutral space-y-2 font-mono text-sm">
-                <li>Carga principal ≤ 2.5s (LCP)</li>
-                <li>Sin saltos al cargar (CLS ≤ 0.1)</li>
-                <li>Respuesta rápida (INP ≤ 200ms)</li>
-              </ul>
-            </div>
-            <div class="bg-zinc-800/30 p-6 rounded-none text-center border border-zinc-700/50">
-              <p class="text-white font-medium mb-4">Accesibilidad</p>
-              <ul class="text-muga-neutral space-y-2 font-mono text-sm">
-                <li>Cumplimos WCAG AA (≥ 90)</li>
-                <li>SEO alto (≥ 95%)</li>
-                <li>Indexación correcta en Google</li>
-              </ul>
-            </div>
-            <div class="bg-zinc-800/30 p-6 rounded-none text-center border border-zinc-700/50">
-              <p class="text-white font-medium mb-4">Confiabilidad</p>
-              <ul class="text-muga-neutral space-y-2 font-mono text-sm">
-                <li>HTTPS seguro</li>
-                <li>Headers de seguridad</li>
-                <li>Disponibilidad ≥ 99.9%</li>
-              </ul>
-            </div>
-          </div>
         </div>
 
-        <!-- Filosofía -->
-        <div>
-          <h3 class="text-sm font-mono text-accent uppercase tracking-wider mb-4">Filosofía</h3>
-          <p class="text-xl font-light text-white">
-            Construimos con método<br>
-            y entregamos valor real.
-          </p>
-          <p class="text-muga-neutral mt-4 text-sm">
-            Transparencia total • Reportes automáticos • Mantenimiento continuo
-          </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <article class="border border-white/10 bg-muga-dark-800/35 p-6">
+            <h3 class="text-white text-xl font-medium mb-4">Velocidad</h3>
+            <ul class="space-y-2 text-muga-neutral text-sm">
+              <li>LCP <= 2.5s</li>
+              <li>CLS <= 0.1</li>
+              <li>INP <= 200ms</li>
+            </ul>
+          </article>
+
+          <article class="border border-white/10 bg-muga-dark-800/35 p-6">
+            <h3 class="text-white text-xl font-medium mb-4">Accesibilidad</h3>
+            <ul class="space-y-2 text-muga-neutral text-sm">
+              <li>WCAG AA (>= 90)</li>
+              <li>SEO (>= 95%)</li>
+              <li>Indexación técnica correcta</li>
+            </ul>
+          </article>
+
+          <article class="border border-white/10 bg-muga-dark-800/35 p-6">
+            <h3 class="text-white text-xl font-medium mb-4">Confiabilidad</h3>
+            <ul class="space-y-2 text-muga-neutral text-sm">
+              <li>HTTPS seguro</li>
+              <li>Headers de seguridad</li>
+              <li>Disponibilidad >= 99.9%</li>
+            </ul>
+          </article>
         </div>
+      </div>
+
+      <div class="border border-white/10 bg-muga-dark-800/25 p-8">
+        <p class="text-accent text-xs font-mono uppercase tracking-[0.2em] mb-4">Filosofía de trabajo</p>
+        <p class="text-white text-2xl font-light leading-tight mb-6">
+          Construimos con método y entregamos valor real.
+        </p>
+        <p class="text-muga-neutral max-w-4xl">
+          Trabajamos con transparencia en cada decisión, medimos resultados reales y dejamos una base técnica lista para crecer sin fricción.
+        </p>
       </div>
     </div>
   </section>

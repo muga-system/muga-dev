@@ -15,7 +15,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 ];
 ---
 
-<Layout title="Contacto | MUGA" description="Inicia tu proyecto con KPI garantizados">
+<Layout title="Contacto | MUGA" description="Iniciá tu proyecto con KPI garantizados">
   <Navigation>
     <Breadcrumb items={breadcrumbItems} />
   </Navigation>
@@ -23,40 +23,54 @@ const breadcrumbItems: BreadcrumbItem[] = [
     <Breadcrumb items={breadcrumbItems} />
   </div>
   <PageHeroSection
-    title="Iniciar Proyecto"
-    description="Cuéntanos tu idea. Construimos con método y entregamos con valor."
-    textAlign="center"
+    title="Iniciá tu proyecto"
+    description="Contanos tu idea. Construimos con método y entregamos con valor."
+    textAlign="left"
     showBadge={true}
     badgeText="AWNG"
   />
 
   <section class="relative px-6 lg:px-8 py-24">
-    <div class="mx-auto max-w-4xl">
-      <div class="text-center mb-16">
-        <h2 class="text-2xl font-light text-white mb-4">Proceso</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div>
-            <div class="w-12 h-12 bg-accent/10 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span class="text-accent font-mono font-bold">01</span>
-            </div>
-            <h3 class="text-white font-medium mb-2">Consulta</h3>
-            <p class="text-muga-neutral text-sm">Evaluamos tu proyecto y requerimientos</p>
-          </div>
-          <div>
-            <div class="w-12 h-12 bg-accent/10 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span class="text-accent font-mono font-bold">02</span>
-            </div>
-            <h3 class="text-white font-medium mb-2">Propuesta</h3>
-            <p class="text-muga-neutral text-sm">KPI garantizados y roadmap técnico</p>
-          </div>
-          <div>
-            <div class="w-12 h-12 bg-accent/10 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span class="text-accent font-mono font-bold">03</span>
-            </div>
-            <h3 class="text-white font-medium mb-2">Entrega</h3>
-            <p class="text-muga-neutral text-sm">Monitoreo continuo y reportes transparentes</p>
-          </div>
+    <div class="mx-auto max-w-7xl">
+      <div class="mb-16">
+        <div class="text-center mb-10">
+          <h2 class="text-2xl font-light text-white mb-3">Proceso</h2>
+          <p class="text-white/75 max-w-2xl mx-auto">
+            Tres etapas claras para convertir tu idea en un proyecto ejecutable y medible.
+          </p>
         </div>
+
+        <ol class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <li class="h-full min-h-[290px] bg-muga-dark-800/40 border border-white/10 p-6 flex flex-col transition-colors duration-200 hover:border-accent/25">
+            <p class="text-accent text-xs font-mono font-semibold tracking-wider mb-3">01</p>
+            <h3 class="text-white text-lg font-medium mb-2">Descubrimiento</h3>
+            <p class="text-white/75 mb-7 flex-1">Alineamos objetivos de negocio, alcance y prioridades del proyecto.</p>
+            <div class="space-y-2 text-sm">
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">30-45 min</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Diagnóstico inicial</span></p>
+            </div>
+          </li>
+
+          <li class="h-full min-h-[290px] bg-muga-dark-800/40 border border-white/10 p-6 flex flex-col transition-colors duration-200 hover:border-accent/25">
+            <p class="text-accent text-xs font-mono font-semibold tracking-wider mb-3">02</p>
+            <h3 class="text-white text-lg font-medium mb-2">Arquitectura y KPIs</h3>
+            <p class="text-white/75 mb-7 flex-1">Definimos stack, roadmap técnico y objetivos medibles por etapa.</p>
+            <div class="space-y-2 text-sm">
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">24-48 h</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Propuesta + roadmap</span></p>
+            </div>
+          </li>
+
+          <li class="h-full min-h-[290px] bg-muga-dark-800/40 border border-white/10 p-6 flex flex-col transition-colors duration-200 hover:border-accent/25">
+            <p class="text-accent text-xs font-mono font-semibold tracking-wider mb-3">03</p>
+            <h3 class="text-white text-lg font-medium mb-2">Ejecución y seguimiento</h3>
+            <p class="text-white/75 mb-7 flex-1">Implementamos por iteraciones con reportes transparentes y control continuo.</p>
+            <div class="space-y-2 text-sm">
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">Iterativo</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Entrega + reporte KPI</span></p>
+            </div>
+          </li>
+        </ol>
       </div>
 
       <!-- Formulario de contacto -->
@@ -127,7 +141,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
               class="w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
               required
             >
-              <option value="">Selecciona una opción</option>
+              <option value="">Seleccioná una opción</option>
               <option value="landing">Landing Page</option>
               <option value="corporativo">Sitio Corporativo</option>
               <option value="institucional">Sitio Institucional</option>
@@ -141,7 +155,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
               name="message"
               rows="4"
               class="w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white placeholder-graylight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-              placeholder="Cuéntanos sobre tu proyecto..."
+              placeholder="Contanos sobre tu proyecto..."
             ></textarea>
           </div>
 
@@ -166,7 +180,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
       </div>
 
       <div class="text-center mt-12">
-        <p class="text-muga-neutral mb-4">O explora nuestros productos</p>
+        <p class="text-muga-neutral mb-4">O explorá nuestros productos</p>
         <div class="flex justify-center gap-6">
           <ArrowLink href="/productos" text="Productos" />
           <ArrowLink href="/portafolio" text="Portafolio" />
