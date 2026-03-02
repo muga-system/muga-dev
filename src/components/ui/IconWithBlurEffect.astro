@@ -4,7 +4,7 @@ interface Props {
   iconAlt: string;
   iconSize?: string;
   blurAmount?: string;
-  iconId?: string;
+  iconKey?: string;
 }
 
 const { 
@@ -12,7 +12,7 @@ const {
   iconAlt, 
   iconSize = "w-40 h-40", 
   blurAmount = "3px",
-  iconId
+  iconKey
 } = Astro.props;
 ---
 
@@ -21,7 +21,7 @@ const {
     src={iconPath}
     class={`icon-with-blur-effect ${iconSize}`}
     alt={iconAlt}
-    data-icon-id={iconId}
+    data-icon-key={iconKey}
     style={`--blur-amount: ${blurAmount};`}
   />
 </div>
@@ -37,46 +37,36 @@ const {
 </style>
 
 <script>
-  // Este script se ejecutará una vez por componente
   document.addEventListener("astro:page-load", function () {
     const setupIconEffects = () => {
-      // Seleccionar todos los iconos con efecto de blur
       const icons = document.querySelectorAll<HTMLImageElement>(".icon-with-blur-effect");
       
       icons.forEach(function (icon) {
         const bentoCell = icon.closest<HTMLElement>(".bento-cell");
         if (!bentoCell) return;
 
-        // Configurar el icono para que sea invisible inicialmente
         icon.style.opacity = "0";
 
-        // Función para actualizar la máscara del icono
         function updateMask(e: MouseEvent) {
-          // Obtener las coordenadas del SVG para cálculos precisos
           const svgRect = icon.getBoundingClientRect();
 
-          // Calcular la posición exacta del cursor relativa al SVG
           const svgX = e.clientX - svgRect.left;
           const svgY = e.clientY - svgRect.top;
 
-          // Aplicar la máscara con el centro exactamente en la posición del cursor
           icon.style.opacity = "1";
           const maskImage = `radial-gradient(circle 50px at ${svgX}px ${svgY}px, black 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.2) 80%, transparent 100%)`;
           icon.style.webkitMaskImage = maskImage;
           icon.style.maskImage = maskImage;
         }
 
-        // Agregar eventos
         bentoCell.addEventListener("mousemove", updateMask);
 
-        // Ocultar el icono cuando el cursor sale de la celda
         bentoCell.addEventListener("mouseleave", function () {
           icon.style.opacity = "0";
         });
       });
     };
 
-    // Inicializar los efectos
     setupIconEffects();
   });
 </script>

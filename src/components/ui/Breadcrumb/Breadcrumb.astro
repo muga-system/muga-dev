@@ -8,14 +8,13 @@ export interface Props {
 const { items } = Astro.props;
 ---
 
-<!-- Versión desktop del breadcrumb -->
 <nav id="breadcrumb" aria-label="Breadcrumb" class="fixed top-[72px] left-0 right-0 z-40 px-6 lg:px-8 h-[40px] hidden md:flex items-center m-0 bg-obscure transition-all duration-300 border-b border-transparent">
   <ol class="flex items-center space-x-2 text-sm">
     <li>
       <a href="/" class="text-gray-400 hover:text-white">Inicio</a>
     </li>
     {
-      items.map((item, index) => (
+      items.map((item) => (
         <li class="flex items-center">
           <span class="mx-2 text-gray-500">/</span>
           <a
@@ -33,14 +32,13 @@ const { items } = Astro.props;
   </ol>
 </nav>
 
-<!-- Versión móvil del breadcrumb (se usará en Navigation.astro) -->
 <div id="mobile-breadcrumb" class="md:hidden">
   <ol class="flex items-center space-x-1 text-xs">
     <li>
       <a href="/" class="text-gray-400 hover:text-white truncate max-w-[40px]">Inicio</a>
     </li>
     {
-      items.map((item, index) => (
+      items.map((item) => (
         <li class="flex items-center">
           <span class="mx-1 text-gray-500">/</span>
           <a
@@ -63,4 +61,3 @@ const { items } = Astro.props;
     border-color: rgba(255, 255, 255, 0.1);
   }
 </style>
-

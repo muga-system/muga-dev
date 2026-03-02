@@ -1,8 +1,10 @@
-document.addEventListener("DOMContentLoaded", () => {
+const initContactFormRedirect = () => {
   const form = document.getElementById("contact-form") as HTMLFormElement | null;
   const targetFrame = document.getElementById("make-webhook-target") as HTMLIFrameElement | null;
 
   if (!form || !targetFrame) return;
+  if (form.dataset.bound === "true") return;
+  form.dataset.bound = "true";
 
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement | null;
   const btnText = document.getElementById("btn-text") as HTMLSpanElement | null;
@@ -10,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnSpinner = document.getElementById("btn-spinner") as HTMLDivElement | null;
   const formMessages = document.getElementById("form-messages") as HTMLDivElement | null;
   const errorMessage = document.getElementById("error-message") as HTMLDivElement | null;
+  const defaultButtonText = btnText?.textContent || "Enviar";
 
   let pendingSubmit = false;
   let timeoutId: number | null = null;
@@ -38,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
       pendingSubmit = false;
 
       if (submitBtn) submitBtn.disabled = false;
-      if (btnText) btnText.textContent = "Enviar consulta";
+      if (btnText) btnText.textContent = defaultButtonText;
       if (btnArrow) btnArrow.classList.remove("hidden");
       if (btnSpinner) btnSpinner.classList.add("hidden");
 
@@ -62,4 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     goToSuccess();
   });
-});
+};
+
+document.addEventListener("DOMContentLoaded", initContactFormRedirect);
+document.addEventListener("astro:page-load", initContactFormRedirect);

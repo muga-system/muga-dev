@@ -18,6 +18,95 @@
   }
 }
 
+@layer components {
+  .section-title {
+    font-size: 1.875rem;
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: white;
+  }
+
+  .section-lead {
+    max-width: 42rem;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    color: var(--color-graylight);
+  }
+
+  .secondary-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    transition: color 0.2s ease;
+  }
+
+  .secondary-link:hover {
+    color: var(--color-accent);
+  }
+
+  .secondary-link__arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  .secondary-link:hover .secondary-link__arrow {
+    transform: translateX(4px);
+  }
+
+  .muga-select {
+    background-color: rgba(24, 23, 23, 0.7) !important;
+    color: var(--color-graylight) !important;
+  }
+
+  .muga-select:focus {
+    color: white !important;
+  }
+
+  .muga-select option {
+    background-color: var(--color-obscure) !important;
+    color: white !important;
+  }
+
+  .muga-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 83, 83, 0.06);
+    color: var(--color-accent);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .muga-badge--sm {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.6875rem;
+  }
+
+  .muga-badge--md {
+    padding: 0.6rem 1.15rem;
+    font-size: 0.8125rem;
+  }
+
+}
+
+@media (min-width: 640px) {
+  @layer components {
+    .section-title {
+      font-size: 2.25rem;
+    }
+
+    .section-lead {
+      line-height: 2rem;
+    }
+  }
+}
+
 /* Añadir al inicio del archivo */
 html {
   overflow-y: scroll;

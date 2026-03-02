@@ -1,12 +1,11 @@
 ---
-// Props tipadas con más opciones para flexibilidad
 interface Props {
   title?: string;
-  colSpan?: string; // Tailwind col-span
-  bgClass?: string; // Clase de fondo personalizable
-  borderClass?: string; // Clase de borde personalizable
-  rounded?: boolean; // Opción para esquinas redondeadas
-  lightEffect?: boolean; // Opción para activar/desactivar el efecto de luz
+  colSpan?: string;
+  bgClass?: string;
+  borderClass?: string;
+  rounded?: boolean;
+  lightEffect?: boolean;
 }
 
 const { 
@@ -32,20 +31,18 @@ const roundedClass = rounded ? "rounded-xl" : "";
 </div>
 
 <style>
-  /* Estilos integrados directamente en el componente */
   .bento-cell {
     position: relative;
     transition: border-color 0.3s ease;
     overflow: hidden;
   }
   
-  /* Efecto de luz dentro de cada celda */
   .light-effect {
     position: absolute;
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    background: rgba(255, 83, 83, 0.5); /* accent/20 */
+    background: rgba(255, 83, 83, 0.5);
     pointer-events: none;
     filter: blur(100px);
     opacity: 0;
@@ -53,7 +50,6 @@ const roundedClass = rounded ? "rounded-xl" : "";
     transition: opacity 0.3s ease;
   }
   
-  /* Aseguramos que el contenido esté por encima del efecto de luz */
   .bento-cell > *:not(.light-effect) {
     position: relative;
     z-index: 2;

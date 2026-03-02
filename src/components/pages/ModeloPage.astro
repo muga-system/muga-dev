@@ -1,0 +1,47 @@
+---
+import ModeloBentoGrid from "../BentoGrid/ModeloBentoGrid.astro";
+import Layout from "../../layouts/layout.astro";
+import Navigation from "../ui/Navigation/Navigation.astro";
+import Breadcrumb from "../ui/Breadcrumb/Breadcrumb.astro";
+import PageHeroSection from "../HeroSection/PageHeroSection.astro";
+import type { BreadcrumbItem } from "../../types";
+import "../../styles/bento.css";
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  {
+    label: "Modelo",
+    href: "/modelo",
+    active: true,
+  },
+];
+---
+
+<Layout
+  title="Modelo de trabajo | MUGA"
+  description="Como definimos alcance, entregables y continuidad tecnica."
+>
+  <Navigation>
+    <Breadcrumb items={breadcrumbItems} />
+  </Navigation>
+  <div class="hidden lg:block">
+    <Breadcrumb items={breadcrumbItems} />
+  </div>
+  <PageHeroSection
+    title="Modelo de trabajo"
+    description="Cómo definimos alcance, entregables y continuidad técnica."
+    textAlign="left"
+    showBadge={true}
+    badgeText="Modelo"
+  />
+  <ModeloBentoGrid />
+
+  <section class="px-6 pb-20 lg:px-8 lg:pb-24">
+    <div class="mx-auto max-w-7xl border border-white/5 bg-muga-dark-800/50 p-6 lg:p-8">
+      <p class="max-w-3xl text-sm leading-7 text-muga-neutral">
+        Esta version resume el criterio general de trabajo. La version interna detalla pricing, roadmap y continuidad tecnica.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<script src="../../scripts/bento-grid.ts"></script>

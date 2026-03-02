@@ -1,14 +1,13 @@
 ---
-// Footer.astro - Componente de pie de página
 export interface Props {}
 
 const year = new Date().getFullYear();
 
 const primaryLinks = [
-  { href: "/productos", label: "Productos" },
-  { href: "/caracteristicas", label: "Características" },
-  { href: "/portafolio", label: "Portafolio" },
-  { href: "/modelo-negocio", label: "Modelo de Negocio" },
+  { href: "/formatos", label: "Formatos" },
+  { href: "/criterios", label: "Criterios" },
+  { href: "/casos", label: "Casos" },
+  { href: "/modelo", label: "Modelo" },
   { href: "/contacto", label: "Contacto" },
 ];
 ---
@@ -17,19 +16,19 @@ const primaryLinks = [
   <div class="w-full px-6 py-14 lg:px-8">
     <div class="flex flex-col gap-8 border-b border-white/10 pb-10 lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <p class="text-xs font-mono uppercase tracking-[0.18em] text-accent">MUGA DEV</p>
+        <p class="muga-badge muga-badge--sm">MUGA DEV</p>
         <h2 class="mt-3 max-w-xl text-xl font-semibold leading-tight text-white sm:text-2xl">
-          Sitios claros, rápidos y mantenibles.
+          Conversión antes que dispersión.
         </h2>
         <p class="mt-3 max-w-xl text-sm text-graylight">
-          Arquitectura web con criterio técnico y diseño consistente.
+          Estructura, jerarquía y recorrido claro para sostener una acción principal.
         </p>
       </div>
       <a
         href="/contacto"
         class="inline-flex w-fit items-center gap-2 border border-accent px-4 py-2 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-obscure"
       >
-        Iniciá tu proyecto
+        Solicitá un diagnóstico
         <span aria-hidden="true">→</span>
       </a>
     </div>
@@ -49,7 +48,7 @@ const primaryLinks = [
     <div class="flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-graylight sm:flex-row sm:items-center sm:justify-between">
       <p>
         <span class="font-mono">{year}</span>
-        <span class="ml-1 font-semibold text-accent">MUGA</span> - Estudio digital independiente.
+        <span class="ml-1 font-semibold text-accent">MUGA</span> - Arquitectura web como sistema.
       </p>
       <div class="flex items-center gap-4">
         <a href="https://muga.studio" class="transition-colors hover:text-white">MUGA Studio</a>

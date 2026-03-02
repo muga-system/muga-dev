@@ -1,64 +1,60 @@
 ---
-// Añadir interfaz de Props aunque no tenga propiedades
 export interface Props {
-  // Añadir slot para mobile-breadcrumb
 }
 
-// Definir interfaz para elementos de navegación
 interface NavItem {
   label: string;
   href: string;
-  icon?: string;
 }
 
-// Usar la interfaz para definir los elementos de navegación
 const navItems: NavItem[] = [
-  { label: "Productos", href: "/productos" },
-  { label: "Características", href: "/caracteristicas" },
+  { label: "Formatos", href: "/formatos" },
+  { label: "Criterios", href: "/criterios" },
   { label: "Nosotros", href: "/nosotros" },
   { label: "Contacto", href: "/contacto" },
 ];
 
-const portfolioItem: NavItem = {
-  label: "Portafolio",
-  href: "/portafolio",
-  icon: "briefcase"
+const casesItem: NavItem = {
+  label: "Casos",
+  href: "/casos"
 };
 
-// Obtener la ruta actual para resaltar el enlace activo
 const currentPath = Astro.url.pathname;
+
+const isActive = (href: string) =>
+  href === "/contacto" ? currentPath.startsWith("/contacto") : currentPath === href;
 ---
 
 <header id="navbar" class="fixed inset-x-0 top-0 z-50 transition-colors duration-300 navbar-scrolled" transition:animate="none">
   <nav aria-label="Global" class="flex items-center justify-between p-6 lg:px-8 h-[72px]">
-    <!-- Logo y Links desktop -->
     <div class="flex items-center space-x-6" transition:animate="none">
-      <!-- Logo -->
       <div class="flex items-center justify-start" transition:animate="none">
         <a href="/" transition:animate="none">
           <span class="sr-only">MUGA</span>
-          <img src="/logo/logo.png" alt="" class="h-8 w-8 border border-accent/50 hover:border-accent transition-all duration-500 border-dashed" transition:animate="none" />
+          <img src="/logo/logo.png" alt="" class="h-8 w-8" transition:animate="none" />
         </a>
       </div>
       
-      <!-- Mobile breadcrumb -->
       <div class="flex lg:hidden ml-4">
         <slot name="mobile-breadcrumb" />
       </div>
       
-      <!-- Links desktop -->
       <div class="hidden lg:flex lg:gap-x-2 items-center ml-2" transition:animate="none">
-        <a href="/productos" class={`text-sm font-semibold ${currentPath === '/productos' ? 'text-white' : 'text-graylight hover:text-white'}`} transition:animate="none">Productos</a>
-        <a href="/caracteristicas" class={`text-sm font-semibold ${currentPath === '/caracteristicas' ? 'text-white' : 'text-graylight hover:text-white'} ml-4`} transition:animate="none">Características</a>
-        <a href="/nosotros" class={`text-sm font-semibold ${currentPath === '/nosotros' ? 'text-white' : 'text-graylight hover:text-white'} ml-4`} transition:animate="none">Nosotros</a>
-        <a href="/contacto" class={`text-sm font-semibold ${currentPath === '/contacto' ? 'text-white' : 'text-graylight hover:text-white'} ml-4`} transition:animate="none">Contacto</a>
+        {navItems.map((item, index) => (
+          <a
+            href={item.href}
+            class={`text-sm font-semibold ${isActive(item.href) ? "text-white" : "text-graylight hover:text-white"} ${index > 0 ? "ml-4" : ""}`}
+            transition:animate="none"
+          >
+            {item.label}
+          </a>
+        ))}
       </div>
     </div>
 
-    <!-- Botón menú móvil -->
     <div class="flex lg:hidden" transition:animate="none">
       <button id="mobile-menu-button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-200" transition:animate="none">
-        <span class="sr-only">Open main menu</span>
+        <span class="sr-only">Abrir menu principal</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6" aria-hidden="true" transition:animate="none">
           <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -66,49 +62,47 @@ const currentPath = Astro.url.pathname;
     </div>
 
     <div class="hidden lg:flex lg:flex-1 lg:justify-end" transition:animate="none">
-      <a href="/portafolio" class={`text-sm font-semibold ${currentPath === '/portafolio' ? 'text-white' : 'text-graylight hover:text-white'} flex items-center`} transition:animate="none">
+      <a href={casesItem.href} class={`text-sm font-semibold ${isActive(casesItem.href) ? 'text-white' : 'text-graylight hover:text-white'} flex items-center`} transition:animate="none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transition:animate="none">
           <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
         </svg>
-        Portafolio <span aria-hidden="true" class="ml-1" transition:animate="none">&rarr;</span>
+        {casesItem.label} <span aria-hidden="true" class="ml-1" transition:animate="none">&rarr;</span>
       </a>
     </div>
   </nav>
 
-  <!-- Overlay menú mobile -->
   <div id="mobile-menu" class="fixed inset-0 z-50 hidden lg:hidden bg-obscure">
     <div class="fixed inset-y-0 right-0 w-full sm:max-w-sm overflow-y-auto bg-obscure sm:ring-1 sm:ring-gray-100/10">
-      <!-- Header del menú -->
       <div class="flex items-center justify-between h-[72px] px-6">
         <a href="/" class="flex items-center">
           <span class="sr-only">MUGA</span>
-          <img src="/logo/logo.png" alt="" class="h-8 w-8 border border-accent/50 hover:border-accent transition-all duration-500 border-dashed" />
+          <img src="/logo/logo.png" alt="" class="h-8 w-8" />
         </a>
         <button id="close-mobile-menu" class="-m-2.5 rounded-md p-2.5 text-gray-200">
-          <span class="sr-only">Close menu</span>
+          <span class="sr-only">Cerrar menu</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6" aria-hidden="true">
             <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
 
-      <!-- Links -->
       <div class="mt-6 px-6 pb-6 flow-root">
         <div class="-my-6 divide-y divide-white/10">
           <div class="space-y-2 py-6">
-            <a href="/productos" class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5">Productos</a>
-            <a href="/caracteristicas" class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5">Características</a>
-            <a href="/nosotros" class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5">Nosotros</a>
-            <a href="/contacto" class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5">Contacto</a>
+            {navItems.map((item) => (
+              <a href={item.href} class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5">
+                {item.label}
+              </a>
+            ))}
           </div>
           <div class="py-6">
-            <a href="/portafolio" class="flex items-center rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-white/5">
+            <a href={casesItem.href} class="flex items-center rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-white/5">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                 <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
               </svg>
-              Portafolio
+              {casesItem.label}
             </a>
           </div>
         </div>
@@ -118,12 +112,10 @@ const currentPath = Astro.url.pathname;
 </header>
 
 <style>
-  /* Añadir espacio para el header fijo */
   :global(body) {
-    padding-top: 112px; /* 72px (navbar) + 40px (breadcrumb) */
+    padding-top: 112px;
   }
 
-  /* Clase para el fondo al hacer scroll */
   .navbar-scrolled {
     background-color: #191717; 
     box-shadow: 0 4px 6px -1px #191717, 0 2px 4px -1px #191717;
@@ -131,13 +123,11 @@ const currentPath = Astro.url.pathname;
 </style>
 
 <script is:inline define:vars={{ currentPath }}>
-  // Función para inicializar el comportamiento del navbar
   const initNavbarBehavior = () => {
     const mobileMenuButton = document.getElementById('mobile-menu-button');
     const closeMenuButton = document.getElementById('close-mobile-menu');
     const mobileMenu = document.getElementById('mobile-menu');
 
-    // Función para manejar el scroll del breadcrumb (solo si existe)
     const handleScroll = () => {
       const breadcrumb = document.getElementById('breadcrumb');
       if (breadcrumb) {
@@ -149,13 +139,10 @@ const currentPath = Astro.url.pathname;
       }
     };
 
-    // Verificar estado inicial
     handleScroll();
 
-    // Agregar evento de scroll
     window.addEventListener('scroll', handleScroll);
 
-    // Event listeners del menú móvil
     mobileMenuButton?.addEventListener('click', () => {
       mobileMenu?.classList.remove('hidden');
     });
@@ -172,9 +159,7 @@ const currentPath = Astro.url.pathname;
     });
   };
 
-  // Ejecutar en carga de página de Astro
   document.addEventListener('astro:page-load', initNavbarBehavior);
 
-  // Ejecutar en carga inicial del DOM
   document.addEventListener('DOMContentLoaded', initNavbarBehavior);
 </script>

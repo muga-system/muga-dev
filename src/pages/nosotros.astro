@@ -14,7 +14,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 ];
 ---
 
-<Layout title="Nosotros | MUGA" description="Arquitectura web de nueva generación">
+<Layout title="Nosotros | MUGA" description="Arquitectura web como sistema, con foco en conversion.">
   <Navigation>
     <Breadcrumb items={breadcrumbItems} />
   </Navigation>
@@ -22,8 +22,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
     <Breadcrumb items={breadcrumbItems} />
   </div>
   <PageHeroSection
-    title="AWNG"
-    description="Arquitectura Web de Nueva Generación"
+    title="Nosotros"
+    description="Arquitectura web como sistema, con criterio técnico y foco en conversión."
     textAlign="left"
     showBadge={true}
     badgeText="MUGA"
@@ -33,18 +33,22 @@ const breadcrumbItems: BreadcrumbItem[] = [
     <div class="mx-auto max-w-7xl space-y-16">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-7">
-          <p class="text-accent text-xs font-mono uppercase tracking-[0.2em] mb-4">Nosotros</p>
-          <h2 class="text-3xl sm:text-4xl font-light text-white leading-tight mb-5">
-            Diseñamos arquitectura web con criterio técnico y foco en resultados.
+          <div class="mb-4">
+            <span class="muga-badge muga-badge--sm">Nosotros</span>
+          </div>
+          <h2 class="section-title mb-5">
+            Diseñamos estructura web con criterio tecnico y foco en conversion.
           </h2>
-          <p class="text-muga-neutral text-lg max-w-2xl">
-            No vendemos páginas aisladas. Construimos sistemas web mantenibles, rápidos y medibles para que tu negocio pueda escalar sin rehacer todo cada seis meses.
+          <p class="section-lead">
+            No vendemos paginas aisladas. Construimos sistemas web mantenibles, rapidos y medibles para escalar sin rehacer la base cada vez que cambia la necesidad.
           </p>
         </div>
 
         <aside class="lg:col-span-5 border border-white/10 bg-muga-dark-800/40 p-6">
-          <p class="text-accent text-xs font-mono uppercase tracking-[0.18em] mb-3">Cómo lo hacemos</p>
-          <p class="text-white text-2xl font-light mb-4">Astro + TailwindCSS + TypeScript</p>
+          <div class="mb-3">
+            <span class="muga-badge muga-badge--sm">Cómo lo hacemos</span>
+          </div>
+          <p class="text-white text-2xl font-light mb-4">Base tecnica estable</p>
           <ul class="space-y-2 text-sm text-muga-neutral">
             <li>Arquitectura modular desde el inicio.</li>
             <li>Métricas definidas antes de desarrollar.</li>
@@ -55,9 +59,11 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
       <div>
         <div class="mb-6">
-          <p class="text-accent text-xs font-mono uppercase tracking-[0.2em] mb-3">Qué garantizamos</p>
-          <p class="text-muga-neutral max-w-3xl">
-            Definimos objetivos técnicos desde el inicio y reportamos métricas claras para que sepas exactamente qué estás recibiendo.
+          <div class="mb-3">
+            <span class="muga-badge muga-badge--sm">Qué garantizamos</span>
+          </div>
+          <p class="section-lead">
+            Definimos criterios tecnicos desde el inicio y dejamos claro que se mide, que se entrega y que sostiene la estructura.
           </p>
         </div>
 
@@ -92,12 +98,14 @@ const breadcrumbItems: BreadcrumbItem[] = [
       </div>
 
       <div class="border border-white/10 bg-muga-dark-800/25 p-8">
-        <p class="text-accent text-xs font-mono uppercase tracking-[0.2em] mb-4">Filosofía de trabajo</p>
+        <div class="mb-4">
+          <span class="muga-badge muga-badge--sm">Criterio de trabajo</span>
+        </div>
         <p class="text-white text-2xl font-light leading-tight mb-6">
-          Construimos con método y entregamos valor real.
+          Ordenamos antes de construir.
         </p>
-        <p class="text-muga-neutral max-w-4xl">
-          Trabajamos con transparencia en cada decisión, medimos resultados reales y dejamos una base técnica lista para crecer sin fricción.
+        <p class="section-lead max-w-4xl">
+          Trabajamos con decisiones explicitas, medicion real y una base tecnica lista para crecer sin desorden.
         </p>
       </div>
     </div>

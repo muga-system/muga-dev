@@ -1,0 +1,31 @@
+---
+import Layout from "../../layouts/layout.astro";
+import Navigation from "../ui/Navigation/Navigation.astro";
+import Breadcrumb from "../ui/Breadcrumb/Breadcrumb.astro";
+import PageHeroSection from "../HeroSection/PageHeroSection.astro";
+import type { BreadcrumbItem } from "../../types";
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  {
+    label: "Casos",
+    href: "/casos",
+    active: true,
+  },
+];
+---
+
+<Layout title="Casos | MUGA" description="Referencias de estructura aplicada a distintos objetivos.">
+  <Navigation>
+    <Breadcrumb items={breadcrumbItems} />
+  </Navigation>
+  <div class="hidden lg:block">
+    <Breadcrumb items={breadcrumbItems} />
+  </div>
+  <PageHeroSection 
+    title="Casos"
+    description="Referencias de estructura aplicada a distintos objetivos."
+    textAlign="left"
+    showBadge={true}
+    badgeText="Casos"
+  />
+</Layout>

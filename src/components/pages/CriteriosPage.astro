@@ -1,25 +1,25 @@
 ---
-import Layout from "../layouts/layout.astro";
-import Navigation from "../components/ui/Navigation/Navigation.astro";
-import Breadcrumb from "../components/ui/Breadcrumb/Breadcrumb.astro";
-import PageHeroSection from "../components/HeroSection/PageHeroSection.astro";
-import BentoCell from "../components/ui/BentoCell.astro";
-import IconWithBlurEffect from "../components/ui/IconWithBlurEffect.astro";
-import ArrowLink from "../components/ui/Button/ArrowLink.astro";
-import type { BreadcrumbItem } from "../types";
+import Layout from "../../layouts/layout.astro";
+import Navigation from "../ui/Navigation/Navigation.astro";
+import Breadcrumb from "../ui/Breadcrumb/Breadcrumb.astro";
+import PageHeroSection from "../HeroSection/PageHeroSection.astro";
+import BentoCell from "../ui/BentoCell.astro";
+import IconWithBlurEffect from "../ui/IconWithBlurEffect.astro";
+import ArrowLink from "../ui/Button/ArrowLink.astro";
+import type { BreadcrumbItem } from "../../types";
 
 const breadcrumbItems: BreadcrumbItem[] = [
   {
-    label: "Características",
-    href: "/caracteristicas",
+    label: "Criterios",
+    href: "/criterios",
     active: true,
   },
 ];
 ---
 
 <Layout
-  title="Características | MUGA"
-  description="Características de nuestros productos"
+  title="Criterios tecnicos | MUGA"
+  description="Rendimiento, accesibilidad, SEO y estructura como base tecnica."
 >
   <Navigation>
     <Breadcrumb items={breadcrumbItems} />
@@ -28,22 +28,20 @@ const breadcrumbItems: BreadcrumbItem[] = [
     <Breadcrumb items={breadcrumbItems} />
   </div>
   <PageHeroSection
-    title="Características"
-    description="Conocé las características de nuestros productos."
+    title="Criterios técnicos"
+    description="Rendimiento, accesibilidad, SEO y estructura como soporte del objetivo."
     textAlign="left"
     showBadge={true}
-    badgeText="Características"
+    badgeText="Criterios"
   />
 
-  <section class="relative px-6 lg:px-8">
-    <!-- Grid principal -->
+  <section class="relative px-6 py-20 lg:px-8 lg:py-24">
     <div class="mx-auto max-w-7xl">
       <div
         class="grid grid-cols-1 md:grid-cols-4 gap-0 auto-rows-[minmax(200px,auto)]"
       >
-        <!-- Fila 1: 1fr, 1fr, 2fr -->
         <BentoCell
-          title="Diseño Modular"
+          title="Estructura modular"
           colSpan="col-span-1 md:col-span-1"
           bgClass="bg-transparent"
           rounded={false}
@@ -52,7 +50,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/component.svg"
             iconAlt="Icono de componente"
-            iconId="component"
+            iconKey="component"
           />
 
           <ul class="space-y-2 text-muga-neutral relative z-10">
@@ -62,7 +60,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
             </li>
             <li class="flex items-start">
               <span class="text-muga-primary mr-2">•</span>
-              <span>Consistencia visual</span>
+              <span>Consistencia de sistema</span>
             </li>
             <li class="flex items-start">
               <span class="text-muga-primary mr-2">•</span>
@@ -82,7 +80,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/chart-no-axes-combined.svg"
             iconAlt="Icono de rendimiento"
-            iconId="chart"
+            iconKey="chart"
           />
 
           <ul class="space-y-2 text-muga-neutral relative z-10">
@@ -96,13 +94,13 @@ const breadcrumbItems: BreadcrumbItem[] = [
             </li>
             <li class="flex items-start">
               <span class="text-muga-primary mr-2">•</span>
-              <span>Experiencia fluida</span>
+              <span>Lectura sin cortes</span>
             </li>
           </ul>
         </BentoCell>
 
         <BentoCell
-          title="Nuestro Enfoque"
+          title="Criterio"
           colSpan="col-span-1 md:col-span-2"
           bgClass="bg-transparent"
           borderClass="border-white/5"
@@ -112,23 +110,19 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/goal.svg"
             iconAlt="Icono de objetivo"
-            iconId="goal"
+            iconKey="goal"
           />
 
           <p class="text-muga-neutral relative z-10">
-            En MUGA, nos enfocamos en crear productos y servicios que no solo se
-            vean bien, sino que también funcionen de manera excepcional. Nuestro
-            enfoque se centra en la transparencia, eficiencia y KPIs medibles
-            como estándar de calidad.
+            Definimos una base tecnica clara antes de construir. Eso ordena
+            decisiones, reduce desvio y sostiene el objetivo principal.
           </p>
           <p class="mt-4 text-muga-neutral relative z-10">
-            Cada proyecto se construye con componentes reutilizables que
-            garantizan consistencia visual y funcional, optimizando tanto la
-            experiencia de desarrollo como el rendimiento final para el usuario.
+            Cada proyecto parte de componentes reutilizables para mantener
+            consistencia, control y un rendimiento estable en cada ajuste.
           </p>
         </BentoCell>
 
-        <!-- Fila 2: 1fr, 2fr, 1fr -->
         <BentoCell
           title="Accesibilidad"
           colSpan="col-span-1 md:col-span-1"
@@ -140,7 +134,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/keyboard.svg"
             iconAlt="Icono de teclado"
-            iconId="keyboard"
+            iconKey="keyboard"
           />
 
           <ul class="space-y-2 text-muga-neutral relative z-10">
@@ -164,7 +158,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
         </BentoCell>
 
         <BentoCell
-          title="Tecnologías"
+          title="Base técnica"
           colSpan="col-span-1 md:col-span-2"
           bgClass="bg-transparent"
           borderClass="border-white/5"
@@ -174,7 +168,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/cpu.svg"
             iconAlt="Icono de CPU"
-            iconId="cpu"
+            iconKey="cpu"
             iconSize="w-40 h-40 opacity-30"
           />
 
@@ -196,10 +190,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
             >
           </div>
           <p class="text-muga-neutral relative z-20 mt-10">
-            Utilizamos tecnologías modernas y eficientes para crear sitios web
-            rápidos, seguros y escalables. Nuestro stack tecnológico está
-            optimizado para ofrecer la mejor experiencia tanto para
-            desarrolladores como para usuarios finales.
+            La tecnologia se define por funcion: carga rapida, base mantenible
+            y control tecnico para escalar sin reordenar todo el sitio.
           </p>
         </BentoCell>
 
@@ -214,7 +206,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/scan-search.svg"
             iconAlt="Icono de SEO"
-            iconId="seo"
+            iconKey="seo"
           />
 
           <ul class="space-y-2 text-muga-neutral relative z-10">
@@ -233,9 +225,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </ul>
         </BentoCell>
 
-        <!-- Fila 3: 2fr, 1fr, 1fr -->
         <BentoCell
-          title="Experiencia Responsive"
+          title="Respuesta en pantalla"
           colSpan="col-span-1 md:col-span-2"
           bgClass="bg-transparent"
           borderClass="border-white/5"
@@ -245,21 +236,16 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/monitor-smartphone.svg"
             iconAlt="Icono de Responsive"
-            iconId="responsive"
+            iconKey="responsive"
           />
           
           <p class="text-muga-neutral">
-            Todos nuestros productos están diseñados para funcionar
-            perfectamente en cualquier dispositivo, desde teléfonos móviles
-            hasta pantallas de escritorio. Utilizamos un enfoque mobile-first
-            para garantizar una experiencia óptima en todos los tamaños de
-            pantalla.
+            La estructura se define para sostener lectura y accion en cada
+            ancho de pantalla, desde mobile hasta desktop.
           </p>
           <p class="mt-4 text-muga-neutral">
-            Nuestro diseño responsive no solo se adapta visualmente, sino que
-            también optimiza la interacción y la usabilidad para cada tipo de
-            dispositivo, asegurando que todos los usuarios tengan la mejor
-            experiencia posible.
+            No se trata solo de adaptar bloques. Se trata de mantener
+            jerarquia, recorrido y claridad en cada contexto de uso.
           </p>
         </BentoCell>
 
@@ -274,7 +260,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/hard-hat.svg"
             iconAlt="Icono de Mantenimiento"
-            iconId="maintenance"
+            iconKey="maintenance"
           />
           
           <ul class="space-y-2 text-muga-neutral relative z-10">
@@ -284,7 +270,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
             </li>
             <li class="flex items-start">
               <span class="text-muga-primary mr-2">•</span>
-              <span>Actualizaciones periódicas</span>
+              <span>Actualizaciones controladas</span>
             </li>
             <li class="flex items-start">
               <span class="text-muga-primary mr-2">•</span>
@@ -294,7 +280,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
         </BentoCell>
 
         <BentoCell
-          title="Contacto"
+          title="Siguiente paso"
           colSpan="col-span-1 md:col-span-1"
           bgClass="bg-transparent"
           borderClass="border-white/5"
@@ -304,13 +290,13 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <IconWithBlurEffect 
             iconPath="/icons/message-square-text.svg"
             iconAlt="Icono de Contacto"
-            iconId="contact"
+            iconKey="contact"
           />
           
           <div class="flex flex-col space-y-4 relative z-10">
-            <ArrowLink href="/contacto" text="Solicitar información" />
-            <ArrowLink href="/productos" text="Ver productos" />
-            <ArrowLink href="/portafolio" text="Ver portafolio" />
+            <ArrowLink href="/contacto" text="Solicitar diagnostico" />
+            <ArrowLink href="/formatos" text="Ver formatos" />
+            <ArrowLink href="/casos" text="Ver casos" />
           </div>
         </BentoCell>
       </div>
@@ -318,15 +304,4 @@ const breadcrumbItems: BreadcrumbItem[] = [
   </section>
 </Layout>
 
-<style>
-  .arrow-icon {
-    display: inline-block;
-    transition: transform 0.3s ease;
-  }
-
-  a:hover .arrow-icon {
-    transform: translateX(4px);
-  }
-</style>
-
-<script src="../scripts/bento-grid.ts"></script>
+<script src="../../scripts/bento-grid.ts"></script>

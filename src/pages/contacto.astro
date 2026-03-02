@@ -4,6 +4,7 @@ import Navigation from "../components/ui/Navigation/Navigation.astro";
 import Breadcrumb from "../components/ui/Breadcrumb/Breadcrumb.astro";
 import PageHeroSection from "../components/HeroSection/PageHeroSection.astro";
 import ArrowLink from "../components/ui/Button/ArrowLink.astro";
+import { Layers, Search, Wrench } from "@lucide/astro";
 import type { BreadcrumbItem } from "../types";
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -15,7 +16,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 ];
 ---
 
-<Layout title="Contacto | MUGA" description="Iniciá tu proyecto con KPI garantizados">
+<Layout title="Contacto | MUGA" description="Solicitá un diagnóstico para ordenar conversión, jerarquía, flujo y secuencia.">
   <Navigation>
     <Breadcrumb items={breadcrumbItems} />
   </Navigation>
@@ -23,65 +24,98 @@ const breadcrumbItems: BreadcrumbItem[] = [
     <Breadcrumb items={breadcrumbItems} />
   </div>
   <PageHeroSection
-    title="Iniciá tu proyecto"
-    description="Contanos tu idea. Construimos con método y entregamos con valor."
+    title="Solicitá un diagnóstico"
+    description="Revisamos objetivo, jerarquía, flujo y secuencia para definir qué parte de la estructura hay que ordenar."
     textAlign="left"
     showBadge={true}
-    badgeText="AWNG"
+    badgeText="MUGA"
   />
 
-  <section class="relative px-6 lg:px-8 py-24">
+  <section class="relative px-6 py-20 lg:px-8 lg:py-24">
     <div class="mx-auto max-w-7xl">
-      <div class="mb-16">
-        <div class="text-center mb-10">
-          <h2 class="text-2xl font-light text-white mb-3">Proceso</h2>
-          <p class="text-white/75 max-w-2xl mx-auto">
-            Tres etapas claras para convertir tu idea en un proyecto ejecutable y medible.
+      <div class="mb-14">
+        <div class="mb-12 max-w-3xl">
+          <div class="mb-4">
+            <span class="muga-badge muga-badge--sm">Proceso</span>
+          </div>
+          <h2 class="section-title">
+            Tres etapas para ordenar la estructura
+          </h2>
+          <p class="section-lead mt-4">
+            Del diagnóstico inicial a la implementación, cada paso reduce dispersión y define qué tiene que pasar en la web.
           </p>
         </div>
 
-        <ol class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <li class="h-full min-h-[290px] bg-muga-dark-800/40 border border-white/10 p-6 flex flex-col transition-colors duration-200 hover:border-accent/25">
-            <p class="text-accent text-xs font-mono font-semibold tracking-wider mb-3">01</p>
-            <h3 class="text-white text-lg font-medium mb-2">Descubrimiento</h3>
-            <p class="text-white/75 mb-7 flex-1">Alineamos objetivos de negocio, alcance y prioridades del proyecto.</p>
-            <div class="space-y-2 text-sm">
+        <ol class="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <li class="flex min-h-[320px] h-full flex-col bg-muga-dark-800/40 border border-white/10 p-7 transition-colors duration-200 hover:border-accent/25">
+            <div class="relative mb-6 flex h-24 w-24 items-center justify-center">
+              <div class="relative flex h-20 w-20 items-center justify-center overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(44,18,18,0.34),rgba(18,12,12,0.14))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <Search size={44} color="#ff5b5b" strokeWidth={1.6} aria-hidden="true" class="absolute z-0 scale-110 opacity-80 blur-[1.4px] [filter:drop-shadow(0_0_12px_rgba(255,83,83,0.5))_drop-shadow(0_0_24px_rgba(255,83,83,0.24))]" />
+                <div class="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,rgba(255,83,83,0.28),rgba(255,83,83,0.08)_32%,transparent_60%)] blur-xl"></div>
+                <div class="absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(255,255,255,0.008))] backdrop-blur-[2px]"></div>
+              </div>
+            </div>
+            <h3 class="mb-3 text-xl font-semibold tracking-tight text-white">Diagnóstico</h3>
+            <p class="mb-8 flex-1 text-base leading-8 text-white/75">Revisamos objetivo, fricción, exceso de decisiones y prioridad visible.</p>
+            <div class="space-y-3 pt-2 text-sm">
               <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">30-45 min</span></p>
-              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Diagnóstico inicial</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Lectura inicial</span></p>
             </div>
           </li>
 
-          <li class="h-full min-h-[290px] bg-muga-dark-800/40 border border-white/10 p-6 flex flex-col transition-colors duration-200 hover:border-accent/25">
-            <p class="text-accent text-xs font-mono font-semibold tracking-wider mb-3">02</p>
-            <h3 class="text-white text-lg font-medium mb-2">Arquitectura y KPIs</h3>
-            <p class="text-white/75 mb-7 flex-1">Definimos stack, roadmap técnico y objetivos medibles por etapa.</p>
-            <div class="space-y-2 text-sm">
+          <li class="flex min-h-[320px] h-full flex-col bg-muga-dark-800/40 border border-white/10 p-7 transition-colors duration-200 hover:border-accent/25">
+            <div class="relative mb-6 flex h-24 w-24 items-center justify-center">
+              <div class="relative flex h-20 w-20 items-center justify-center overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(44,18,18,0.34),rgba(18,12,12,0.14))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <Layers size={44} color="#ff5b5b" strokeWidth={1.6} aria-hidden="true" class="absolute z-0 scale-110 opacity-80 blur-[1.4px] [filter:drop-shadow(0_0_12px_rgba(255,83,83,0.5))_drop-shadow(0_0_24px_rgba(255,83,83,0.24))]" />
+                <div class="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,rgba(255,83,83,0.28),rgba(255,83,83,0.08)_32%,transparent_60%)] blur-xl"></div>
+                <div class="absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(255,255,255,0.008))] backdrop-blur-[2px]"></div>
+              </div>
+            </div>
+            <h3 class="mb-3 text-xl font-semibold tracking-tight text-white">Estructura</h3>
+            <p class="mb-8 flex-1 text-base leading-8 text-white/75">Definimos acción principal, mensaje central, recorrido y orden de lectura.</p>
+            <div class="space-y-3 pt-2 text-sm">
               <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">24-48 h</span></p>
-              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Propuesta + roadmap</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Dirección estructural</span></p>
             </div>
           </li>
 
-          <li class="h-full min-h-[290px] bg-muga-dark-800/40 border border-white/10 p-6 flex flex-col transition-colors duration-200 hover:border-accent/25">
-            <p class="text-accent text-xs font-mono font-semibold tracking-wider mb-3">03</p>
-            <h3 class="text-white text-lg font-medium mb-2">Ejecución y seguimiento</h3>
-            <p class="text-white/75 mb-7 flex-1">Implementamos por iteraciones con reportes transparentes y control continuo.</p>
-            <div class="space-y-2 text-sm">
+          <li class="flex min-h-[320px] h-full flex-col bg-muga-dark-800/40 border border-white/10 p-7 transition-colors duration-200 hover:border-accent/25">
+            <div class="relative mb-6 flex h-24 w-24 items-center justify-center">
+              <div class="relative flex h-20 w-20 items-center justify-center overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(44,18,18,0.34),rgba(18,12,12,0.14))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                <Wrench size={44} color="#ff5b5b" strokeWidth={1.6} aria-hidden="true" class="absolute z-0 scale-110 opacity-80 blur-[1.4px] [filter:drop-shadow(0_0_12px_rgba(255,83,83,0.5))_drop-shadow(0_0_24px_rgba(255,83,83,0.24))]" />
+                <div class="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,rgba(255,83,83,0.28),rgba(255,83,83,0.08)_32%,transparent_60%)] blur-xl"></div>
+                <div class="absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(255,255,255,0.008))] backdrop-blur-[2px]"></div>
+              </div>
+            </div>
+            <h3 class="mb-3 text-xl font-semibold tracking-tight text-white">Implementación</h3>
+            <p class="mb-8 flex-1 text-base leading-8 text-white/75">Aplicamos la base técnica para que la estructura sea clara, medible y mantenible.</p>
+            <div class="space-y-3 pt-2 text-sm">
               <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">Iterativo</span></p>
-              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Entrega + reporte KPI</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Entrega + seguimiento</span></p>
             </div>
           </li>
         </ol>
       </div>
 
-      <!-- Formulario de contacto -->
-      <div class="bg-muga-dark-800/50 border border-white/5 p-8">
-        <!-- Mensajes de estado del formulario -->
+      <div class="bg-muga-dark-800/50 border border-white/5 p-8 lg:p-10">
+        <div class="mb-10 max-w-3xl">
+          <div class="mb-4">
+            <span class="muga-badge muga-badge--sm">Contacto</span>
+          </div>
+          <h2 class="section-title">
+            Definí el objetivo y empezamos por ahí
+          </h2>
+          <p class="section-lead mt-4">
+            Deja el objetivo y el problema actual para definir el siguiente paso.
+          </p>
+        </div>
+
         <div id="form-messages" class="mb-6 hidden">
           <div id="success-message" class="hidden bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3">
-            ¡Mensaje enviado exitosamente! Nos pondremos en contacto pronto.
+            Diagnostico enviado. Te contactamos por email.
           </div>
           <div id="error-message" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3">
-            Error al enviar el mensaje. Por favor, intenta de nuevo.
+            No pudimos enviar el formulario. Volve a intentar.
           </div>
         </div>
 
@@ -121,7 +155,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </div>
 
           <div>
-            <label for="phone" class="block text-sm font-medium text-white mb-2">Teléfono</label>
+              <label for="phone" class="block text-sm font-medium text-white mb-2">Teléfono o WhatsApp</label>
             <input
               type="tel"
               id="phone"
@@ -134,28 +168,28 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </div>
 
           <div>
-            <label for="project" class="block text-sm font-medium text-white mb-2">Tipo de proyecto</label>
+            <label for="project" class="block text-sm font-medium text-white mb-2">Tipo de estructura</label>
             <select
               id="project"
               name="project"
-              class="w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              class="muga-select w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
               required
             >
               <option value="">Seleccioná una opción</option>
-              <option value="landing">Landing Page</option>
-              <option value="corporativo">Sitio Corporativo</option>
-              <option value="institucional">Sitio Institucional</option>
+              <option value="landing">Landing de conversión</option>
+              <option value="corporativo">Sitio corporativo</option>
+              <option value="institucional">Sitio institucional</option>
             </select>
           </div>
 
           <div>
-            <label for="message" class="block text-sm font-medium text-white mb-2">Mensaje</label>
+            <label for="message" class="block text-sm font-medium text-white mb-2">Objetivo y problema actual</label>
             <textarea
               id="message"
               name="message"
               rows="4"
               class="w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white placeholder-graylight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-              placeholder="Contanos sobre tu proyecto..."
+              placeholder="Contanos qué tiene que lograr tu web y qué parte hoy está frenando la conversión"
             ></textarea>
           </div>
 
@@ -164,13 +198,13 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <input type="hidden" name="status" value="new" />
           <input type="hidden" name="ip" value="" />
 
-          <div class="text-center">
+          <div class="pt-2">
             <button
               type="submit"
               id="submit-btn"
               class="inline-flex items-center gap-2 px-6 py-3 bg-accent text-obscure font-semibold hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-obscure transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span id="btn-text">Enviar consulta</span>
+              <span id="btn-text">Solicitar diagnóstico</span>
               <span id="btn-arrow" aria-hidden="true">→</span>
               <div id="btn-spinner" class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-obscure" aria-hidden="true"></div>
             </button>
@@ -179,32 +213,15 @@ const breadcrumbItems: BreadcrumbItem[] = [
         <iframe id="make-webhook-target" name="make-webhook-target" class="hidden" aria-hidden="true"></iframe>
       </div>
 
-      <div class="text-center mt-12">
-        <p class="text-muga-neutral mb-4">O explorá nuestros productos</p>
-        <div class="flex justify-center gap-6">
-          <ArrowLink href="/productos" text="Productos" />
-          <ArrowLink href="/portafolio" text="Portafolio" />
+      <div class="mt-10 max-w-3xl">
+        <p class="mb-4 text-sm text-muga-neutral">Si queres mas contexto, revisa formatos y casos.</p>
+        <div class="flex flex-wrap gap-6">
+          <ArrowLink href="/formatos" text="Formatos" />
+          <ArrowLink href="/casos" text="Casos" />
         </div>
       </div>
     </div>
   </section>
-
-  <style>
-    /* Estilos para el select */
-    select {
-      background-color: rgba(24, 23, 23, 0.7) !important;
-      color: #A0A0A0 !important;
-    }
-
-    select:focus {
-      color: white !important;
-    }
-
-    select option {
-      background-color: #191717 !important;
-      color: white !important;
-    }
-  </style>
 
   <script src="../scripts/contact-form-redirect.ts"></script>
 

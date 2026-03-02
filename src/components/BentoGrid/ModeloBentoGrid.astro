@@ -5,14 +5,12 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
 ---
 
 <section class="relative px-6 lg:px-8">
-  <!-- Grid principal -->
   <div class="mx-auto max-w-7xl">
     <div
       class="grid grid-cols-1 md:grid-cols-4 gap-0 auto-rows-[minmax(200px,auto)]"
     >
-      <!-- Fila 1 -->
       <BentoCell
-        title="Stack Tecnológico"
+        title="Base técnica"
         colSpan="col-span-1 md:col-span-1"
         bgClass="bg-transparent"
         borderClass="border-white/5"
@@ -21,8 +19,8 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       >
         <IconWithBlurEffect
           iconPath="/icons/layers.svg"
-          iconAlt="Icono de Stack Tecnológico"
-          iconId="stack"
+          iconAlt="Icono de base tecnica"
+          iconKey="base"
         />
 
         <ul class="space-y-2 text-muga-neutral relative z-10">
@@ -58,7 +56,7 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       </BentoCell>
 
       <BentoCell
-        title="Cliente Ideal"
+        title="Encaje"
         colSpan="col-span-1 md:col-span-1"
         bgClass="bg-transparent"
         borderClass="border-white/5"
@@ -67,28 +65,29 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       >
         <IconWithBlurEffect
           iconPath="/icons/shield-user.svg"
-          iconAlt="Icono de Cliente Ideal"
-          iconId="cliente"
+          iconAlt="Icono de encaje"
+          iconKey="encaje"
         />
 
         <ul class="space-y-2 text-muga-neutral relative z-10">
           <li class="flex items-start">
             <span class="text-muga-primary mr-2">•</span>
             <span
-              >Startups que necesitan lanzar rápido sin hipotecar el futuro
-              técnico.</span
+              >Equipos que necesitan salir rapido sin desordenar la base
+              tecnica.</span
             >
           </li>
           <li class="flex items-start">
             <span class="text-muga-primary mr-2">•</span>
             <span
-              >Pymes que buscan una base sólida y profesional a largo plazo.</span
+              >Negocios que necesitan una base clara para vender y sostener el
+              sitio.</span
             >
           </li>
           <li class="flex items-start">
             <span class="text-muga-primary mr-2">•</span>
             <span
-              >Agencias o equipos que trabajan sobre Astro y requieren soporte
+              >Equipos que trabajan sobre Astro y necesitan soporte
               estructural.</span
             >
           </li>
@@ -96,7 +95,7 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       </BentoCell>
 
       <BentoCell
-        title="Nuestro Enfoque"
+        title="Sistema"
         colSpan="col-span-1 md:col-span-2"
         bgClass="bg-transparent"
         borderClass="border-white/5"
@@ -105,28 +104,27 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       >
         <IconWithBlurEffect
           iconPath="/icons/drafting-compass.svg"
-          iconAlt="Icono de Nuestro Enfoque"
-          iconId="enfoque"
+          iconAlt="Icono de sistema"
+          iconKey="sistema"
         />
 
         <div class="relative z-10">
           <p class="text-muga-neutral">
-            Todos nuestros proyectos parten de una base técnica común: <strong
+            Cada proyecto parte de una base tecnica comun: <strong
               >MUGA Base System</strong
-            >. Esto nos permite trabajar con reglas claras, decisiones
-            repetibles y métricas objetivas desde el inicio.
+            >. Eso permite trabajar con reglas claras, decisiones repetibles y
+            metricas objetivas desde el inicio.
           </p>
           <p class="mt-4 text-muga-neutral">
-            No improvisamos arquitecturas ni resolvemos problemas dos veces.
-            Construimos sistemas modulares que optimizan el desarrollo, el
-            mantenimiento y el rendimiento final para el usuario.
+            No improvisamos estructuras ni resolvemos el mismo problema dos
+            veces. Construimos sistemas modulares para mantener control,
+            continuidad y rendimiento estable.
           </p>
         </div>
       </BentoCell>
 
-      <!-- Fila 2 -->
       <BentoCell
-        title="Checklist del Sistema"
+        title="Checklist"
         colSpan="col-span-1 md:col-span-1"
         bgClass="bg-transparent"
         borderClass="border-white/5"
@@ -135,8 +133,8 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       >
         <IconWithBlurEffect
           iconPath="/icons/list-checks.svg"
-          iconAlt="Icono de Checklist del Sistema"
-          iconId="checklist"
+          iconAlt="Icono de checklist"
+          iconKey="checklist"
         />
 
         <ul class="space-y-2 text-muga-neutral relative z-10">
@@ -219,7 +217,7 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       </BentoCell>
 
       <BentoCell
-        title="Beneficios"
+        title="Consecuencia"
         colSpan="col-span-1 md:col-span-1"
         bgClass="bg-transparent"
         borderClass="border-white/5"
@@ -228,8 +226,8 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       >
         <IconWithBlurEffect
           iconPath="/icons/badge-check.svg"
-          iconAlt="Icono de Beneficios"
-          iconId="beneficios"
+          iconAlt="Icono de consecuencia"
+          iconKey="consecuencia"
         />
 
         <ul class="space-y-2 text-muga-neutral">
@@ -252,9 +250,8 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
         </ul>
       </BentoCell>
 
-      <!-- Fila 3 -->
       <BentoCell
-        title="Filosofía de Trabajo"
+        title="Criterio"
         colSpan="col-span-1 md:col-span-2"
         bgClass="bg-transparent"
         borderClass="border-white/5"
@@ -262,23 +259,23 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       >
         <IconWithBlurEffect
           iconPath="/icons/brain-cog.svg"
-          iconAlt="Icono de Filosofía de Trabajo"
-          iconId="filosofia"
+          iconAlt="Icono de criterio"
+          iconKey="criterio"
         />
 
         <p class="text-muga-neutral">
-          Trabajamos con reglas claras, documentación explícita y métricas
-          compartidas. Esto reduce fricción, evita malentendidos y permite tomar
-          decisiones técnicas con información real.
+          Trabajamos con reglas claras, documentacion explicita y metricas
+          compartidas. Eso reduce friccion, evita desvio y permite decidir con
+          informacion real.
         </p>
         <p class="mt-4 text-muga-neutral">
-          Preferimos decir no a proyectos que no encajan antes que comprometer
-          la calidad del sistema o la estabilidad futura del producto.
+          Preferimos frenar un alcance mal definido antes que comprometer la
+          estabilidad del sistema.
         </p>
       </BentoCell>
 
       <BentoCell
-        title="Tecnologías Adicionales"
+        title="Extensiones"
         colSpan="col-span-1 md:col-span-1"
         bgClass="bg-transparent"
         borderClass="border-white/5"
@@ -287,8 +284,8 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       >
         <IconWithBlurEffect
           iconPath="/icons/package-plus.svg"
-          iconAlt="Icono de Tecnologías Adicionales"
-          iconId="tecnologias"
+          iconAlt="Icono de extensiones"
+          iconKey="extensiones"
         />
 
         <ul class="space-y-2 text-muga-neutral relative z-10">
@@ -324,27 +321,16 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
         <IconWithBlurEffect
           iconPath="/icons/message-square-text.svg"
           iconAlt="Icono de Contacto"
-          iconId="contacto"
+          iconKey="contacto-modelo"
         />
 
         <div class="flex flex-col space-y-4 relative z-10">
-          <ArrowLink href="/contacto" text="Agendar llamada" />
-          <ArrowLink href="#" text="Ver portafolio" />
+          <ArrowLink href="/contacto" text="Agendar diagnostico" />
+          <ArrowLink href="/casos" text="Ver casos" />
         </div>
       </BentoCell>
     </div>
   </div>
 </section>
-
-<style>
-  .arrow-icon {
-    display: inline-block;
-    transition: transform 0.3s ease;
-  }
-
-  a:hover .arrow-icon {
-    transform: translateX(4px);
-  }
-</style>
 
 <script src="../../scripts/bento-grid.ts"></script>
