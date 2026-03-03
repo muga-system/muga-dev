@@ -43,7 +43,7 @@ const isActive = (href: string) =>
         {navItems.map((item, index) => (
           <a
             href={item.href}
-            class={`text-sm font-semibold ${isActive(item.href) ? "text-white" : "text-graylight hover:text-white"} ${index > 0 ? "ml-4" : ""}`}
+            class={`text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure ${isActive(item.href) ? "text-white" : "text-graylight hover:text-white"} ${index > 0 ? "ml-4" : ""}`}
             transition:animate="none"
           >
             {item.label}
@@ -53,7 +53,14 @@ const isActive = (href: string) =>
     </div>
 
     <div class="flex lg:hidden" transition:animate="none">
-      <button id="mobile-menu-button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-200" transition:animate="none">
+      <button
+        id="mobile-menu-button"
+        type="button"
+        aria-controls="mobile-menu"
+        aria-expanded="false"
+        class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure"
+        transition:animate="none"
+      >
         <span class="sr-only">Abrir menu principal</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6" aria-hidden="true" transition:animate="none">
           <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -62,7 +69,7 @@ const isActive = (href: string) =>
     </div>
 
     <div class="hidden lg:flex lg:flex-1 lg:justify-end" transition:animate="none">
-      <a href={casesItem.href} class={`text-sm font-semibold ${isActive(casesItem.href) ? 'text-white' : 'text-graylight hover:text-white'} flex items-center`} transition:animate="none">
+      <a href={casesItem.href} class={`text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure ${isActive(casesItem.href) ? 'text-white' : 'text-graylight hover:text-white'} flex items-center`} transition:animate="none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transition:animate="none">
           <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
@@ -72,14 +79,22 @@ const isActive = (href: string) =>
     </div>
   </nav>
 
-  <div id="mobile-menu" class="fixed inset-0 z-50 hidden lg:hidden bg-obscure">
+  <div
+    id="mobile-menu"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="mobile-menu-title"
+    class="fixed inset-0 z-50 hidden lg:hidden bg-obscure"
+  >
     <div class="fixed inset-y-0 right-0 w-full sm:max-w-sm overflow-y-auto bg-obscure sm:ring-1 sm:ring-gray-100/10">
+      <h2 id="mobile-menu-title" class="sr-only">Menu principal</h2>
       <div class="flex items-center justify-between h-[72px] px-6">
         <a href="/" class="flex items-center">
           <span class="sr-only">MUGA</span>
           <img src="/logo/logo.png" alt="" class="h-8 w-8" />
         </a>
-        <button id="close-mobile-menu" class="-m-2.5 rounded-md p-2.5 text-gray-200">
+        <button id="close-mobile-menu" type="button" class="-m-2.5 rounded-md p-2.5 text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure">
           <span class="sr-only">Cerrar menu</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6" aria-hidden="true">
             <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
@@ -91,13 +106,13 @@ const isActive = (href: string) =>
         <div class="-my-6 divide-y divide-white/10">
           <div class="space-y-2 py-6">
             {navItems.map((item) => (
-              <a href={item.href} class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5">
+              <a href={item.href} class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure">
                 {item.label}
               </a>
             ))}
           </div>
           <div class="py-6">
-            <a href={casesItem.href} class="flex items-center rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-white/5">
+            <a href={casesItem.href} class="flex items-center rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                 <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
@@ -124,9 +139,30 @@ const isActive = (href: string) =>
 
 <script is:inline define:vars={{ currentPath }}>
   const initNavbarBehavior = () => {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return;
+
     const mobileMenuButton = document.getElementById('mobile-menu-button');
     const closeMenuButton = document.getElementById('close-mobile-menu');
     const mobileMenu = document.getElementById('mobile-menu');
+    const focusableSelector = 'a[href], button:not([disabled])';
+
+    const openMenu = () => {
+      mobileMenu?.classList.remove('hidden');
+      mobileMenu?.setAttribute('aria-hidden', 'false');
+      mobileMenuButton?.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      const firstFocusable = mobileMenu?.querySelector(focusableSelector);
+      if (firstFocusable instanceof HTMLElement) firstFocusable.focus();
+    };
+
+    const closeMenu = () => {
+      mobileMenu?.classList.add('hidden');
+      mobileMenu?.setAttribute('aria-hidden', 'true');
+      mobileMenuButton?.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      if (mobileMenuButton instanceof HTMLElement) mobileMenuButton.focus();
+    };
 
     const handleScroll = () => {
       const breadcrumb = document.getElementById('breadcrumb');
@@ -141,22 +177,65 @@ const isActive = (href: string) =>
 
     handleScroll();
 
-    window.addEventListener('scroll', handleScroll);
+    const handleMenuKeydown = (event) => {
+      if (!mobileMenu) return;
 
-    mobileMenuButton?.addEventListener('click', () => {
-      mobileMenu?.classList.remove('hidden');
-    });
+      if (event.key === 'Escape') {
+        closeMenu();
+        return;
+      }
 
-    closeMenuButton?.addEventListener('click', () => {
-      mobileMenu?.classList.add('hidden');
-    });
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = Array.from(
+        mobileMenu.querySelectorAll(focusableSelector)
+      ).filter((element) => {
+        return element instanceof HTMLElement && !element.hasAttribute('disabled');
+      });
+
+      if (!focusableElements.length) return;
+
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement;
+
+      if (event.shiftKey && activeElement === firstFocusable) {
+        event.preventDefault();
+        if (lastFocusable instanceof HTMLElement) lastFocusable.focus();
+      }
+
+      if (!event.shiftKey && activeElement === lastFocusable) {
+        event.preventDefault();
+        if (firstFocusable instanceof HTMLElement) firstFocusable.focus();
+      }
+    };
+
+    if (!window.__mugaNavbarScrollBound) {
+      window.addEventListener('scroll', handleScroll);
+      window.__mugaNavbarScrollBound = true;
+    }
+
+    if (mobileMenuButton && mobileMenuButton.dataset.bound !== 'true') {
+      mobileMenuButton.addEventListener('click', openMenu);
+      mobileMenuButton.dataset.bound = 'true';
+    }
+
+    if (closeMenuButton && closeMenuButton.dataset.bound !== 'true') {
+      closeMenuButton.addEventListener('click', closeMenu);
+      closeMenuButton.dataset.bound = 'true';
+    }
 
     const mobileLinks = mobileMenu?.querySelectorAll('a');
     mobileLinks?.forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu?.classList.add('hidden');
-      });
+      if (link.dataset.bound === 'true') return;
+      link.addEventListener('click', closeMenu);
+      link.dataset.bound = 'true';
     });
+
+    if (mobileMenu && mobileMenu.dataset.keydownBound !== 'true') {
+      mobileMenu.addEventListener('keydown', handleMenuKeydown);
+      mobileMenu.dataset.keydownBound = 'true';
+    }
   };
 
   document.addEventListener('astro:page-load', initNavbarBehavior);

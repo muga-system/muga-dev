@@ -1,68 +1,69 @@
-// Script para la interactividad del Bento Grid
-document.addEventListener("astro:page-load", () => {
-  // Definir interfaces para TypeScript
-  interface HTMLElementWithStyle extends HTMLElement {
-    style: CSSStyleDeclaration;
-  }
-  
-  interface LightEffectElement extends HTMLElementWithStyle {
-    style: CSSStyleDeclaration & {
-      opacity: string;
-      transform: string;
-    };
-  }
-  
-  interface BentoCellElement extends HTMLElementWithStyle {
-    style: CSSStyleDeclaration & {
-      borderImage: string;
-    };
-  }
+interface HTMLElementWithStyle extends HTMLElement {
+  style: CSSStyleDeclaration;
+}
 
-  // Función para aplicar el efecto de luz
-  function applyLightEffect() {
-    // Seleccionamos los elementos y los tipamos
-    const bentoCells = document.querySelectorAll<BentoCellElement>(".bento-cell");
-    
-    // Optimización: Usar throttle para limitar la frecuencia de eventos mousemove
-    function throttle(callback: Function, limit: number) {
-      let waiting = false;
-      return function(this: any, ...args: any[]) {
-        if (!waiting) {
-          callback.apply(this, args);
-          waiting = true;
-          setTimeout(() => {
-            waiting = false;
-          }, limit);
-        }
-      };
+interface LightEffectElement extends HTMLElementWithStyle {
+  style: CSSStyleDeclaration & {
+    opacity: string;
+    transform: string;
+  };
+}
+
+interface BentoCellElement extends HTMLElementWithStyle {
+  style: CSSStyleDeclaration & {
+    borderImage: string;
+  };
+  dataset: DOMStringMap & {
+    lightBound?: string;
+  };
+}
+
+declare global {
+  interface Window {
+    __mugaBentoGridBound?: boolean;
+  }
+}
+
+function throttle(callback: Function, limit: number) {
+  let waiting = false;
+  return function (this: any, ...args: any[]) {
+    if (!waiting) {
+      callback.apply(this, args);
+      waiting = true;
+      setTimeout(() => {
+        waiting = false;
+      }, limit);
     }
+  };
+}
 
-    bentoCells.forEach((cell) => {
-      const lightEffect = cell.querySelector<LightEffectElement>(".light-effect");
-      
-      // Si no hay efecto de luz en esta celda, saltamos
-      if (!lightEffect) return;
-      
-      // Usar mouseenter/mouseleave para mejor rendimiento
-      cell.addEventListener("mouseenter", () => {
-        lightEffect.style.opacity = "1";
-      });
+function applyLightEffect() {
+  const bentoCells = document.querySelectorAll<BentoCellElement>(".bento-cell");
 
-      cell.addEventListener("mouseleave", () => {
-        lightEffect.style.opacity = "0";
-        cell.style.borderImage = "none";
-      });
+  bentoCells.forEach((cell) => {
+    if (cell.dataset.lightBound === "true") return;
 
-      // Throttle para el evento mousemove (limitar a 30ms)
-      cell.addEventListener("mousemove", throttle((e: MouseEvent) => {
+    const lightEffect = cell.querySelector<LightEffectElement>(".light-effect");
+    if (!lightEffect) return;
+
+    cell.addEventListener("mouseenter", () => {
+      lightEffect.style.opacity = "1";
+    });
+
+    cell.addEventListener("mouseleave", () => {
+      lightEffect.style.opacity = "0";
+      cell.style.borderImage = "none";
+    });
+
+    cell.addEventListener(
+      "mousemove",
+      throttle((e: MouseEvent) => {
         const rect = cell.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Usar transform para mejor rendimiento
         lightEffect.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
-        
-        // Precalcular valores y reutilizar
+
         const gradientSize = 153;
         const borderGradient = `
           radial-gradient(
@@ -72,14 +73,20 @@ document.addEventListener("astro:page-load", () => {
           ) 1
         `;
 
-        // Usar requestAnimationFrame para cambios visuales
         requestAnimationFrame(() => {
           cell.style.borderImage = borderGradient;
         });
-      }, 30));
-    });
-  }
+      }, 30)
+    );
 
-  // Inicializar el efecto de luz
-  applyLightEffect();
-});
+    cell.dataset.lightBound = "true";
+  });
+}
+
+if (!window.__mugaBentoGridBound) {
+  document.addEventListener("astro:page-load", applyLightEffect);
+  document.addEventListener("DOMContentLoaded", applyLightEffect);
+  window.__mugaBentoGridBound = true;
+}
+
+applyLightEffect();

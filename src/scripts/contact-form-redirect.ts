@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    __mugaContactFormRedirectBound?: boolean;
+  }
+}
+
 const initContactFormRedirect = () => {
   const form = document.getElementById("contact-form") as HTMLFormElement | null;
   const targetFrame = document.getElementById("make-webhook-target") as HTMLIFrameElement | null;
@@ -11,6 +17,7 @@ const initContactFormRedirect = () => {
   const btnArrow = document.getElementById("btn-arrow") as HTMLSpanElement | null;
   const btnSpinner = document.getElementById("btn-spinner") as HTMLDivElement | null;
   const formMessages = document.getElementById("form-messages") as HTMLDivElement | null;
+  const successMessage = document.getElementById("success-message") as HTMLDivElement | null;
   const errorMessage = document.getElementById("error-message") as HTMLDivElement | null;
   const defaultButtonText = btnText?.textContent || "Enviar";
 
@@ -32,6 +39,7 @@ const initContactFormRedirect = () => {
     if (btnSpinner) btnSpinner.classList.remove("hidden");
 
     if (formMessages) formMessages.classList.add("hidden");
+    if (successMessage) successMessage.classList.add("hidden");
     if (errorMessage) errorMessage.classList.add("hidden");
 
     if (timeoutId) window.clearTimeout(timeoutId);
@@ -50,12 +58,6 @@ const initContactFormRedirect = () => {
     }, 12000);
   });
 
-  const goToSuccess = () => {
-    const successUrlField = form.elements.namedItem("success_url") as HTMLInputElement | null;
-    const successUrl = successUrlField?.value || "/contacto/enviado";
-    window.location.assign(successUrl);
-  };
-
   targetFrame.addEventListener("load", () => {
     if (!pendingSubmit) return;
     pendingSubmit = false;
@@ -63,9 +65,22 @@ const initContactFormRedirect = () => {
       window.clearTimeout(timeoutId);
       timeoutId = null;
     }
-    goToSuccess();
+    if (submitBtn) submitBtn.disabled = false;
+    if (btnText) btnText.textContent = defaultButtonText;
+    if (btnArrow) btnArrow.classList.remove("hidden");
+    if (btnSpinner) btnSpinner.classList.add("hidden");
+
+    form.reset();
+
+    if (formMessages) formMessages.classList.remove("hidden");
+    if (successMessage) successMessage.classList.remove("hidden");
   });
 };
 
-document.addEventListener("DOMContentLoaded", initContactFormRedirect);
-document.addEventListener("astro:page-load", initContactFormRedirect);
+if (!window.__mugaContactFormRedirectBound) {
+  document.addEventListener("DOMContentLoaded", initContactFormRedirect);
+  document.addEventListener("astro:page-load", initContactFormRedirect);
+  window.__mugaContactFormRedirectBound = true;
+}
+
+initContactFormRedirect();

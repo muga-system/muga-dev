@@ -26,7 +26,7 @@ const primaryLinks = [
       </div>
       <a
         href="/contacto"
-        class="inline-flex w-fit items-center gap-2 border border-accent px-4 py-2 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-obscure"
+        class="inline-flex w-fit items-center gap-2 border border-accent px-4 py-2 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-obscure focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure"
       >
         Solicitá un diagnóstico
         <span aria-hidden="true">→</span>
@@ -37,7 +37,7 @@ const primaryLinks = [
       <ul class="flex flex-wrap items-center gap-x-6 gap-y-3">
         {primaryLinks.map((link) => (
           <li>
-            <a href={link.href} class="text-sm text-graylight transition-colors hover:text-white">
+            <a href={link.href} class="inline-flex min-h-10 items-center py-1 text-sm text-graylight transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure">
               {link.label}
             </a>
           </li>
@@ -51,7 +51,7 @@ const primaryLinks = [
         <span class="ml-1 font-semibold text-accent">MUGA</span> - Arquitectura web como sistema.
       </p>
       <div class="flex items-center gap-4">
-        <a href="https://muga.studio" class="transition-colors hover:text-white">MUGA Studio</a>
+        <a href="https://muga.studio" class="inline-flex min-h-10 items-center transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure">MUGA Studio</a>
         <span class="hidden h-3 w-px bg-white/20 sm:inline-block"></span>
         <p class="font-mono">Version 1.1.0</p>
       </div>

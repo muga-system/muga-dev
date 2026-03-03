@@ -158,7 +158,7 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
       </BentoCell>
 
       <BentoCell
-        title="Métricas de Calidad"
+        title="Métricas"
         colSpan="col-span-1 md:col-span-2"
         bgClass="bg-transparent"
         borderClass="border-white/5"
@@ -166,7 +166,8 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
         lightEffect={true}
       >
         <div class="relative z-10">
-          <table class="w-full text-sm">
+          <div class="overflow-x-auto">
+            <table class="min-w-[34rem] text-sm">
             <thead>
               <tr class="border-b border-white/10">
                 <th class="py-2 text-left text-muga-neutral">Métrica</th>
@@ -212,7 +213,8 @@ import ArrowLink from "../ui/Button/ArrowLink.astro";
                 <td class="py-2 font-semibold text-muga-primary">≥ 95%</td>
               </tr>
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       </BentoCell>
 

@@ -37,17 +37,19 @@ const {
 </style>
 
 <script>
-  document.addEventListener("astro:page-load", function () {
-    const setupIconEffects = () => {
-      const icons = document.querySelectorAll<HTMLImageElement>(".icon-with-blur-effect");
-      
+  if (!window.__mugaSetupIconEffects) {
+    window.__mugaSetupIconEffects = () => {
+      const icons = document.querySelectorAll(".icon-with-blur-effect");
+
       icons.forEach(function (icon) {
-        const bentoCell = icon.closest<HTMLElement>(".bento-cell");
+        if (icon.dataset.bound === "true") return;
+
+        const bentoCell = icon.closest(".bento-cell");
         if (!bentoCell) return;
 
         icon.style.opacity = "0";
 
-        function updateMask(e: MouseEvent) {
+        function updateMask(e) {
           const svgRect = icon.getBoundingClientRect();
 
           const svgX = e.clientX - svgRect.left;
@@ -64,9 +66,17 @@ const {
         bentoCell.addEventListener("mouseleave", function () {
           icon.style.opacity = "0";
         });
+
+        icon.dataset.bound = "true";
       });
     };
+  }
 
-    setupIconEffects();
-  });
+  if (!window.__mugaIconEffectsBound) {
+    document.addEventListener("astro:page-load", window.__mugaSetupIconEffects);
+    document.addEventListener("DOMContentLoaded", window.__mugaSetupIconEffects);
+    window.__mugaIconEffectsBound = true;
+  }
+
+  window.__mugaSetupIconEffects();
 </script>

@@ -20,7 +20,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 ];
 ---
 
-<Layout title="Consulta enviada | MUGA" description="Confirmacion del envio del diagnostico.">
+<Layout title="Confirmación de envío | MUGA" description="Confirmación de la solicitud de diagnóstico.">
   <Navigation>
     <Breadcrumb items={breadcrumbItems} />
   </Navigation>
@@ -29,16 +29,16 @@ const breadcrumbItems: BreadcrumbItem[] = [
   </div>
 
   <PageHeroSection
-    title="Diagnóstico enviado"
-    description="Recibimos tu consulta. Revisa tu email para seguir con el proximo paso."
+    title="Solicitud registrada"
+    description="La confirmación principal se muestra en el formulario. Esta página queda como respaldo."
     textAlign="center"
     showBadge={true}
-    badgeText="OK"
+    badgeText="Confirmación"
   />
 
-  <section class="relative px-6 lg:px-8 py-24">
+  <section class="relative px-6 py-20 lg:px-8 lg:py-24">
     <div class="mx-auto max-w-3xl">
-      <div class="bg-muga-dark-800/50 border border-white/5 p-8 text-center">
+      <div class="bg-muga-dark-800/50 border border-white/5 p-6 text-center sm:p-8">
         <div class="w-12 h-12 bg-accent/10 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -55,9 +55,9 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </svg>
         </div>
 
-        <h2 class="section-title mb-4">Solicitud recibida</h2>
-        <p class="section-lead mx-auto mb-8">
-          El diagnostico fue enviado. Revisa tu email de contacto para seguir con el proximo paso.
+        <h2 class="section-title mb-4">Solicitud registrada</h2>
+        <p class="section-lead mx-auto mb-8 max-w-2xl">
+          Si ya enviaste el formulario, seguimos por email. Si no, volvé a contacto y completá el diagnóstico.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
@@ -65,24 +65,25 @@ const breadcrumbItems: BreadcrumbItem[] = [
             <div class="mb-2">
               <span class="muga-badge muga-badge--sm">Estado</span>
             </div>
-            <p class="text-white text-sm">Recibido</p>
+            <p class="text-white text-sm">En revisión</p>
           </div>
           <div class="border border-white/10 p-4">
             <div class="mb-2">
               <span class="muga-badge muga-badge--sm">Siguiente paso</span>
             </div>
-            <p class="text-white text-sm">Revisá tu email</p>
+            <p class="text-white text-sm">Seguimiento por email</p>
           </div>
           <div class="border border-white/10 p-4">
             <div class="mb-2">
               <span class="muga-badge muga-badge--sm">Canal</span>
             </div>
-            <p class="text-white text-sm">Email de contacto</p>
+            <p class="text-white text-sm">Formulario o email</p>
           </div>
         </div>
 
-        <div class="flex items-center justify-center">
-          <ArrowLink href="/" text="Volver al inicio" />
+        <div class="flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-6">
+          <ArrowLink href="/contacto" text="Volver a contacto" />
+          <ArrowLink href="/" text="Ir al inicio" />
         </div>
       </div>
     </div>

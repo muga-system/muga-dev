@@ -19,25 +19,25 @@ import "../styles/bento.css";
 >
   <Navigation />
 
-  <section class="relative -mt-12 grid min-h-[42rem] grid-rows-[1fr_auto_1fr] px-6 py-6 lg:min-h-[46rem] lg:px-8 lg:py-8">
+  <section class="relative -mt-12 grid min-h-[36rem] grid-rows-[1fr_auto_1fr] px-5 py-5 sm:min-h-[40rem] sm:px-6 sm:py-6 lg:min-h-[46rem] lg:px-8 lg:py-8">
     <div class="row-start-2 self-center -translate-y-4 lg:-translate-y-6 mx-auto w-full max-w-7xl">
-      <div class="max-w-5xl bg-muga-dark-800/30 px-8 py-10 sm:px-10 sm:py-12 lg:px-12">
+      <div class="max-w-5xl bg-muga-dark-800/30 px-6 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <div class="mb-5 muga-badge muga-badge--md">
           muga dev
         </div>
 
-        <h1 class="max-w-5xl text-6xl font-semibold leading-[0.94] tracking-tight text-white sm:text-7xl lg:text-[5.4rem]">
+        <h1 class="max-w-5xl text-4xl font-semibold leading-[0.94] tracking-tight text-white sm:text-6xl lg:text-[5.4rem]">
           Arquitectura web orientada a conversión
         </h1>
 
-        <p class="mt-6 max-w-3xl text-lg leading-8 text-graylight sm:text-xl/8">
+        <p class="mt-5 max-w-3xl text-base leading-7 text-graylight sm:mt-6 sm:text-lg sm:leading-8 lg:text-xl/8">
           Conversión, jerarquía, flujo y secuencia aplicados a una estructura clara.
         </p>
 
         <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
           <a
             href="/contacto"
-            class="inline-flex items-center justify-center gap-2 border border-accent/50 bg-accent/5 px-5 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/10"
+            class="inline-flex w-full items-center justify-center gap-2 border border-accent/50 bg-accent/5 px-5 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure sm:w-auto"
           >
             Solicitar diagnóstico
             <ArrowRight size={16} strokeWidth={1.8} />
@@ -52,9 +52,9 @@ import "../styles/bento.css";
     </div>
   </section>
 
-  <section class="relative px-6 py-20 lg:px-8 lg:py-24">
+  <section class="relative px-6 py-16 lg:px-8 lg:py-24">
     <div class="mx-auto max-w-6xl">
-      <div class="mb-12 max-w-3xl">
+      <div class="mb-10 max-w-3xl lg:mb-12">
         <div class="mb-4">
           <span class="muga-badge muga-badge--sm">Base</span>
         </div>
@@ -67,60 +67,44 @@ import "../styles/bento.css";
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <div class="bg-muga-dark-800/50 border border-white/5 p-7 text-center">
-          <div class="relative mx-auto mb-7 flex h-24 w-24 items-center justify-center">
-            <div class="relative flex h-20 w-20 items-center justify-center overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(44,18,18,0.34),rgba(18,12,12,0.14))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <ChartNoAxesCombined size={44} color="#ff5b5b" strokeWidth={1.6} aria-hidden="true" class="absolute z-0 scale-110 opacity-80 blur-[1.4px] [filter:drop-shadow(0_0_12px_rgba(255,83,83,0.5))_drop-shadow(0_0_24px_rgba(255,83,83,0.24))]" />
-              <div class="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,rgba(255,83,83,0.28),rgba(255,83,83,0.08)_32%,transparent_60%)] blur-xl"></div>
-              <div class="absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(255,255,255,0.008))] backdrop-blur-[2px]"></div>
-            </div>
+        <div class="bg-muga-dark-800/50 border border-white/5 p-6 sm:p-7">
+          <div class="mb-6 flex h-16 w-16 items-center justify-center border border-accent/50 bg-accent/5 text-accent sm:mb-7 sm:h-[4.5rem] sm:w-[4.5rem]">
+            <ChartNoAxesCombined size={30} strokeWidth={1.8} aria-hidden="true" />
           </div>
           <h3 class="text-xl font-semibold text-white mb-3">Conversión</h3>
-          <p class="text-muga-neutral">Más tráfico no corrige una mala conversión. Primero se ordena la acción principal.</p>
+          <p class="max-w-sm text-muga-neutral">Más tráfico no corrige una mala conversión. Primero se ordena la acción principal.</p>
         </div>
 
-        <div class="bg-muga-dark-800/50 border border-white/5 p-7 text-center">
-          <div class="relative mx-auto mb-7 flex h-24 w-24 items-center justify-center">
-            <div class="relative flex h-20 w-20 items-center justify-center overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(44,18,18,0.34),rgba(18,12,12,0.14))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <Layers size={44} color="#ff5b5b" strokeWidth={1.6} aria-hidden="true" class="absolute z-0 scale-110 opacity-80 blur-[1.4px] [filter:drop-shadow(0_0_12px_rgba(255,83,83,0.5))_drop-shadow(0_0_24px_rgba(255,83,83,0.24))]" />
-              <div class="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,rgba(255,83,83,0.28),rgba(255,83,83,0.08)_32%,transparent_60%)] blur-xl"></div>
-              <div class="absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(255,255,255,0.008))] backdrop-blur-[2px]"></div>
-            </div>
+        <div class="bg-muga-dark-800/50 border border-white/5 p-6 sm:p-7">
+          <div class="mb-6 flex h-16 w-16 items-center justify-center border border-accent/50 bg-accent/5 text-accent sm:mb-7 sm:h-[4.5rem] sm:w-[4.5rem]">
+            <Layers size={30} strokeWidth={1.8} aria-hidden="true" />
           </div>
           <h3 class="text-xl font-semibold text-white mb-3">Jerarquía</h3>
-          <p class="text-muga-neutral">Si todo tiene el mismo peso, no hay decisión. Primero se define prioridad.</p>
+          <p class="max-w-sm text-muga-neutral">Si todo tiene el mismo peso, no hay decisión. Primero se define prioridad.</p>
         </div>
 
-        <div class="bg-muga-dark-800/50 border border-white/5 p-7 text-center">
-          <div class="relative mx-auto mb-7 flex h-24 w-24 items-center justify-center">
-            <div class="relative flex h-20 w-20 items-center justify-center overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(44,18,18,0.34),rgba(18,12,12,0.14))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <SquareArrowRight size={44} color="#ff5b5b" strokeWidth={1.6} aria-hidden="true" class="absolute z-0 scale-110 opacity-80 blur-[1.4px] [filter:drop-shadow(0_0_12px_rgba(255,83,83,0.5))_drop-shadow(0_0_24px_rgba(255,83,83,0.24))]" />
-              <div class="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,rgba(255,83,83,0.28),rgba(255,83,83,0.08)_32%,transparent_60%)] blur-xl"></div>
-              <div class="absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(255,255,255,0.008))] backdrop-blur-[2px]"></div>
-            </div>
+        <div class="bg-muga-dark-800/50 border border-white/5 p-6 sm:p-7">
+          <div class="mb-6 flex h-16 w-16 items-center justify-center border border-accent/50 bg-accent/5 text-accent sm:mb-7 sm:h-[4.5rem] sm:w-[4.5rem]">
+            <SquareArrowRight size={30} strokeWidth={1.8} aria-hidden="true" />
           </div>
           <h3 class="text-xl font-semibold text-white mb-3">Flujo</h3>
-          <p class="text-muga-neutral">Cada duda agrega fricción. Un recorrido claro reduce interrupciones y dispersión.</p>
+          <p class="max-w-sm text-muga-neutral">Cada duda agrega fricción. Un recorrido claro reduce interrupciones y dispersión.</p>
         </div>
 
-        <div class="bg-muga-dark-800/50 border border-white/5 p-7 text-center">
-          <div class="relative mx-auto mb-7 flex h-24 w-24 items-center justify-center">
-            <div class="relative flex h-20 w-20 items-center justify-center overflow-hidden border border-white/10 bg-[linear-gradient(180deg,rgba(44,18,18,0.34),rgba(18,12,12,0.14))] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
-              <ListChecks size={44} color="#ff5b5b" strokeWidth={1.6} aria-hidden="true" class="absolute z-0 scale-110 opacity-80 blur-[1.4px] [filter:drop-shadow(0_0_12px_rgba(255,83,83,0.5))_drop-shadow(0_0_24px_rgba(255,83,83,0.24))]" />
-              <div class="absolute inset-0 z-10 bg-[radial-gradient(circle_at_center,rgba(255,83,83,0.28),rgba(255,83,83,0.08)_32%,transparent_60%)] blur-xl"></div>
-              <div class="absolute inset-0 z-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.024),rgba(255,255,255,0.008))] backdrop-blur-[2px]"></div>
-            </div>
+        <div class="bg-muga-dark-800/50 border border-white/5 p-6 sm:p-7">
+          <div class="mb-6 flex h-16 w-16 items-center justify-center border border-accent/50 bg-accent/5 text-accent sm:mb-7 sm:h-[4.5rem] sm:w-[4.5rem]">
+            <ListChecks size={30} strokeWidth={1.8} aria-hidden="true" />
           </div>
           <h3 class="text-xl font-semibold text-white mb-3">Secuencia</h3>
-          <p class="text-muga-neutral">Una web funciona como una secuencia. No como páginas sueltas sin orden.</p>
+          <p class="max-w-sm text-muga-neutral">Una web funciona como una secuencia. No como páginas sueltas sin orden.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="relative bg-muga-dark-800/30 px-6 py-20 lg:px-8 lg:py-24">
+  <section class="relative bg-muga-dark-800/30 px-6 py-16 lg:px-8 lg:py-24">
     <div class="mx-auto max-w-6xl">
-      <div class="mb-12 max-w-3xl">
+      <div class="mb-10 max-w-3xl lg:mb-12">
         <div class="mb-4">
           <span class="muga-badge muga-badge--sm">Formatos</span>
         </div>
@@ -133,20 +117,20 @@ import "../styles/bento.css";
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div class="flex flex-col items-center bg-muga-dark-800/70 border border-white/10 px-5 py-5">
-          <img src="/products/edge.webp" alt="Landing Page Moderna" class="w-full h-48 object-cover mb-4 border border-white/10" />
+        <div class="flex flex-col bg-muga-dark-800/70 border border-white/10 px-4 py-4 sm:px-5 sm:py-5">
+          <img src="/products/edge.webp" alt="Landing Page Moderna" class="w-full h-44 object-cover mb-4 border border-white/10 sm:h-48" />
           <h3 class="text-xl font-semibold text-white mb-2 tracking-tight">Landing Page Moderna</h3>
-          <p class="mb-6 text-center text-graylight">Una acción principal, menos fricción y decisión clara.</p>
-          <div class="w-full flex justify-center mt-auto">
+          <p class="mb-6 max-w-md text-graylight">Una acción principal, menos fricción y decisión clara.</p>
+          <div class="w-full flex justify-start mt-auto">
             <a href="https://mugaland.vercel.app/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 text-accent border border-accent hover:bg-accent hover:text-obscure transition font-medium uppercase mb-2">Ver demo <span aria-hidden="true">→</span></a>
           </div>
         </div>
 
-        <div class="flex flex-col items-center bg-muga-dark-800/70 border border-white/10 px-5 py-5">
-          <img src="/products/spark.webp" alt="Sitio Corporativo" class="w-full h-48 object-cover mb-4 border border-white/10" />
+        <div class="flex flex-col bg-muga-dark-800/70 border border-white/10 px-4 py-4 sm:px-5 sm:py-5">
+          <img src="/products/spark.webp" alt="Sitio Corporativo" class="w-full h-44 object-cover mb-4 border border-white/10 sm:h-48" />
           <h3 class="text-xl font-semibold text-white mb-2 tracking-tight">Sitio Corporativo</h3>
-          <p class="mb-6 text-center text-graylight">Ordena propuesta, mensaje y recorrido de contacto.</p>
-          <div class="w-full flex justify-center mt-auto">
+          <p class="mb-6 max-w-md text-graylight">Ordena propuesta, mensaje y recorrido de contacto.</p>
+          <div class="w-full flex justify-start mt-auto">
             <a href="https://corporativo-astro.vercel.app/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2 text-accent border border-accent hover:bg-accent hover:text-obscure transition font-medium uppercase mb-2">Ver demo <span aria-hidden="true">→</span></a>
           </div>
         </div>
@@ -158,9 +142,9 @@ import "../styles/bento.css";
     </div>
   </section>
 
-  <section class="relative px-6 py-20 lg:px-8 lg:py-24">
+  <section class="relative px-6 py-16 lg:px-8 lg:py-24">
     <div class="mx-auto max-w-6xl">
-      <div class="mb-12 max-w-3xl">
+      <div class="mb-10 max-w-3xl lg:mb-12">
         <div class="mb-4">
           <span class="muga-badge muga-badge--sm">Diagnóstico</span>
         </div>
@@ -172,12 +156,12 @@ import "../styles/bento.css";
         </p>
       </div>
 
-      <div class="w-full bg-muga-dark-800/50 border border-white/5 p-8 lg:p-10">
+      <div class="w-full bg-muga-dark-800/50 border border-white/5 p-6 sm:p-8 lg:p-10">
         <div id="form-messages" class="mb-6 hidden">
-          <div id="success-message" class="hidden bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3">
+          <div id="success-message" role="status" aria-live="polite" class="hidden bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3">
             Diagnostico enviado. Te contactamos por email.
           </div>
-          <div id="error-message" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3">
+          <div id="error-message" role="alert" aria-live="assertive" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3">
             No pudimos enviar el formulario. Volve a intentar.
           </div>
         </div>
@@ -191,7 +175,6 @@ import "../styles/bento.css";
           class="space-y-6"
         >
           <input type="hidden" name="created_at" value="" />
-          <input type="hidden" name="success_url" value="/contacto/enviado" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="name" class="block text-sm font-medium text-white mb-2">Nombre</label>
@@ -231,14 +214,13 @@ import "../styles/bento.css";
           </div>
 
           <div>
-            <label for="project" class="block text-sm font-medium text-white mb-2">Tipo de estructura</label>
+            <label for="project" class="block text-sm font-medium text-white mb-2">Formato estimado (si ya lo tenés definido)</label>
             <select
               id="project"
               name="project"
               class="muga-select w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-              required
             >
-              <option value="">Seleccioná una opción</option>
+              <option value="">Todavía no lo definí</option>
               <option value="landing">Landing de conversión</option>
               <option value="corporativo">Sitio corporativo</option>
               <option value="institucional">Sitio institucional</option>
@@ -261,11 +243,11 @@ import "../styles/bento.css";
           <input type="hidden" name="status" value="new" />
           <input type="hidden" name="ip" value="" />
 
-          <div class="text-center">
+          <div>
             <button
               type="submit"
               id="submit-btn"
-              class="inline-flex items-center gap-2 px-6 py-3 bg-accent text-obscure font-semibold hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-obscure transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="inline-flex w-full items-center justify-center gap-2 px-6 py-3 bg-accent text-obscure font-semibold hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-obscure transition disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
             >
               <span id="btn-text">Solicitar diagnóstico</span>
               <span id="btn-arrow" aria-hidden="true">→</span>

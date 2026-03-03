@@ -23,7 +23,7 @@ const roundedClass = rounded ? "rounded-xl" : "";
 <div class={`bento-cell ${bgClass} ${colSpan} p-6 flex flex-col border ${borderClass} ${roundedClass} relative overflow-hidden`}>
   {lightEffect && <div class="light-effect" aria-hidden="true"></div>}
   
-  {title && <h3 class="text-lg font-medium text-white mb-4 ">{title}</h3>}
+  {title && <h3 class="mb-4 max-w-[16ch] text-lg font-medium leading-tight text-white sm:max-w-none">{title}</h3>}
   
   <div class="relative z-10 flex-grow flex flex-col justify-center">
     <slot />
