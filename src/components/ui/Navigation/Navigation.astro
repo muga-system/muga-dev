@@ -9,13 +9,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "Formatos", href: "/formatos" },
+  { label: "Modelo", href: "/modelo" },
   { label: "Criterios", href: "/criterios" },
   { label: "Nosotros", href: "/nosotros" },
   { label: "Contacto", href: "/contacto" },
 ];
 
 const casesItem: NavItem = {
-  label: "Casos",
+  label: "Referencias",
   href: "/casos"
 };
 
@@ -138,6 +139,10 @@ const isActive = (href: string) =>
 </style>
 
 <script is:inline define:vars={{ currentPath }}>
+  if (!window.__mugaNavbarInitBound) {
+    window.__mugaNavbarInitBound = true;
+  }
+
   const initNavbarBehavior = () => {
     const navbar = document.getElementById('navbar');
     if (!navbar) return;
@@ -238,7 +243,11 @@ const isActive = (href: string) =>
     }
   };
 
-  document.addEventListener('astro:page-load', initNavbarBehavior);
+  if (!window.__mugaNavbarEventsBound) {
+    document.addEventListener('astro:page-load', initNavbarBehavior);
+    document.addEventListener('DOMContentLoaded', initNavbarBehavior);
+    window.__mugaNavbarEventsBound = true;
+  }
 
-  document.addEventListener('DOMContentLoaded', initNavbarBehavior);
+  initNavbarBehavior();
 </script>

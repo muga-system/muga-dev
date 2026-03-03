@@ -17,14 +17,14 @@ const breadcrumbItems: BreadcrumbItem[] = [
 
 <Layout title="Contacto | MUGA" description="Solicitá un diagnóstico para ordenar conversión, jerarquía, flujo y secuencia.">
   <Navigation>
-    <Breadcrumb items={breadcrumbItems} />
+    <Breadcrumb slot="mobile-breadcrumb" items={breadcrumbItems} />
   </Navigation>
   <div class="hidden lg:block">
     <Breadcrumb items={breadcrumbItems} />
   </div>
   <PageHeroSection
     title="Solicitá un diagnóstico"
-    description="Revisamos objetivo, jerarquía, flujo y secuencia para definir qué parte de la estructura hay que ordenar."
+    description="No hace falta que sepas qué tipo de sitio necesitás. Revisamos tu objetivo y te decimos qué conviene."
     textAlign="left"
     showBadge={true}
     badgeText="MUGA"
@@ -38,10 +38,10 @@ const breadcrumbItems: BreadcrumbItem[] = [
             <span class="muga-badge muga-badge--sm">Proceso</span>
           </div>
           <h2 class="section-title">
-            Tres etapas para ordenar la estructura
+            Así convertimos tu necesidad en una propuesta clara
           </h2>
           <p class="section-lead mt-4">
-            Del diagnóstico inicial a la implementación, cada paso reduce dispersión y define qué tiene que pasar en la web.
+            Primero entendemos tu objetivo, después te recomendamos el formato y recién ahí avanzamos.
           </p>
         </div>
 
@@ -53,10 +53,10 @@ const breadcrumbItems: BreadcrumbItem[] = [
               </div>
             </div>
             <h3 class="mb-3 text-xl font-semibold tracking-tight text-white">Diagnóstico</h3>
-            <p class="mb-6 flex-1 text-base leading-7 text-white/75 md:mb-8 md:leading-8">Revisamos objetivo, fricción, exceso de decisiones y prioridad visible.</p>
+            <p class="mb-6 flex-1 text-base leading-7 text-white/75 md:mb-8 md:leading-8">Entendemos qué vendés, qué querés lograr y dónde hoy se traba la decisión.</p>
             <div class="space-y-3 pt-2 text-sm">
               <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">30-45 min</span></p>
-              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Lectura inicial</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Diagnóstico inicial</span></p>
             </div>
           </li>
 
@@ -66,11 +66,11 @@ const breadcrumbItems: BreadcrumbItem[] = [
                 02
               </div>
             </div>
-            <h3 class="mb-3 text-xl font-semibold tracking-tight text-white">Estructura</h3>
-            <p class="mb-6 flex-1 text-base leading-7 text-white/75 md:mb-8 md:leading-8">Definimos acción principal, mensaje central, recorrido y orden de lectura.</p>
+            <h3 class="mb-3 text-xl font-semibold tracking-tight text-white">Recomendación</h3>
+            <p class="mb-6 flex-1 text-base leading-7 text-white/75 md:mb-8 md:leading-8">Te decimos qué tipo de sitio conviene, qué debería incluir y hasta dónde avanzar ahora.</p>
             <div class="space-y-3 pt-2 text-sm">
               <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">24-48 h</span></p>
-              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Dirección estructural</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Formato recomendado</span></p>
             </div>
           </li>
 
@@ -81,10 +81,10 @@ const breadcrumbItems: BreadcrumbItem[] = [
               </div>
             </div>
             <h3 class="mb-3 text-xl font-semibold tracking-tight text-white">Implementación</h3>
-            <p class="mb-6 flex-1 text-base leading-7 text-white/75 md:mb-8 md:leading-8">Aplicamos la base técnica para que la estructura sea clara, medible y mantenible.</p>
+            <p class="mb-6 flex-1 text-base leading-7 text-white/75 md:mb-8 md:leading-8">Si avanzamos, construimos la versión definida y dejamos una base lista para crecer.</p>
             <div class="space-y-3 pt-2 text-sm">
-              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">Iterativo</span></p>
-              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Entrega + seguimiento</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Tiempo:</span> <span class="text-white">Según alcance</span></p>
+              <p><span class="text-accent font-mono uppercase text-[11px] tracking-wider">Entregable:</span> <span class="text-white">Sitio implementado</span></p>
             </div>
           </li>
         </ol>
@@ -96,11 +96,17 @@ const breadcrumbItems: BreadcrumbItem[] = [
             <span class="muga-badge muga-badge--sm">Contacto</span>
           </div>
           <h2 class="section-title">
-            Definí el objetivo y empezamos por ahí
+            Contanos tu caso y te guiamos en la compra
           </h2>
           <p class="section-lead mt-4">
-            Deja el objetivo y el problema actual para definir el siguiente paso.
+            No hace falta que sepas qué formato elegir. Con tu objetivo alcanza para empezar.
           </p>
+        </div>
+
+        <div class="mb-8 grid gap-4 border border-white/10 bg-muga-dark-800/40 p-5 text-sm text-muga-neutral md:grid-cols-3">
+          <p>Te llevás un formato recomendado.</p>
+          <p>Definimos qué contenido va primero.</p>
+          <p>Te dejamos claro el próximo paso.</p>
         </div>
 
         <div id="form-messages" class="mb-6 hidden">
@@ -115,7 +121,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
         <form
           id="contact-form"
           method="POST"
-          action="https://hook.us2.make.com/d2244ejjygfwjirzirv7xg5j8olpv8cd"
+          action="https://hook.us2.make.com/btf7mb88a3f5pkjrprjff44rsykxizfx"
           target="make-webhook-target"
           accept-charset="UTF-8"
           class="space-y-6"
@@ -160,17 +166,33 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </div>
 
           <div>
-            <label for="project" class="block text-sm font-medium text-white mb-2">Formato estimado (si ya lo tenés definido)</label>
+            <label for="project" class="block text-sm font-medium text-white mb-2">¿Qué tipo de sitio creés que necesitás? (opcional)</label>
             <select
               id="project"
               name="project"
               class="muga-select w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             >
-              <option value="">Todavía no lo definí</option>
+              <option value="">No lo sé todavía</option>
               <option value="landing">Landing de conversión</option>
               <option value="corporativo">Sitio corporativo</option>
               <option value="institucional">Sitio institucional</option>
             </select>
+            <p class="mt-2 text-xs text-muga-neutral">Si no estás seguro, lo definimos juntos.</p>
+          </div>
+
+          <div>
+            <label for="budget" class="block text-sm font-medium text-white mb-2">Rango de inversión orientativo (opcional)</label>
+            <select
+              id="budget"
+              name="budget"
+              class="muga-select w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+            >
+              <option value="">No lo sé todavía</option>
+              <option value="start">$ - Start</option>
+              <option value="business">$$ - Business</option>
+              <option value="premium">$$$ - Premium</option>
+            </select>
+            <p class="mt-2 text-xs text-muga-neutral">Nos ayuda a entender en qué nivel de alcance estás pensando.</p>
           </div>
 
           <div>
@@ -180,14 +202,17 @@ const breadcrumbItems: BreadcrumbItem[] = [
               name="message"
               rows="4"
               class="w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white placeholder-graylight focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-              placeholder="Contanos qué tiene que lograr tu web y qué parte hoy está frenando la conversión"
+              placeholder="Contanos qué vendés, qué querés lograr y qué te está frenando hoy"
+              required
             ></textarea>
           </div>
 
           <input type="hidden" name="page" value="" />
           <input type="hidden" name="source" value="website" />
           <input type="hidden" name="status" value="new" />
-          <input type="hidden" name="ip" value="" />
+          <input type="hidden" name="lead_tier" value="undecided" />
+          <input type="hidden" name="lead_stage" value="discovery" />
+          <input type="hidden" name="lead_route" value="unspecified:undecided" />
 
           <div class="pt-2">
             <button
@@ -205,10 +230,11 @@ const breadcrumbItems: BreadcrumbItem[] = [
       </div>
 
       <div class="mt-10 max-w-3xl">
-        <p class="mb-4 text-sm text-muga-neutral">Si queres mas contexto, revisa formatos y casos.</p>
+        <p class="mb-4 text-sm text-muga-neutral">Si querés más contexto antes de escribirnos, revisá formatos, referencias y modelo de trabajo.</p>
         <div class="flex flex-wrap gap-6">
           <ArrowLink href="/formatos" text="Formatos" />
-          <ArrowLink href="/casos" text="Casos" />
+          <ArrowLink href="/casos" text="Referencias" />
+          <ArrowLink href="/modelo" text="Modelo" />
         </div>
       </div>
     </div>

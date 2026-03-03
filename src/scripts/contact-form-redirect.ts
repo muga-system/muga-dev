@@ -24,12 +24,39 @@ const initContactFormRedirect = () => {
   let pendingSubmit = false;
   let timeoutId: number | null = null;
 
+  const updateLeadSegmentation = () => {
+    const projectField = form.elements.namedItem("project") as HTMLSelectElement | null;
+    const budgetField = form.elements.namedItem("budget") as HTMLSelectElement | null;
+    const leadTierField = form.elements.namedItem("lead_tier") as HTMLInputElement | null;
+    const leadStageField = form.elements.namedItem("lead_stage") as HTMLInputElement | null;
+    const leadRouteField = form.elements.namedItem("lead_route") as HTMLInputElement | null;
+
+    const budgetValue = budgetField?.value || "";
+    const projectValue = projectField?.value || "";
+
+    const leadTier = budgetValue || "undecided";
+    const leadStage =
+      budgetValue === "premium"
+        ? "high-intent"
+        : budgetValue === "business"
+          ? "qualified"
+          : budgetValue === "start"
+            ? "entry"
+            : "discovery";
+    const leadRoute = `${projectValue || "unspecified"}:${budgetValue || "undecided"}`;
+
+    if (leadTierField) leadTierField.value = leadTier;
+    if (leadStageField) leadStageField.value = leadStage;
+    if (leadRouteField) leadRouteField.value = leadRoute;
+  };
+
   form.addEventListener("submit", () => {
     const createdAtField = form.elements.namedItem("created_at") as HTMLInputElement | null;
     const pageField = form.elements.namedItem("page") as HTMLInputElement | null;
 
     if (createdAtField) createdAtField.value = new Date().toISOString();
     if (pageField) pageField.value = window.location.href;
+    updateLeadSegmentation();
 
     pendingSubmit = true;
 

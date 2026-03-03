@@ -22,7 +22,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
   description="Rendimiento, accesibilidad, SEO y estructura como base tecnica."
 >
   <Navigation>
-    <Breadcrumb items={breadcrumbItems} />
+    <Breadcrumb slot="mobile-breadcrumb" items={breadcrumbItems} />
   </Navigation>
   <div class="hidden lg:block">
     <Breadcrumb items={breadcrumbItems} />
@@ -296,7 +296,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
           <div class="flex flex-col space-y-4 relative z-10">
             <ArrowLink href="/contacto" text="Solicitar diagnostico" />
             <ArrowLink href="/formatos" text="Ver formatos" />
-            <ArrowLink href="/casos" text="Ver casos" />
+            <ArrowLink href="/casos" text="Ver referencias" />
           </div>
         </BentoCell>
       </div>
