@@ -20,7 +20,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 ];
 ---
 
-<Layout title="Confirmación de envío | MUGA" description="Confirmación de la solicitud de diagnóstico.">
+<Layout title="Consulta recibida | MUGA" description="Confirmacion del envio de tu consulta.">
   <Navigation>
     <Breadcrumb slot="mobile-breadcrumb" items={breadcrumbItems} />
   </Navigation>
@@ -29,8 +29,8 @@ const breadcrumbItems: BreadcrumbItem[] = [
   </div>
 
   <PageHeroSection
-    title="Solicitud registrada"
-    description="La confirmación principal se muestra en el formulario. Esta página queda como respaldo."
+    title="Consulta recibida"
+    description="Recibimos tu mensaje. El siguiente paso es revisar el caso y responderte por email."
     textAlign="center"
     showBadge={true}
     badgeText="Confirmación"
@@ -55,9 +55,9 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </svg>
         </div>
 
-        <h2 class="section-title mb-4">Solicitud registrada</h2>
+        <h2 class="section-title mb-4">Ya tenemos tu consulta</h2>
         <p class="section-lead mx-auto mb-8 max-w-2xl">
-          Si ya enviaste el formulario, seguimos por email. Si no, volvé a contacto y completá el diagnóstico.
+          Revisamos el mensaje y te respondemos por email. Si hace falta, coordinamos una primera conversacion para ordenar objetivo, formato y alcance.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
@@ -65,25 +65,30 @@ const breadcrumbItems: BreadcrumbItem[] = [
             <div class="mb-2">
               <span class="muga-badge muga-badge--sm">Estado</span>
             </div>
-            <p class="text-white text-sm">En revisión</p>
+            <p class="text-white text-sm">Consulta recibida</p>
           </div>
           <div class="border border-white/10 p-4">
             <div class="mb-2">
               <span class="muga-badge muga-badge--sm">Siguiente paso</span>
             </div>
-            <p class="text-white text-sm">Seguimiento por email</p>
+            <p class="text-white text-sm">Respuesta inicial por email</p>
           </div>
           <div class="border border-white/10 p-4">
             <div class="mb-2">
-              <span class="muga-badge muga-badge--sm">Canal</span>
+              <span class="muga-badge muga-badge--sm">Tiempo estimado</span>
             </div>
-            <p class="text-white text-sm">Formulario o email</p>
+            <p class="text-white text-sm">24-48 h habiles</p>
           </div>
         </div>
 
+        <p class="mx-auto mb-8 max-w-2xl text-sm leading-7 text-muga-neutral">
+          Mientras tanto, si queres revisar opciones antes de nuestra respuesta, podes volver a los formatos o al modelo de trabajo.
+        </p>
+
         <div class="flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-6">
-          <ArrowLink href="/contacto" text="Volver a contacto" />
-          <ArrowLink href="/" text="Ir al inicio" />
+          <ArrowLink href="/contacto" text="Volver a contacto" analyticsEvent="post_submit_navigation_click" analyticsLabel="volver_a_contacto" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
+          <ArrowLink href="/formatos" text="Ver formatos" analyticsEvent="post_submit_navigation_click" analyticsLabel="ver_formatos" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
+          <ArrowLink href="/modelo" text="Ver modelo" analyticsEvent="post_submit_navigation_click" analyticsLabel="ver_modelo" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
         </div>
       </div>
     </div>

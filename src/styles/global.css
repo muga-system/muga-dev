@@ -16,6 +16,16 @@
     color: var(--color-graylight);
     font-family: system-ui, sans-serif;
   }
+
+  ::selection {
+    background-color: rgba(255, 83, 83, 0.32);
+    color: white;
+  }
+
+  ::-moz-selection {
+    background-color: rgba(255, 83, 83, 0.32);
+    color: white;
+  }
 }
 
 @layer components {

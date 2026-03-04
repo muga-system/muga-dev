@@ -18,11 +18,10 @@ interface BentoCellElement extends HTMLElementWithStyle {
   };
 }
 
-declare global {
-  interface Window {
+type MugaBentoWindow = Window &
+  typeof globalThis & {
     __mugaBentoGridBound?: boolean;
-  }
-}
+  };
 
 function throttle(callback: Function, limit: number) {
   let waiting = false;
@@ -83,10 +82,12 @@ function applyLightEffect() {
   });
 }
 
-if (!window.__mugaBentoGridBound) {
+const mugaBentoWindow = window as MugaBentoWindow;
+
+if (!mugaBentoWindow.__mugaBentoGridBound) {
   document.addEventListener("astro:page-load", applyLightEffect);
   document.addEventListener("DOMContentLoaded", applyLightEffect);
-  window.__mugaBentoGridBound = true;
+  mugaBentoWindow.__mugaBentoGridBound = true;
 }
 
 applyLightEffect();

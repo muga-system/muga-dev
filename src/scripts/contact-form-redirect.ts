@@ -1,8 +1,29 @@
-declare global {
-  interface Window {
+type MugaContactWindow = Window &
+  typeof globalThis & {
     __mugaContactFormRedirectBound?: boolean;
-  }
-}
+  };
+
+const getFormContext = () => {
+  if (window.location.pathname === "/") return "home";
+  if (window.location.pathname.startsWith("/contacto")) return "contacto";
+  return "unknown";
+};
+
+const emitFormTrackingEvent = (
+  eventName: string,
+  payload: Record<string, string> = {},
+) => {
+  document.dispatchEvent(
+    new CustomEvent("muga:form-state", {
+      detail: {
+        event: eventName,
+        form_id: "contact-form",
+        form_context: getFormContext(),
+        ...payload,
+      },
+    }),
+  );
+};
 
 const initContactFormRedirect = () => {
   const form = document.getElementById("contact-form") as HTMLFormElement | null;
@@ -58,6 +79,14 @@ const initContactFormRedirect = () => {
     if (pageField) pageField.value = window.location.href;
     updateLeadSegmentation();
 
+    const projectField = form.elements.namedItem("project") as HTMLSelectElement | null;
+    const budgetField = form.elements.namedItem("budget") as HTMLSelectElement | null;
+
+    emitFormTrackingEvent("form_submit_started", {
+      project: projectField?.value || "empty",
+      budget: budgetField?.value || "empty",
+    });
+
     pendingSubmit = true;
 
     if (submitBtn) submitBtn.disabled = true;
@@ -82,6 +111,10 @@ const initContactFormRedirect = () => {
 
       if (formMessages) formMessages.classList.remove("hidden");
       if (errorMessage) errorMessage.classList.remove("hidden");
+
+      emitFormTrackingEvent("form_submit_error", {
+        error_type: "timeout",
+      });
     }, 12000);
   });
 
@@ -101,13 +134,17 @@ const initContactFormRedirect = () => {
 
     if (formMessages) formMessages.classList.remove("hidden");
     if (successMessage) successMessage.classList.remove("hidden");
+
+    emitFormTrackingEvent("form_submit_success");
   });
 };
 
-if (!window.__mugaContactFormRedirectBound) {
+const mugaContactWindow = window as MugaContactWindow;
+
+if (!mugaContactWindow.__mugaContactFormRedirectBound) {
   document.addEventListener("DOMContentLoaded", initContactFormRedirect);
   document.addEventListener("astro:page-load", initContactFormRedirect);
-  window.__mugaContactFormRedirectBound = true;
+  mugaContactWindow.__mugaContactFormRedirectBound = true;
 }
 
 initContactFormRedirect();

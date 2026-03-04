@@ -37,19 +37,27 @@ const {
 </style>
 
 <script>
-  if (!window.__mugaSetupIconEffects) {
-    window.__mugaSetupIconEffects = () => {
-      const icons = document.querySelectorAll(".icon-with-blur-effect");
+  type MugaIconWindow = Window &
+    typeof globalThis & {
+      __mugaSetupIconEffects?: () => void;
+      __mugaIconEffectsBound?: boolean;
+    };
+
+  const mugaWindow = window as MugaIconWindow;
+
+  if (!mugaWindow.__mugaSetupIconEffects) {
+    mugaWindow.__mugaSetupIconEffects = () => {
+      const icons = document.querySelectorAll<HTMLImageElement>(".icon-with-blur-effect");
 
       icons.forEach(function (icon) {
         if (icon.dataset.bound === "true") return;
 
-        const bentoCell = icon.closest(".bento-cell");
+        const bentoCell = icon.closest<HTMLElement>(".bento-cell");
         if (!bentoCell) return;
 
         icon.style.opacity = "0";
 
-        function updateMask(e) {
+        function updateMask(e: MouseEvent) {
           const svgRect = icon.getBoundingClientRect();
 
           const svgX = e.clientX - svgRect.left;
@@ -57,7 +65,7 @@ const {
 
           icon.style.opacity = "1";
           const maskImage = `radial-gradient(circle 50px at ${svgX}px ${svgY}px, black 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.2) 80%, transparent 100%)`;
-          icon.style.webkitMaskImage = maskImage;
+          icon.style.setProperty("-webkit-mask-image", maskImage);
           icon.style.maskImage = maskImage;
         }
 
@@ -72,11 +80,11 @@ const {
     };
   }
 
-  if (!window.__mugaIconEffectsBound) {
-    document.addEventListener("astro:page-load", window.__mugaSetupIconEffects);
-    document.addEventListener("DOMContentLoaded", window.__mugaSetupIconEffects);
-    window.__mugaIconEffectsBound = true;
+  if (!mugaWindow.__mugaIconEffectsBound && mugaWindow.__mugaSetupIconEffects) {
+    document.addEventListener("astro:page-load", mugaWindow.__mugaSetupIconEffects);
+    document.addEventListener("DOMContentLoaded", mugaWindow.__mugaSetupIconEffects);
+    mugaWindow.__mugaIconEffectsBound = true;
   }
 
-  window.__mugaSetupIconEffects();
+  mugaWindow.__mugaSetupIconEffects?.();
 </script>

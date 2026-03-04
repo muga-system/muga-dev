@@ -13,6 +13,7 @@ const {
   title = "MUGA - Arquitectura Web para Conversión",
   description = "Conversión, jerarquía, flujo y secuencia aplicados a la estructura de tu web.",
 } = Astro.props;
+const goatCounterEndpoint = import.meta.env.PUBLIC_GOATCOUNTER_ENDPOINT;
 ---
 
 <!DOCTYPE html>
@@ -24,11 +25,21 @@ const {
     <title>{title}</title>
     <link rel="icon" type="image/png" href="/logo/logo.png" />
     <ClientRouter />
+    {goatCounterEndpoint && (
+      <script
+        is:inline
+        async
+        src="https://gc.zgo.at/count.js"
+        data-goatcounter={goatCounterEndpoint}
+        data-goatcounter-settings='{"no_onload": true, "no_events": true}'
+      ></script>
+    )}
   </head>
   <body >
     <main>
       <slot />
     </main>
+    <script src="../scripts/analytics.ts"></script>
     <Footer />  
   </body>
 </html>

@@ -6,6 +6,10 @@ export interface Props {
   hoverColor?: string;
   iconSvg?: string;
   arrowType?: string;
+  analyticsEvent?: string;
+  analyticsLabel?: string;
+  analyticsLocation?: string;
+  analyticsStep?: string;
 }
 
 const { 
@@ -14,13 +18,22 @@ const {
   textColor = "text-graylight", 
   hoverColor = "hover:text-accent",
   iconSvg,
-  arrowType = "→"
+  arrowType = "→",
+  analyticsEvent,
+  analyticsLabel,
+  analyticsLocation,
+  analyticsStep
 } = Astro.props;
 ---
 
 <a
   href={href}
   class={`secondary-link ${textColor} ${hoverColor}`}
+  data-analytics-event={analyticsEvent}
+  data-analytics-label={analyticsLabel}
+  data-analytics-location={analyticsLocation}
+  data-analytics-step={analyticsStep}
+  data-analytics-destination={href}
 >
   {iconSvg && <span class="icon-container mr-1" set:html={iconSvg} />}
   <span>{text}</span>

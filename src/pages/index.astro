@@ -15,8 +15,8 @@ import "../styles/bento.css";
 ---
 
 <Layout
-  title="MUGA - Arquitectura Web para Conversión"
-  description="Conversión, jerarquía, flujo y secuencia aplicados a la estructura de tu web."
+  title="MUGA - Arquitectura web para conversion"
+  description="Conversion, jerarquia, flujo y secuencia aplicados a la estructura de tu web."
 >
   <Navigation />
 
@@ -28,23 +28,28 @@ import "../styles/bento.css";
         </div>
 
         <h1 class="max-w-5xl text-4xl font-semibold leading-[0.94] tracking-tight text-white sm:text-6xl lg:text-[5.4rem]">
-          Te ayudamos a construir el sitio correcto para vender mejor
+          Construimos sitios web con una estructura clara desde el inicio
         </h1>
 
         <p class="mt-5 max-w-3xl text-base leading-7 text-graylight sm:mt-6 sm:text-lg sm:leading-8 lg:text-xl/8">
-          Si no sabés si necesitás una landing o un sitio más completo, lo definimos antes de construir.
+          Cada proyecto se define segun tu objetivo, para que el sitio tenga una base clara, ordenada y lista para crecer.
         </p>
 
         <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
           <a
             href="/contacto"
             class="inline-flex w-full items-center justify-center gap-2 border border-accent/50 bg-accent/5 px-5 py-3 text-sm font-semibold text-accent transition-colors hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure sm:w-auto"
+            data-analytics-event="cta_click"
+            data-analytics-label="contanos_tu_caso"
+            data-analytics-location="home_hero"
+            data-analytics-step="home"
+            data-analytics-destination="/contacto"
           >
-            Solicitar diagnóstico
-            <ArrowRight size={16} strokeWidth={1.8} />
+            Contanos tu caso
+            <ArrowRight size={16} stroke-width={1.8} />
           </a>
-          <a href="/formatos" class="secondary-link">
-            Ver formatos
+          <a href="/modelo" class="secondary-link" data-analytics-event="cta_click" data-analytics-label="como_trabajamos" data-analytics-location="home_hero" data-analytics-step="home" data-analytics-destination="/modelo">
+            Como trabajamos
             <span aria-hidden="true" class="secondary-link__arrow">→</span>
           </a>
         </div>
@@ -57,20 +62,20 @@ import "../styles/bento.css";
     <div class="mx-auto max-w-6xl">
       <div class="mb-10 max-w-3xl lg:mb-12">
         <div class="mb-4">
-          <span class="muga-badge muga-badge--sm">Base</span>
+          <span class="muga-badge muga-badge--sm">Sistema</span>
         </div>
         <h2 class="section-title mb-4">
-          Lo que definimos para que tu web funcione
+          La base con la que ordenamos cada sitio
         </h2>
         <p class="section-lead">
-          Sin estas decisiones, la web confunde. Con estas decisiones, la web guía.
+          Conversion, jerarquia, flujo y secuencia aplicados para que la web sea clara, ordenada y facil de entender.
         </p>
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <div class="bg-muga-dark-800/50 border border-white/5 p-6 sm:p-7">
           <div class="mb-6 flex h-16 w-16 items-center justify-center border border-accent/50 bg-accent/5 text-accent sm:mb-7 sm:h-[4.5rem] sm:w-[4.5rem]">
-            <ChartNoAxesCombined size={30} strokeWidth={1.8} aria-hidden="true" />
+            <ChartNoAxesCombined size={30} stroke-width={1.8} aria-hidden="true" />
           </div>
           <h3 class="text-xl font-semibold text-white mb-3">Conversión</h3>
           <p class="max-w-sm text-muga-neutral">Definimos qué tiene que pasar: consulta, venta o contacto.</p>
@@ -78,7 +83,7 @@ import "../styles/bento.css";
 
         <div class="bg-muga-dark-800/50 border border-white/5 p-6 sm:p-7">
           <div class="mb-6 flex h-16 w-16 items-center justify-center border border-accent/50 bg-accent/5 text-accent sm:mb-7 sm:h-[4.5rem] sm:w-[4.5rem]">
-            <Layers size={30} strokeWidth={1.8} aria-hidden="true" />
+            <Layers size={30} stroke-width={1.8} aria-hidden="true" />
           </div>
           <h3 class="text-xl font-semibold text-white mb-3">Jerarquía</h3>
           <p class="max-w-sm text-muga-neutral">Ordenamos qué se ve primero para que tu propuesta se entienda rápido.</p>
@@ -86,7 +91,7 @@ import "../styles/bento.css";
 
         <div class="bg-muga-dark-800/50 border border-white/5 p-6 sm:p-7">
           <div class="mb-6 flex h-16 w-16 items-center justify-center border border-accent/50 bg-accent/5 text-accent sm:mb-7 sm:h-[4.5rem] sm:w-[4.5rem]">
-            <SquareArrowRight size={30} strokeWidth={1.8} aria-hidden="true" />
+            <SquareArrowRight size={30} stroke-width={1.8} aria-hidden="true" />
           </div>
           <h3 class="text-xl font-semibold text-white mb-3">Flujo</h3>
           <p class="max-w-sm text-muga-neutral">Armamos el recorrido para que la visita llegue a la acción sin trabas.</p>
@@ -94,7 +99,7 @@ import "../styles/bento.css";
 
         <div class="bg-muga-dark-800/50 border border-white/5 p-6 sm:p-7">
           <div class="mb-6 flex h-16 w-16 items-center justify-center border border-accent/50 bg-accent/5 text-accent sm:mb-7 sm:h-[4.5rem] sm:w-[4.5rem]">
-            <ListChecks size={30} strokeWidth={1.8} aria-hidden="true" />
+            <ListChecks size={30} stroke-width={1.8} aria-hidden="true" />
           </div>
           <h3 class="text-xl font-semibold text-white mb-3">Secuencia</h3>
           <p class="max-w-sm text-muga-neutral">Ponemos el contenido en el orden correcto para facilitar la decisión.</p>
@@ -113,7 +118,7 @@ import "../styles/bento.css";
           Elegí el tipo de sitio según tu objetivo
         </h2>
         <p class="section-lead">
-          Estos son los formatos más comunes. Si no sabés cuál te conviene, lo definimos con vos.
+          Estos son los formatos mas comunes. Si no sabes cual conviene, lo definimos con vos antes de avanzar.
         </p>
       </div>
 
@@ -138,7 +143,7 @@ import "../styles/bento.css";
       </div>
 
       <div class="mt-12">
-        <ArrowLink href="/formatos" text="Ver todos los formatos" />
+        <ArrowLink href="/formatos" text="Ver todos los formatos" analyticsEvent="content_navigation_click" analyticsLabel="ver_todos_los_formatos" analyticsLocation="home_formatos" analyticsStep="home" />
       </div>
     </div>
   </section>
@@ -150,17 +155,17 @@ import "../styles/bento.css";
           <span class="muga-badge muga-badge--sm">Inversión</span>
         </div>
         <h2 class="section-title mb-4">
-          Rangos orientativos para decidir más rápido
+          Niveles de alcance para decidir mas rapido
         </h2>
         <p class="section-lead">
-          No son precios cerrados. Sirven para que sepas en qué nivel de proyecto estás parado antes de escribirnos.
+          No son precios cerrados. Sirven para que sepas en que nivel de proyecto estas antes de escribirnos.
         </p>
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
         <article class="flex h-full flex-col border border-white/10 bg-muga-dark-800/45 p-6">
-          <p class="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">Rango $</p>
-          <h3 class="text-2xl font-semibold text-white">Start</h3>
+          <p class="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">Alcance inicial</p>
+          <h3 class="text-2xl font-semibold text-white">Base</h3>
           <p class="mt-3 flex-1 text-muga-neutral">
             Para una landing o una versión simple enfocada en una sola oferta.
           </p>
@@ -172,8 +177,8 @@ import "../styles/bento.css";
         </article>
 
         <article class="flex h-full flex-col border border-white/10 bg-muga-dark-800/45 p-6">
-          <p class="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">Rango $$</p>
-          <h3 class="text-2xl font-semibold text-white">Business</h3>
+          <p class="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">Alcance intermedio</p>
+          <h3 class="text-2xl font-semibold text-white">Intermedio</h3>
           <p class="mt-3 flex-1 text-muga-neutral">
             Para un sitio corporativo con más recorrido, más contexto y mejor estructura comercial.
           </p>
@@ -185,8 +190,8 @@ import "../styles/bento.css";
         </article>
 
         <article class="flex h-full flex-col border border-white/10 bg-muga-dark-800/45 p-6">
-          <p class="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">Rango $$$</p>
-          <h3 class="text-2xl font-semibold text-white">Premium</h3>
+          <p class="mb-4 font-mono text-xs uppercase tracking-[0.28em] text-accent">Alcance amplio</p>
+          <h3 class="text-2xl font-semibold text-white">Avanzado</h3>
           <p class="mt-3 flex-1 text-muga-neutral">
             Para una estructura más amplia, con más personalización, más capas y continuidad técnica.
           </p>
@@ -198,8 +203,8 @@ import "../styles/bento.css";
         </article>
       </div>
 
-      <p class="mt-6 max-w-3xl text-sm text-muga-neutral">
-        El valor final se define después del diagnóstico. Lo importante acá es que puedas ubicarte rápido en un rango y no llegar a ciegas.
+      <p class="mt-8 max-w-4xl border-t border-white/10 pt-6 text-base leading-8 text-white">
+        <span class="text-accent">No es una lista de precios.</span> Es una referencia para que puedas ubicar el alcance de tu proyecto antes de hablar con nosotros.
       </p>
     </div>
   </section>
@@ -222,7 +227,7 @@ import "../styles/bento.css";
         <details class="border border-white/10 bg-muga-dark-800/45 p-5" open>
           <summary class="faq-summary">
             <span>No sé qué comprar</span>
-            <ChevronRight class="faq-summary__icon" size={20} strokeWidth={1.8} aria-hidden="true" />
+            <ChevronRight class="faq-summary__icon" size={20} stroke-width={1.8} aria-hidden="true" />
           </summary>
           <p class="mt-3 max-w-3xl text-muga-neutral">
             No hace falta que lo sepas. Justamente por eso conviene escribirnos: vemos tu objetivo y te decimos qué formato tiene más sentido hoy.
@@ -231,18 +236,18 @@ import "../styles/bento.css";
 
         <details class="border border-white/10 bg-muga-dark-800/45 p-5">
           <summary class="faq-summary">
-            <span>¿El diagnóstico me obliga a contratar?</span>
-            <ChevronRight class="faq-summary__icon" size={20} strokeWidth={1.8} aria-hidden="true" />
+            <span>¿La consulta me obliga a contratar?</span>
+            <ChevronRight class="faq-summary__icon" size={20} stroke-width={1.8} aria-hidden="true" />
           </summary>
           <p class="mt-3 max-w-3xl text-muga-neutral">
-            No. El diagnóstico ordena la decisión. Después decidís si avanzamos juntos, pero ya con más claridad.
+            No. La primera conversacion ordena la decision. Despues decidis si avanzamos juntos, pero ya con mas claridad.
           </p>
         </details>
 
         <details class="border border-white/10 bg-muga-dark-800/45 p-5">
           <summary class="faq-summary">
             <span>Ya tengo una web, ¿igual vale la pena?</span>
-            <ChevronRight class="faq-summary__icon" size={20} strokeWidth={1.8} aria-hidden="true" />
+            <ChevronRight class="faq-summary__icon" size={20} stroke-width={1.8} aria-hidden="true" />
           </summary>
           <p class="mt-3 max-w-3xl text-muga-neutral">
             Sí. Si tu web actual no explica bien, no ordena la decisión o no te trae el tipo de consulta que buscás, hay algo para corregir.
@@ -252,7 +257,7 @@ import "../styles/bento.css";
         <details class="border border-white/10 bg-muga-dark-800/45 p-5">
           <summary class="faq-summary">
             <span>¿Tengo que hacer todo de una?</span>
-            <ChevronRight class="faq-summary__icon" size={20} strokeWidth={1.8} aria-hidden="true" />
+            <ChevronRight class="faq-summary__icon" size={20} stroke-width={1.8} aria-hidden="true" />
           </summary>
           <p class="mt-3 max-w-3xl text-muga-neutral">
             No. Muchas veces conviene empezar con una versión más simple, resolver lo importante y crecer después sobre una base ordenada.
@@ -262,10 +267,10 @@ import "../styles/bento.css";
         <details class="border border-white/10 bg-muga-dark-800/45 p-5">
           <summary class="faq-summary">
             <span>¿Cuándo hablamos de inversión real?</span>
-            <ChevronRight class="faq-summary__icon" size={20} strokeWidth={1.8} aria-hidden="true" />
+            <ChevronRight class="faq-summary__icon" size={20} stroke-width={1.8} aria-hidden="true" />
           </summary>
           <p class="mt-3 max-w-3xl text-muga-neutral">
-            Después del diagnóstico. Primero definimos objetivo, formato y alcance. Recién ahí tiene sentido hablar de propuesta.
+            Despues de la primera conversacion. Primero definimos objetivo, formato y alcance. Recien ahi tiene sentido hablar de propuesta.
           </p>
         </details>
       </div>
@@ -276,25 +281,20 @@ import "../styles/bento.css";
     <div class="mx-auto max-w-6xl">
       <div class="mb-10 max-w-3xl lg:mb-12">
         <div class="mb-4">
-          <span class="muga-badge muga-badge--sm">Diagnóstico</span>
+          <span class="muga-badge muga-badge--sm">Contacto</span>
         </div>
         <h2 class="section-title mb-4">
-          Contanos tu objetivo y te recomendamos el formato
+          Contanos tu caso y te orientamos con el formato
         </h2>
         <p class="section-lead mb-8">
-          No hace falta que sepas qué sitio comprar. Con tu objetivo alcanza para definir qué conviene.
+          No hace falta que llegues con el formato resuelto. Con tu objetivo alcanza para ordenar el punto de partida y avanzar con una propuesta clara.
         </p>
       </div>
 
       <div class="w-full bg-muga-dark-800/50 border border-white/5 p-6 sm:p-8 lg:p-10">
-        <div class="mb-8 grid gap-4 border border-white/10 bg-muga-dark-800/40 p-5 text-sm text-muga-neutral md:grid-cols-3">
-          <p>Te decimos qué formato conviene.</p>
-          <p>Definimos qué tiene que ir primero.</p>
-          <p>Te dejamos claro cómo seguir.</p>
-        </div>
         <div id="form-messages" class="mb-6 hidden">
           <div id="success-message" role="status" aria-live="polite" class="hidden bg-green-500/10 border border-green-500/20 text-green-400 px-4 py-3">
-            Diagnostico enviado. Te contactamos por email.
+            Consulta enviada. Te contactamos por email.
           </div>
           <div id="error-message" role="alert" aria-live="assertive" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3">
             No pudimos enviar el formulario. Volve a intentar.
@@ -354,6 +354,8 @@ import "../styles/bento.css";
               id="project"
               name="project"
               class="muga-select w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              data-analytics-select
+              data-analytics-context="home"
             >
               <option value="">No lo sé todavía</option>
               <option value="landing">Landing de conversión</option>
@@ -368,11 +370,13 @@ import "../styles/bento.css";
               id="budget"
               name="budget"
               class="muga-select w-full px-3 py-2 bg-muga-dark-800/70 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+              data-analytics-select
+              data-analytics-context="home"
             >
               <option value="">No lo sé todavía</option>
-              <option value="start">$ - Start</option>
-              <option value="business">$$ - Business</option>
-              <option value="premium">$$$ - Premium</option>
+              <option value="start">Base</option>
+              <option value="business">Intermedio</option>
+              <option value="premium">Avanzado</option>
             </select>
           </div>
 
@@ -401,7 +405,7 @@ import "../styles/bento.css";
               id="submit-btn"
               class="inline-flex w-full items-center justify-center gap-2 px-6 py-3 bg-accent text-obscure font-semibold hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-obscure transition disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
             >
-              <span id="btn-text">Solicitar diagnóstico</span>
+              <span id="btn-text">Enviar consulta</span>
               <span id="btn-arrow" aria-hidden="true">→</span>
               <div id="btn-spinner" class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-obscure" aria-hidden="true"></div>
             </button>
