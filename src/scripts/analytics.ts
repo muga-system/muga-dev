@@ -22,6 +22,7 @@ type MugaAnalyticsWindow = Window &
     __mugaGoatCounterFlushBound?: boolean;
     __mugaLastTrackedPath?: string;
     __mugaPendingGoatCounter?: MugaGoatCounterPayload[];
+    __mugaGoatCounterScriptLoadBound?: boolean;
     goatcounter?: MugaGoatCounter;
   };
 
@@ -31,6 +32,7 @@ const goatCounterEventMap: Record<string, string> = {
   cta_click: "cta-click",
   nav_click: "navigation-click",
   content_navigation_click: "content-link-click",
+  client_case_click: "client-case-click",
   footer_cta_click: "cta-click",
   footer_link_click: "footer-link-click",
   post_submit_navigation_click: "post-submit-click",
@@ -97,6 +99,19 @@ const flushPendingGoatCounter = () => {
 
     goatCounterCount(payload);
   }
+};
+
+const bindGoatCounterScriptLoad = () => {
+  if (mugaAnalyticsWindow.__mugaGoatCounterScriptLoadBound) return;
+
+  const goatCounterScript = document.querySelector<HTMLScriptElement>(
+    'script[src*="gc.zgo.at/count.js"]',
+  );
+
+  if (!goatCounterScript) return;
+
+  goatCounterScript.addEventListener("load", flushPendingGoatCounter);
+  mugaAnalyticsWindow.__mugaGoatCounterScriptLoadBound = true;
 };
 
 const sendGoatCounterPayload = (payload: MugaGoatCounterPayload) => {
@@ -247,4 +262,5 @@ if (!mugaAnalyticsWindow.__mugaGoatCounterFlushBound) {
   mugaAnalyticsWindow.__mugaGoatCounterFlushBound = true;
 }
 
+bindGoatCounterScriptLoad();
 initAnalytics();

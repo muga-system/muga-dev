@@ -17,6 +17,9 @@ pnpm-debug.log*
 .env
 .env.production
 
+# generated build id
+public/build-id.txt
+
 # macOS-specific files
 .DS_Store
 

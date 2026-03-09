@@ -2,7 +2,7 @@
 // Importar estilos globales
 import "../styles/global.css";
 import Footer from "../components/ui/Footer/Footer.astro";
-import { ClientRouter } from 'astro:transitions';
+import { readFileSync } from "node:fs";
 
 export interface Props {
   title?: string;
@@ -14,6 +14,16 @@ const {
   description = "Conversión, jerarquía, flujo y secuencia aplicados a la estructura de tu web.",
 } = Astro.props;
 const goatCounterEndpoint = import.meta.env.PUBLIC_GOATCOUNTER_ENDPOINT;
+let currentBuildId = "";
+
+try {
+  currentBuildId = readFileSync(
+    new URL("../../public/build-id.txt", import.meta.url),
+    "utf8",
+  ).trim();
+} catch {
+  currentBuildId = "";
+}
 ---
 
 <!DOCTYPE html>
@@ -22,9 +32,68 @@ const goatCounterEndpoint = import.meta.env.PUBLIC_GOATCOUNTER_ENDPOINT;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>{title}</title>
     <link rel="icon" type="image/png" href="/logo/logo.png" />
-    <ClientRouter />
+    <script is:inline define:vars={{ currentBuildId }}>
+      (() => {
+        const storageKey = "muga_build_id";
+        const queryParamKey = "__v";
+        const htmlBuildId = String(currentBuildId || "");
+
+        const forceReloadWithVersion = (buildId) => {
+          const url = new URL(window.location.href);
+          url.searchParams.set(queryParamKey, buildId);
+          url.searchParams.set("__ts", String(Date.now()));
+          window.location.replace(url.toString());
+        };
+
+        fetch(`/build-id.txt?t=${Date.now()}`, { cache: "no-store" })
+          .then((response) => (response.ok ? response.text() : ""))
+          .then((value) => {
+            const latestBuildId = value.trim();
+            if (!latestBuildId) return;
+
+            const currentUrl = new URL(window.location.href);
+            const versionInUrl = currentUrl.searchParams.get(queryParamKey);
+            const savedBuildId = window.localStorage.getItem(storageKey);
+
+            if (htmlBuildId && latestBuildId !== htmlBuildId) {
+              window.localStorage.setItem(storageKey, latestBuildId);
+
+              if (versionInUrl !== latestBuildId) {
+                forceReloadWithVersion(latestBuildId);
+              }
+
+              return;
+            }
+
+            if (!savedBuildId) {
+              window.localStorage.setItem(storageKey, latestBuildId);
+              return;
+            }
+
+            if (savedBuildId !== latestBuildId) {
+              window.localStorage.setItem(storageKey, latestBuildId);
+
+              if (versionInUrl !== latestBuildId) {
+                forceReloadWithVersion(latestBuildId);
+              }
+
+              return;
+            }
+
+            if (versionInUrl && versionInUrl === latestBuildId) {
+              currentUrl.searchParams.delete(queryParamKey);
+              currentUrl.searchParams.delete("__ts");
+              window.history.replaceState({}, "", currentUrl.toString());
+            }
+          })
+          .catch(() => {});
+      })();
+    </script>
     {goatCounterEndpoint && (
       <script
         is:inline
