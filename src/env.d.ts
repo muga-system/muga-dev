@@ -15,7 +15,6 @@ interface ImportMetaEnv {
   readonly DEV: boolean;
   readonly PROD: boolean;
   readonly SSR: boolean;
-  readonly PUBLIC_GOATCOUNTER_ENDPOINT?: string;
 }
 
 interface ImportMeta {

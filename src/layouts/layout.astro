@@ -14,7 +14,6 @@ const {
   title = "MUGA - Arquitectura Web para Conversión",
   description = "Conversión, jerarquía, flujo y secuencia aplicados a la estructura de tu web.",
 } = Astro.props;
-const goatCounterEndpoint = import.meta.env.PUBLIC_GOATCOUNTER_ENDPOINT;
 let currentBuildId = "";
 
 try {
@@ -95,15 +94,20 @@ try {
           .catch(() => {});
       })();
     </script>
-    {goatCounterEndpoint && (
-      <script
-        is:inline
-        async
-        src="https://gc.zgo.at/count.js"
-        data-goatcounter={goatCounterEndpoint}
-        data-goatcounter-settings='{"no_onload": true, "no_events": true}'
-      ></script>
-    )}
+    <script is:inline>
+      function loadScript(a) {
+        var b = document.getElementsByTagName("head")[0],
+          c = document.createElement("script");
+        c.type = "text/javascript";
+        c.src = "https://tracker.metricool.com/resources/be.js";
+        c.onreadystatechange = a;
+        c.onload = a;
+        b.appendChild(c);
+      }
+      loadScript(function () {
+        beTracker.t({ hash: "80c73763fb5e472734cbe390b7b2b5c6" });
+      });
+    </script>
   </head>
   <body >
     <main>

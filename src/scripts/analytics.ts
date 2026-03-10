@@ -1,46 +1,13 @@
 type MugaDataLayerEntry = Record<string, unknown>;
 
-type MugaGoatCounterPayload = {
-  event?: boolean;
-  path?: string;
-  referrer?: string;
-  title?: string;
-};
-
-type MugaGoatCounter = {
-  allow_local?: boolean;
-  count?: (payload?: MugaGoatCounterPayload) => void;
-  endpoint?: string;
-  no_events?: boolean;
-  no_onload?: boolean;
-};
-
 type MugaAnalyticsWindow = Window &
   typeof globalThis & {
     dataLayer?: MugaDataLayerEntry[];
     __mugaAnalyticsBound?: boolean;
-    __mugaGoatCounterFlushBound?: boolean;
     __mugaLastTrackedPath?: string;
-    __mugaPendingGoatCounter?: MugaGoatCounterPayload[];
-    __mugaGoatCounterScriptLoadBound?: boolean;
-    goatcounter?: MugaGoatCounter;
   };
 
 const mugaAnalyticsWindow = window as MugaAnalyticsWindow;
-
-const goatCounterEventMap: Record<string, string> = {
-  cta_click: "cta-click",
-  nav_click: "navigation-click",
-  content_navigation_click: "content-link-click",
-  client_case_click: "client-case-click",
-  footer_cta_click: "cta-click",
-  footer_link_click: "footer-link-click",
-  post_submit_navigation_click: "post-submit-click",
-  form_field_selected: "form-field-selected",
-  form_submit_started: "form-started",
-  form_submit_success: "form-submitted",
-  form_submit_error: "form-submit-error",
-};
 
 const buildEventDetail = (
   eventName: string,
@@ -55,101 +22,6 @@ const buildEventDetail = (
   };
 };
 
-const slugifyValue = (value: string) => {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
-};
-
-const getGoatCounterEventLabel = (detail: MugaDataLayerEntry) => {
-  const candidateKeys = ["label", "field_name", "form_context", "error_type"];
-
-  for (const key of candidateKeys) {
-    const value = detail[key];
-
-    if (typeof value === "string" && value && value !== "unknown" && value !== "unspecified") {
-      return value;
-    }
-  }
-
-  return null;
-};
-
-const queueGoatCounterPayload = (payload: MugaGoatCounterPayload) => {
-  if (!Array.isArray(mugaAnalyticsWindow.__mugaPendingGoatCounter)) {
-    mugaAnalyticsWindow.__mugaPendingGoatCounter = [];
-  }
-
-  mugaAnalyticsWindow.__mugaPendingGoatCounter.push(payload);
-};
-
-const flushPendingGoatCounter = () => {
-  const pendingPayloads = mugaAnalyticsWindow.__mugaPendingGoatCounter;
-  const goatCounterCount = mugaAnalyticsWindow.goatcounter?.count;
-
-  if (!Array.isArray(pendingPayloads) || typeof goatCounterCount !== "function") return;
-
-  while (pendingPayloads.length > 0) {
-    const payload = pendingPayloads.shift();
-
-    if (!payload) continue;
-
-    goatCounterCount(payload);
-  }
-};
-
-const bindGoatCounterScriptLoad = () => {
-  if (mugaAnalyticsWindow.__mugaGoatCounterScriptLoadBound) return;
-
-  const goatCounterScript = document.querySelector<HTMLScriptElement>(
-    'script[src*="gc.zgo.at/count.js"]',
-  );
-
-  if (!goatCounterScript) return;
-
-  goatCounterScript.addEventListener("load", flushPendingGoatCounter);
-  mugaAnalyticsWindow.__mugaGoatCounterScriptLoadBound = true;
-};
-
-const sendGoatCounterPayload = (payload: MugaGoatCounterPayload) => {
-  const goatCounterCount = mugaAnalyticsWindow.goatcounter?.count;
-
-  if (typeof goatCounterCount !== "function") {
-    queueGoatCounterPayload(payload);
-    return;
-  }
-
-  flushPendingGoatCounter();
-  goatCounterCount(payload);
-};
-
-const trackGoatCounterEvent = (detail: MugaDataLayerEntry) => {
-  const basePath = goatCounterEventMap[String(detail.event || "")];
-
-  if (!basePath) return;
-
-  const label = getGoatCounterEventLabel(detail);
-  const path = label ? `${basePath}-${slugifyValue(label)}` : basePath;
-
-  sendGoatCounterPayload({
-    event: true,
-    path,
-    referrer: window.location.pathname,
-    title: label || String(detail.event || "event"),
-  });
-};
-
-const trackGoatCounterPageView = () => {
-  sendGoatCounterPayload({
-    path: `${window.location.pathname}${window.location.search}`,
-    referrer: document.referrer || undefined,
-    title: document.title,
-  });
-};
-
 const emitTrackingEvent = (
   eventName: string,
   payload: Record<string, unknown> = {},
@@ -159,8 +31,6 @@ const emitTrackingEvent = (
   if (Array.isArray(mugaAnalyticsWindow.dataLayer)) {
     mugaAnalyticsWindow.dataLayer.push(detail);
   }
-
-  trackGoatCounterEvent(detail);
 
   document.dispatchEvent(
     new CustomEvent("muga:track", {
@@ -182,7 +52,6 @@ const trackPageView = () => {
   const funnelStep = getFunnelStep(window.location.pathname);
 
   emitTrackingEvent("page_view");
-  trackGoatCounterPageView();
 
   if (funnelStep) {
     emitTrackingEvent("funnel_step_view", {
@@ -256,11 +125,4 @@ if (!mugaAnalyticsWindow.__mugaAnalyticsBound) {
   mugaAnalyticsWindow.__mugaAnalyticsBound = true;
 }
 
-if (!mugaAnalyticsWindow.__mugaGoatCounterFlushBound) {
-  window.addEventListener("load", flushPendingGoatCounter);
-  document.addEventListener("astro:page-load", flushPendingGoatCounter);
-  mugaAnalyticsWindow.__mugaGoatCounterFlushBound = true;
-}
-
-bindGoatCounterScriptLoad();
 initAnalytics();
