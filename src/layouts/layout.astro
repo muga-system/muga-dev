@@ -2,6 +2,7 @@
 // Importar estilos globales
 import "../styles/global.css";
 import Footer from "../components/ui/Footer/Footer.astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
 import { readFileSync } from "node:fs";
 
 export interface Props {
@@ -109,6 +110,7 @@ try {
       <slot />
     </main>
     <script src="../scripts/analytics.ts"></script>
-    <Footer />  
+    <Footer />
+    <SpeedInsights />
   </body>
 </html>
