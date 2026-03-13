@@ -9,6 +9,10 @@ const getFormContext = () => {
   return "unknown";
 };
 
+const getQueryValue = (name: string) => {
+  return new URLSearchParams(window.location.search).get(name) || "";
+};
+
 const emitFormTrackingEvent = (
   eventName: string,
   payload: Record<string, string> = {},
@@ -27,11 +31,11 @@ const emitFormTrackingEvent = (
 
 const initContactFormRedirect = () => {
   const form = document.getElementById("contact-form") as HTMLFormElement | null;
-  const targetFrame = document.getElementById("make-webhook-target") as HTMLIFrameElement | null;
 
-  if (!form || !targetFrame) return;
+  if (!form) return;
   if (form.dataset.bound === "true") return;
   form.dataset.bound = "true";
+
 
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement | null;
   const btnText = document.getElementById("btn-text") as HTMLSpanElement | null;
@@ -87,12 +91,47 @@ const initContactFormRedirect = () => {
     if (leadRouteField) leadRouteField.value = leadRoute;
   };
 
-  form.addEventListener("submit", () => {
-    const createdAtField = form.elements.namedItem("created_at") as HTMLInputElement | null;
+  const updateAttributionFields = () => {
     const pageField = form.elements.namedItem("page") as HTMLInputElement | null;
+    const landingPageField = form.elements.namedItem("landing_page") as HTMLInputElement | null;
+    const referrerField = form.elements.namedItem("referrer") as HTMLInputElement | null;
+    const localeField = form.elements.namedItem("locale") as HTMLInputElement | null;
+    const timezoneField = form.elements.namedItem("timezone") as HTMLInputElement | null;
+    const userAgentField = form.elements.namedItem("user_agent") as HTMLInputElement | null;
+
+    const utmSourceField = form.elements.namedItem("utm_source") as HTMLInputElement | null;
+    const utmMediumField = form.elements.namedItem("utm_medium") as HTMLInputElement | null;
+    const utmCampaignField = form.elements.namedItem("utm_campaign") as HTMLInputElement | null;
+    const utmTermField = form.elements.namedItem("utm_term") as HTMLInputElement | null;
+    const utmContentField = form.elements.namedItem("utm_content") as HTMLInputElement | null;
+    const gclidField = form.elements.namedItem("gclid") as HTMLInputElement | null;
+    const fbclidField = form.elements.namedItem("fbclid") as HTMLInputElement | null;
+
+    if (pageField) pageField.value = window.location.href;
+    if (landingPageField) landingPageField.value = window.location.pathname;
+    if (referrerField) referrerField.value = document.referrer || "direct";
+    if (localeField) localeField.value = navigator.language || "unknown";
+    if (timezoneField) timezoneField.value = Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown";
+    if (userAgentField) userAgentField.value = navigator.userAgent || "unknown";
+
+    if (utmSourceField) utmSourceField.value = getQueryValue("utm_source");
+    if (utmMediumField) utmMediumField.value = getQueryValue("utm_medium");
+    if (utmCampaignField) utmCampaignField.value = getQueryValue("utm_campaign");
+    if (utmTermField) utmTermField.value = getQueryValue("utm_term");
+    if (utmContentField) utmContentField.value = getQueryValue("utm_content");
+    if (gclidField) gclidField.value = getQueryValue("gclid");
+    if (fbclidField) fbclidField.value = getQueryValue("fbclid");
+  };
+
+  updateAttributionFields();
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const createdAtField = form.elements.namedItem("created_at") as HTMLInputElement | null;
 
     if (createdAtField) createdAtField.value = new Date().toISOString();
-    if (pageField) pageField.value = window.location.href;
+    updateAttributionFields();
     updateLeadSegmentation();
 
     const projectField = form.elements.namedItem("project") as HTMLSelectElement | null;
@@ -114,10 +153,55 @@ const initContactFormRedirect = () => {
     if (successMessage) successMessage.classList.add("hidden");
     if (errorMessage) errorMessage.classList.add("hidden");
 
+    const formData = new FormData(form);
+    const payload: Record<string, string> = {};
+
+    formData.forEach((value, key) => {
+      if (typeof value === "string") payload[key] = value;
+    });
+
+    const abortController = new AbortController();
+
     if (timeoutId) window.clearTimeout(timeoutId);
     timeoutId = window.setTimeout(() => {
-      if (!pendingSubmit) return;
+      abortController.abort();
+    }, 12000);
 
+    try {
+      const response = await fetch("/api/contacto", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: abortController.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Supabase request failed: ${response.status}`);
+      }
+
+      pendingSubmit = false;
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      if (submitBtn) submitBtn.disabled = false;
+      if (btnText) btnText.textContent = defaultButtonText;
+      if (btnArrow) btnArrow.classList.remove("hidden");
+      if (btnSpinner) btnSpinner.classList.add("hidden");
+
+      form.reset();
+      hasUnsavedChanges = false;
+      updateAttributionFields();
+      updateLeadSegmentation();
+
+      if (formMessages) formMessages.classList.remove("hidden");
+      if (successMessage) successMessage.classList.remove("hidden");
+
+      emitFormTrackingEvent("form_submit_success");
+      window.location.assign("/contacto/enviado");
+    } catch {
       pendingSubmit = false;
 
       if (submitBtn) submitBtn.disabled = false;
@@ -129,30 +213,14 @@ const initContactFormRedirect = () => {
       if (errorMessage) errorMessage.classList.remove("hidden");
 
       emitFormTrackingEvent("form_submit_error", {
-        error_type: "timeout",
+        error_type: abortController.signal.aborted ? "timeout" : "network",
       });
-    }, 12000);
-  });
 
-  targetFrame.addEventListener("load", () => {
-    if (!pendingSubmit) return;
-    pendingSubmit = false;
-    if (timeoutId) {
-      window.clearTimeout(timeoutId);
-      timeoutId = null;
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+        timeoutId = null;
+      }
     }
-    if (submitBtn) submitBtn.disabled = false;
-    if (btnText) btnText.textContent = defaultButtonText;
-    if (btnArrow) btnArrow.classList.remove("hidden");
-    if (btnSpinner) btnSpinner.classList.add("hidden");
-
-    form.reset();
-    hasUnsavedChanges = false;
-
-    if (formMessages) formMessages.classList.remove("hidden");
-    if (successMessage) successMessage.classList.remove("hidden");
-
-    emitFormTrackingEvent("form_submit_success");
   });
 };
 

@@ -115,8 +115,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
         <form
           id="contact-form"
           method="POST"
-          action="https://hook.us2.make.com/btf7mb88a3f5pkjrprjff44rsykxizfx"
-          target="make-webhook-target"
+          action="/api/contacto"
           accept-charset="UTF-8"
           class="space-y-6"
         >
@@ -213,7 +212,19 @@ const breadcrumbItems: BreadcrumbItem[] = [
           </div>
 
           <input type="hidden" name="page" value="" />
+          <input type="hidden" name="landing_page" value="" />
+          <input type="hidden" name="referrer" value="" />
+          <input type="hidden" name="locale" value="" />
+          <input type="hidden" name="timezone" value="" />
+          <input type="hidden" name="user_agent" value="" />
           <input type="hidden" name="source" value="website" />
+          <input type="hidden" name="utm_source" value="" />
+          <input type="hidden" name="utm_medium" value="" />
+          <input type="hidden" name="utm_campaign" value="" />
+          <input type="hidden" name="utm_term" value="" />
+          <input type="hidden" name="utm_content" value="" />
+          <input type="hidden" name="gclid" value="" />
+          <input type="hidden" name="fbclid" value="" />
           <input type="hidden" name="status" value="new" />
           <input type="hidden" name="lead_tier" value="undecided" />
           <input type="hidden" name="lead_stage" value="discovery" />
@@ -231,7 +242,6 @@ const breadcrumbItems: BreadcrumbItem[] = [
             </button>
           </div>
         </form>
-        <iframe id="make-webhook-target" name="make-webhook-target" class="hidden" aria-hidden="true"></iframe>
       </div>
 
       <div class="mt-10 max-w-3xl">
