@@ -41,9 +41,11 @@ export const POST = async ({ request }) => {
     cleanedPayload[key] = typeof value === "string" ? value.trim() : value;
   });
 
-  if (cleanedPayload.created_at === "") {
-    delete cleanedPayload.created_at;
-  }
+  const normalizedEmail =
+    typeof cleanedPayload.email === "string" ? cleanedPayload.email.toLowerCase() : "";
+  cleanedPayload.email = normalizedEmail;
+
+  delete cleanedPayload.created_at;
 
   for (const field of requiredFields) {
     const value = cleanedPayload[field];
@@ -55,8 +57,40 @@ export const POST = async ({ request }) => {
     }
   }
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
-    method: "POST",
+  Object.entries(cleanedPayload).forEach(([key, value]) => {
+    if (typeof value === "string" && value === "") {
+      cleanedPayload[key] = null;
+    }
+  });
+
+  const existingResponse = await fetch(
+    `${supabaseUrl}/rest/v1/${leadsTable}?select=id&email=eq.${encodeURIComponent(normalizedEmail)}&order=id.desc&limit=1`,
+    {
+      headers: {
+        apikey: supabaseServiceRoleKey,
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      },
+    },
+  );
+
+  if (!existingResponse.ok) {
+    const detail = await existingResponse.text();
+    return new Response(JSON.stringify({ error: "supabase_lookup_failed", detail }), {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const existingLeads = await existingResponse.json();
+  const existingLead = Array.isArray(existingLeads) ? existingLeads[0] : null;
+
+  const supabaseEndpoint = existingLead?.id
+    ? `${supabaseUrl}/rest/v1/${leadsTable}?id=eq.${existingLead.id}`
+    : `${supabaseUrl}/rest/v1/${leadsTable}`;
+  const supabaseMethod = existingLead?.id ? "PATCH" : "POST";
+
+  const response = await fetch(supabaseEndpoint, {
+    method: supabaseMethod,
     headers: {
       "Content-Type": "application/json",
       apikey: supabaseServiceRoleKey,
