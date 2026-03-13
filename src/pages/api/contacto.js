@@ -1,3 +1,5 @@
+import nodemailer from "nodemailer";
+
 const requiredFields = ["name", "email", "message"];
 
 export const prerender = false;
@@ -8,6 +10,14 @@ export const POST = async ({ request }) => {
     import.meta.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   const leadsTable =
     import.meta.env.SUPABASE_LEADS_TABLE || process.env.SUPABASE_LEADS_TABLE || "leads";
+  const alertWebhookUrl =
+    import.meta.env.AUTOMATION_ALERT_WEBHOOK_URL || process.env.AUTOMATION_ALERT_WEBHOOK_URL;
+  const smtpHost = import.meta.env.SMTP_HOST || process.env.SMTP_HOST;
+  const smtpPortRaw = import.meta.env.SMTP_PORT || process.env.SMTP_PORT;
+  const smtpUser = import.meta.env.SMTP_USER || process.env.SMTP_USER;
+  const smtpPass = import.meta.env.SMTP_PASS || process.env.SMTP_PASS;
+  const alertFromEmail = import.meta.env.ALERT_FROM_EMAIL || process.env.ALERT_FROM_EMAIL;
+  const alertToEmail = import.meta.env.ALERT_TO_EMAIL || process.env.ALERT_TO_EMAIL;
   const contentType = request.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
 
@@ -106,6 +116,89 @@ export const POST = async ({ request }) => {
       status: 502,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  const leadStage = (cleanedPayload.lead_stage || "").toString().toLowerCase();
+  const budget = (cleanedPayload.budget || "").toString().toLowerCase();
+  const isHighIntentLead = leadStage === "high-intent" || budget === "premium";
+
+  if (alertWebhookUrl && isHighIntentLead) {
+    const alertPayload = {
+      type: "high_intent_lead",
+      action: existingLead?.id ? "updated" : "created",
+      at: new Date().toISOString(),
+      lead: {
+        id: existingLead?.id || null,
+        name: cleanedPayload.name || null,
+        email: cleanedPayload.email || null,
+        phone: cleanedPayload.phone || null,
+        project: cleanedPayload.project || null,
+        budget: cleanedPayload.budget || null,
+        lead_stage: cleanedPayload.lead_stage || null,
+        source: cleanedPayload.source || null,
+        page: cleanedPayload.page || null,
+      },
+    };
+
+    try {
+      await fetch(alertWebhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(alertPayload),
+      });
+    } catch {
+      // Intentionally ignore webhook errors to not block lead capture.
+    }
+  }
+
+  if (
+    isHighIntentLead &&
+    smtpHost &&
+    smtpPortRaw &&
+    smtpUser &&
+    smtpPass &&
+    alertFromEmail &&
+    alertToEmail
+  ) {
+    const smtpPort = Number(smtpPortRaw);
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    });
+
+    const subject = `[Lead alto] ${cleanedPayload.name || "Sin nombre"} - ${cleanedPayload.project || "sin formato"} - ${cleanedPayload.budget || "sin presupuesto"}`;
+    const text = [
+      "Nuevo lead high-intent",
+      "",
+      `Nombre: ${cleanedPayload.name || "-"}`,
+      `Email: ${cleanedPayload.email || "-"}`,
+      `Telefono: ${cleanedPayload.phone || "-"}`,
+      `Proyecto: ${cleanedPayload.project || "-"}`,
+      `Presupuesto: ${cleanedPayload.budget || "-"}`,
+      `Lead stage: ${cleanedPayload.lead_stage || "-"}`,
+      `Fuente: ${cleanedPayload.source || "-"}`,
+      `Pagina: ${cleanedPayload.page || "-"}`,
+      "",
+      `Mensaje: ${cleanedPayload.message || "-"}`,
+    ].join("\n");
+
+    try {
+      await transporter.sendMail({
+        from: alertFromEmail,
+        to: alertToEmail,
+        subject,
+        text,
+      });
+    } catch {
+      // Intentionally ignore email errors to not block lead capture.
+    }
   }
 
   if (isJson) {

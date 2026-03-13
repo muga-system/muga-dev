@@ -20,6 +20,9 @@ importers:
       astro:
         specifier: ^5.14.1
         version: 5.14.1(@types/node@24.5.2)(@vercel/functions@3.4.3)(jiti@2.6.0)(lightningcss@1.30.1)(rollup@4.52.0)(typescript@5.9.3)(yaml@2.8.2)
+      nodemailer:
+        specifier: ^8.0.2
+        version: 8.0.2
       tailwindcss:
         specifier: ^4.1.12
         version: 4.1.13
@@ -1582,6 +1585,10 @@ packages:
 
   node-mock-http@1.0.3:
     resolution: {integrity: sha512-jN8dK25fsfnMrVsEhluUTPkBFY+6ybu7jSB1n+ri/vOGjJxU8J9CZhpSGkHXSkFjtUhbmoncG/YG9ta5Ludqog==}
+
+  nodemailer@8.0.2:
+    resolution: {integrity: sha512-zbj002pZAIkWQFxyAaqoxvn+zoIwRnS40hgjqTXudKOOJkiFFgBeNqjgD3/YCR12sZnrghWYBY+yP1ZucdDRpw==}
+    engines: {node: '>=6.0.0'}
 
   nopt@8.1.0:
     resolution: {integrity: sha512-ieGu42u/Qsa4TFktmaKEwM6MQH0pOWnaB3htzh0JRtx84+Mebc0cbZYN5bC+6WTZ4+77xrL9Pn5m7CV6VIkV7A==}
@@ -3928,6 +3935,8 @@ snapshots:
   node-gyp-build@4.8.4: {}
 
   node-mock-http@1.0.3: {}
+
+  nodemailer@8.0.2: {}
 
   nopt@8.1.0:
     dependencies:
