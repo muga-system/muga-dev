@@ -20,6 +20,7 @@ export const POST = async ({ request }) => {
   const alertToEmail = import.meta.env.ALERT_TO_EMAIL || process.env.ALERT_TO_EMAIL;
   const contentType = request.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
+  let alertEmailSent = false;
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
     return new Response(JSON.stringify({ error: "missing_server_config" }), {
@@ -196,13 +197,14 @@ export const POST = async ({ request }) => {
         subject,
         text,
       });
-    } catch {
-      // Intentionally ignore email errors to not block lead capture.
+      alertEmailSent = true;
+    } catch (error) {
+      console.error("[api/contacto] SMTP alert failed", error);
     }
   }
 
   if (isJson) {
-    return new Response(JSON.stringify({ ok: true, redirectTo: "/contacto/enviado" }), {
+    return new Response(JSON.stringify({ ok: true, redirectTo: "/contacto/enviado", alertEmailSent }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
