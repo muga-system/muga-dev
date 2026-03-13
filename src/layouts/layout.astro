@@ -37,6 +37,7 @@ try {
     <meta http-equiv="Expires" content="0" />
     <title>{title}</title>
     <link rel="icon" type="image/png" href="/logo/logo.png" />
+    <link rel="preconnect" href="https://tracker.metricool.com" crossorigin />
     <script is:inline define:vars={{ currentBuildId }}>
       (() => {
         const storageKey = "muga_build_id";
@@ -100,6 +101,7 @@ try {
           c = document.createElement("script");
         c.type = "text/javascript";
         c.src = "https://tracker.metricool.com/resources/be.js";
+        c.async = true;
         c.onreadystatechange = a;
         c.onload = a;
         b.appendChild(c);
@@ -109,11 +111,12 @@ try {
       });
     </script>
   </head>
-  <body >
-    <main>
+  <body>
+    <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+    <main id="main-content">
       <slot />
     </main>
-    <script src="../scripts/analytics.ts"></script>
+    <script src="../scripts/analytics.ts" defer></script>
     <Footer />
     <SpeedInsights />
   </body>

@@ -21,6 +21,8 @@ const {
     src={iconPath}
     class={`icon-with-blur-effect ${iconSize}`}
     alt={iconAlt}
+    loading="lazy"
+    decoding="async"
     data-icon-key={iconKey}
     style={`--blur-amount: ${blurAmount};`}
   />
@@ -55,23 +57,44 @@ const {
         const bentoCell = icon.closest<HTMLElement>(".bento-cell");
         if (!bentoCell) return;
 
-        icon.style.opacity = "0";
+        let iconRect = icon.getBoundingClientRect();
+        let pointerX = 0;
+        let pointerY = 0;
+        let rafId: number | null = null;
 
-        function updateMask(e: MouseEvent) {
-          const svgRect = icon.getBoundingClientRect();
+        const updateIconRect = () => {
+          iconRect = icon.getBoundingClientRect();
+        };
 
-          const svgX = e.clientX - svgRect.left;
-          const svgY = e.clientY - svgRect.top;
-
+        const renderMask = () => {
+          rafId = null;
           icon.style.opacity = "1";
-          const maskImage = `radial-gradient(circle 50px at ${svgX}px ${svgY}px, black 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.2) 80%, transparent 100%)`;
+          const maskImage = `radial-gradient(circle 50px at ${pointerX}px ${pointerY}px, black 0%, rgba(0,0,0,0.8) 40%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.2) 80%, transparent 100%)`;
           icon.style.setProperty("-webkit-mask-image", maskImage);
           icon.style.maskImage = maskImage;
-        }
+        };
 
+        icon.style.opacity = "0";
+
+        const updateMask = (event: MouseEvent) => {
+          pointerX = event.clientX - iconRect.left;
+          pointerY = event.clientY - iconRect.top;
+
+          if (rafId === null) {
+            rafId = requestAnimationFrame(renderMask);
+          }
+        };
+
+        bentoCell.addEventListener("mouseenter", updateIconRect, { passive: true });
         bentoCell.addEventListener("mousemove", updateMask);
+        window.addEventListener("resize", updateIconRect, { passive: true });
+        window.addEventListener("scroll", updateIconRect, { passive: true });
 
         bentoCell.addEventListener("mouseleave", function () {
+          if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+          }
           icon.style.opacity = "0";
         });
 

@@ -23,19 +23,6 @@ type MugaBentoWindow = Window &
     __mugaBentoGridBound?: boolean;
   };
 
-function throttle(callback: Function, limit: number) {
-  let waiting = false;
-  return function (this: any, ...args: any[]) {
-    if (!waiting) {
-      callback.apply(this, args);
-      waiting = true;
-      setTimeout(() => {
-        waiting = false;
-      }, limit);
-    }
-  };
-}
-
 function applyLightEffect() {
   const bentoCells = document.querySelectorAll<BentoCellElement>(".bento-cell");
 
@@ -45,38 +32,57 @@ function applyLightEffect() {
     const lightEffect = cell.querySelector<LightEffectElement>(".light-effect");
     if (!lightEffect) return;
 
+    let cellRect = cell.getBoundingClientRect();
+    let pointerX = 0;
+    let pointerY = 0;
+    let rafId: number | null = null;
+
+    const updateCellRect = () => {
+      cellRect = cell.getBoundingClientRect();
+    };
+
+    const renderLightEffect = () => {
+      rafId = null;
+
+      lightEffect.style.transform = `translate(${pointerX}px, ${pointerY}px) translate(-50%, -50%)`;
+
+      const gradientSize = 153;
+      const borderGradient = `
+        radial-gradient(
+          circle ${gradientSize}px at ${pointerX}px ${pointerY}px,
+          rgba(255, 83, 83, 0.5) 50%,
+          rgba(255, 255, 255, 0.05) ${gradientSize}px
+        ) 1
+      `;
+
+      cell.style.borderImage = borderGradient;
+    };
+
     cell.addEventListener("mouseenter", () => {
+      updateCellRect();
       lightEffect.style.opacity = "1";
     });
 
     cell.addEventListener("mouseleave", () => {
       lightEffect.style.opacity = "0";
       cell.style.borderImage = "none";
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
     });
 
-    cell.addEventListener(
-      "mousemove",
-      throttle((e: MouseEvent) => {
-        const rect = cell.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    cell.addEventListener("mousemove", (event: MouseEvent) => {
+      pointerX = event.clientX - cellRect.left;
+      pointerY = event.clientY - cellRect.top;
 
-        lightEffect.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+      if (rafId === null) {
+        rafId = requestAnimationFrame(renderLightEffect);
+      }
+    });
 
-        const gradientSize = 153;
-        const borderGradient = `
-          radial-gradient(
-            circle ${gradientSize}px at ${x}px ${y}px,
-            rgba(255, 83, 83, 0.5) 50%,
-            rgba(255, 255, 255, 0.05) ${gradientSize}px
-          ) 1
-        `;
-
-        requestAnimationFrame(() => {
-          cell.style.borderImage = borderGradient;
-        });
-      }, 30)
-    );
+    window.addEventListener("resize", updateCellRect, { passive: true });
+    window.addEventListener("scroll", updateCellRect, { passive: true });
 
     cell.dataset.lightBound = "true";
   });

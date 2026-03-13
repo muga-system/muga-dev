@@ -30,8 +30,7 @@ const descriptionWidthClass = textAlign === "left" ? "max-w-xl sm:max-w-3xl" : "
 ---
 
 <section class="relative w-full">
-  <div class="relative px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+  <div class="relative page-container">
       <div class={`${contentWidthClass} py-6 sm:py-8 lg:py-10`}>
         {showBadge && (
           <div class={`hidden sm:mb-4 sm:flex ${textAlign === "left" ? "sm:justify-start" : "sm:justify-center"}`}>
@@ -70,6 +69,5 @@ const descriptionWidthClass = textAlign === "left" ? "max-w-xl sm:max-w-3xl" : "
           )}
         </div>
       </div>
-    </div>    
   </div>
 </section>

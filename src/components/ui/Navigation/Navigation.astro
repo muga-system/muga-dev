@@ -26,12 +26,12 @@ const isActive = (href: string) =>
 ---
 
 <header id="navbar" class="fixed inset-x-0 top-0 z-50 transition-colors duration-300 navbar-scrolled" transition:animate="none">
-  <nav aria-label="Global" class="flex items-center justify-between p-6 lg:px-8 h-[72px]">
+  <nav aria-label="Global" class="page-container flex h-[72px] items-center justify-between">
     <div class="flex items-center space-x-6" transition:animate="none">
       <div class="flex items-center justify-start" transition:animate="none">
         <a href="/" transition:animate="none">
           <span class="sr-only">MUGA</span>
-          <img src="/logo/logo.png" alt="" class="h-8 w-8" transition:animate="none" />
+          <img src="/logo/logo.png" alt="" width="32" height="32" fetchpriority="high" decoding="async" class="h-8 w-8" transition:animate="none" />
         </a>
       </div>
       
@@ -44,6 +44,7 @@ const isActive = (href: string) =>
           <a
             href={item.href}
             class={`text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure ${isActive(item.href) ? "text-white" : "text-graylight hover:text-white"} ${index > 0 ? "ml-4" : ""}`}
+            aria-current={isActive(item.href) ? "page" : undefined}
             data-analytics-event="nav_click"
             data-analytics-label={item.label.toLowerCase()}
             data-analytics-location="desktop_nav"
@@ -73,7 +74,7 @@ const isActive = (href: string) =>
     </div>
 
     <div class="hidden lg:flex lg:flex-1 lg:justify-end" transition:animate="none">
-      <a href={casesItem.href} class={`text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure ${isActive(casesItem.href) ? 'text-white' : 'text-graylight hover:text-white'} flex items-center`} data-analytics-event="nav_click" data-analytics-label="referencias" data-analytics-location="desktop_nav" data-analytics-destination={casesItem.href} transition:animate="none">
+      <a href={casesItem.href} class={`text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure ${isActive(casesItem.href) ? 'text-white' : 'text-graylight hover:text-white'} flex items-center`} aria-current={isActive(casesItem.href) ? "page" : undefined} data-analytics-event="nav_click" data-analytics-label="referencias" data-analytics-location="desktop_nav" data-analytics-destination={casesItem.href} transition:animate="none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transition:animate="none">
           <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
           <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
@@ -96,7 +97,7 @@ const isActive = (href: string) =>
       <div class="flex items-center justify-between h-[72px] px-6">
         <a href="/" class="flex items-center">
           <span class="sr-only">MUGA</span>
-          <img src="/logo/logo.png" alt="" class="h-8 w-8" />
+          <img src="/logo/logo.png" alt="" width="32" height="32" fetchpriority="high" decoding="async" class="h-8 w-8" />
         </a>
         <button id="close-mobile-menu" type="button" class="-m-2.5 rounded-md p-2.5 text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure">
           <span class="sr-only">Cerrar menú</span>
@@ -110,13 +111,13 @@ const isActive = (href: string) =>
         <div class="-my-6 divide-y divide-white/10">
           <div class="space-y-2 py-6">
             {navItems.map((item) => (
-              <a href={item.href} class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" data-analytics-event="nav_click" data-analytics-label={item.label.toLowerCase()} data-analytics-location="mobile_nav" data-analytics-destination={item.href}>
+              <a href={item.href} class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" aria-current={isActive(item.href) ? "page" : undefined} data-analytics-event="nav_click" data-analytics-label={item.label.toLowerCase()} data-analytics-location="mobile_nav" data-analytics-destination={item.href}>
                 {item.label}
               </a>
             ))}
           </div>
           <div class="py-6">
-            <a href={casesItem.href} class="flex items-center rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" data-analytics-event="nav_click" data-analytics-label="referencias" data-analytics-location="mobile_nav" data-analytics-destination={casesItem.href}>
+            <a href={casesItem.href} class="flex items-center rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" aria-current={isActive(casesItem.href) ? "page" : undefined} data-analytics-event="nav_click" data-analytics-label="referencias" data-analytics-location="mobile_nav" data-analytics-destination={casesItem.href}>
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                 <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
@@ -219,7 +220,7 @@ const isActive = (href: string) =>
     };
 
     if (!window.__mugaNavbarScrollBound) {
-      window.addEventListener('scroll', handleScroll);
+      window.addEventListener('scroll', handleScroll, { passive: true });
       window.__mugaNavbarScrollBound = true;
     }
 

@@ -36,59 +36,61 @@ const breadcrumbItems: BreadcrumbItem[] = [
     badgeText="Confirmación"
   />
 
-  <section class="relative px-6 py-20 lg:px-8 lg:py-24">
-    <div class="mx-auto max-w-3xl">
-      <div class="bg-muga-dark-800/50 border border-white/5 p-6 text-center sm:p-8">
-        <div class="w-12 h-12 bg-accent/10 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="w-6 h-6 text-accent"
-            aria-hidden="true"
-          >
-            <path d="M20 6L9 17l-5-5"></path>
-          </svg>
-        </div>
-
-        <h2 class="section-title mb-4">Ya tenemos tu consulta</h2>
-        <p class="section-lead mx-auto mb-8 max-w-2xl">
-          Revisamos el mensaje y te respondemos por email. Si hace falta, coordinamos una primera conversación para ordenar objetivo, formato y alcance.
-        </p>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
-          <div class="border border-white/10 p-4">
-            <div class="mb-2">
-              <span class="muga-badge muga-badge--sm">Estado</span>
-            </div>
-            <p class="text-white text-sm">Consulta recibida</p>
+  <section class="section-space-lg section-space-after-hero relative">
+    <div class="page-container">
+      <div class="mx-auto max-w-3xl">
+        <div class="bg-muga-dark-800/50 border border-white/5 p-6 text-center sm:p-8">
+          <div class="w-12 h-12 bg-accent/10 border border-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-6 h-6 text-accent"
+              aria-hidden="true"
+            >
+              <path d="M20 6L9 17l-5-5"></path>
+            </svg>
           </div>
-          <div class="border border-white/10 p-4">
-            <div class="mb-2">
-              <span class="muga-badge muga-badge--sm">Siguiente paso</span>
-            </div>
-            <p class="text-white text-sm">Respuesta inicial por email</p>
-          </div>
-          <div class="border border-white/10 p-4">
-            <div class="mb-2">
-              <span class="muga-badge muga-badge--sm">Tiempo estimado</span>
-            </div>
-            <p class="text-white text-sm">24-48 h hábiles</p>
-          </div>
-        </div>
 
-        <p class="mx-auto mb-8 max-w-2xl text-sm leading-7 text-muga-neutral">
-          Mientras tanto, si querés revisar opciones antes de nuestra respuesta, podés volver a los formatos o al modelo de trabajo.
-        </p>
+          <h2 class="section-title mb-4">Ya tenemos tu consulta</h2>
+          <p class="section-lead mx-auto mb-8 max-w-2xl">
+            Revisamos el mensaje y te respondemos por email. Si hace falta, coordinamos una primera conversación para ordenar objetivo, formato y alcance.
+          </p>
 
-        <div class="flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-6">
-          <ArrowLink href="/contacto" text="Volver a contacto" analyticsEvent="post_submit_navigation_click" analyticsLabel="volver_a_contacto" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
-          <ArrowLink href="/formatos" text="Ver formatos" analyticsEvent="post_submit_navigation_click" analyticsLabel="ver_formatos" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
-          <ArrowLink href="/modelo" text="Ver modelo" analyticsEvent="post_submit_navigation_click" analyticsLabel="ver_modelo" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 text-left">
+            <div class="border border-white/10 p-4">
+              <div class="mb-2">
+                <span class="muga-badge muga-badge--sm">Estado</span>
+              </div>
+              <p class="text-white text-sm">Consulta recibida</p>
+            </div>
+            <div class="border border-white/10 p-4">
+              <div class="mb-2">
+                <span class="muga-badge muga-badge--sm">Siguiente paso</span>
+              </div>
+              <p class="text-white text-sm">Respuesta inicial por email</p>
+            </div>
+            <div class="border border-white/10 p-4">
+              <div class="mb-2">
+                <span class="muga-badge muga-badge--sm">Tiempo estimado</span>
+              </div>
+              <p class="text-white text-sm">24-48 h hábiles</p>
+            </div>
+          </div>
+
+          <p class="mx-auto mb-8 max-w-2xl text-sm leading-7 text-muga-neutral">
+            Mientras tanto, si querés revisar opciones antes de nuestra respuesta, podés volver a los formatos o al modelo de trabajo.
+          </p>
+
+          <div class="flex flex-col items-center gap-4 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-6">
+            <ArrowLink href="/contacto" text="Volver a contacto" analyticsEvent="post_submit_navigation_click" analyticsLabel="volver_a_contacto" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
+            <ArrowLink href="/formatos" text="Ver formatos" analyticsEvent="post_submit_navigation_click" analyticsLabel="ver_formatos" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
+            <ArrowLink href="/modelo" text="Ver modelo" analyticsEvent="post_submit_navigation_click" analyticsLabel="ver_modelo" analyticsLocation="contacto_enviado" analyticsStep="contacto_enviado" />
+          </div>
         </div>
       </div>
     </div>

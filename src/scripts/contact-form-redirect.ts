@@ -43,7 +43,23 @@ const initContactFormRedirect = () => {
   const defaultButtonText = btnText?.textContent || "Enviar";
 
   let pendingSubmit = false;
+  let hasUnsavedChanges = false;
   let timeoutId: number | null = null;
+
+  const markAsDirty = () => {
+    hasUnsavedChanges = true;
+  };
+
+  const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+    if (!hasUnsavedChanges || pendingSubmit) return;
+
+    event.preventDefault();
+    event.returnValue = "";
+  };
+
+  form.addEventListener("input", markAsDirty, { passive: true });
+  form.addEventListener("change", markAsDirty, { passive: true });
+  window.addEventListener("beforeunload", handleBeforeUnload);
 
   const updateLeadSegmentation = () => {
     const projectField = form.elements.namedItem("project") as HTMLSelectElement | null;
@@ -90,7 +106,7 @@ const initContactFormRedirect = () => {
     pendingSubmit = true;
 
     if (submitBtn) submitBtn.disabled = true;
-    if (btnText) btnText.textContent = "Enviando...";
+    if (btnText) btnText.textContent = "Enviando…";
     if (btnArrow) btnArrow.classList.add("hidden");
     if (btnSpinner) btnSpinner.classList.remove("hidden");
 
@@ -131,6 +147,7 @@ const initContactFormRedirect = () => {
     if (btnSpinner) btnSpinner.classList.add("hidden");
 
     form.reset();
+    hasUnsavedChanges = false;
 
     if (formMessages) formMessages.classList.remove("hidden");
     if (successMessage) successMessage.classList.remove("hidden");

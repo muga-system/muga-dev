@@ -117,8 +117,8 @@ const initAnalytics = () => {
 };
 
 if (!mugaAnalyticsWindow.__mugaAnalyticsBound) {
-  document.addEventListener("click", handleTrackedClick);
-  document.addEventListener("change", handleTrackedSelect);
+  document.addEventListener("click", handleTrackedClick, { passive: true });
+  document.addEventListener("change", handleTrackedSelect, { passive: true });
   document.addEventListener("muga:form-state", handleFormState as EventListener);
   document.addEventListener("DOMContentLoaded", initAnalytics);
   document.addEventListener("astro:page-load", initAnalytics);
