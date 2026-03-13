@@ -3,9 +3,11 @@ const requiredFields = ["name", "email", "message"];
 export const prerender = false;
 
 export const POST = async ({ request }) => {
-  const supabaseUrl = import.meta.env.SUPABASE_URL;
-  const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
-  const leadsTable = import.meta.env.SUPABASE_LEADS_TABLE || "leads";
+  const supabaseUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseServiceRoleKey =
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const leadsTable =
+    import.meta.env.SUPABASE_LEADS_TABLE || process.env.SUPABASE_LEADS_TABLE || "leads";
   const contentType = request.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
 
