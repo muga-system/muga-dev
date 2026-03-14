@@ -16,7 +16,7 @@
 - [x] Agregar y usar estados comerciales (`new`, `contacted`, `qualified`, `won`, `lost`).
 - [x] Registrar `last_contact_at` para control operativo.
 - [x] Implementar anti-spam básico (honeypot + rate limit por IP/email).
-- [ ] Crear alertas de error SMTP (cuando no se pueda enviar correo).
+- [x] Crear alertas de error SMTP (cuando no se pueda enviar correo).
 
 ### Prioridad media
 
@@ -38,7 +38,7 @@
 - [x] Estados comerciales + `last_contact_at`.
 - [x] SLA y checklist operativo de respuesta.
 - [x] Anti-spam básico.
-- [ ] Alertas de fallos SMTP.
+- [x] Alertas de fallos SMTP.
 
 ### Semana 2 (escala y visibilidad)
 

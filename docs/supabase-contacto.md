@@ -7,6 +7,7 @@ Usa estas variables (ver `.env.example`):
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_LEADS_TABLE` (default: `leads`)
+- `SUPABASE_SMTP_FAILURES_TABLE` (default: `smtp_failures`)
 - `AUTOMATION_ALERT_WEBHOOK_URL` (opcional, para alertas high-intent)
 - `SMTP_HOST` (opcional, alertas por email)
 - `SMTP_PORT` (opcional, alertas por email)
@@ -143,3 +144,13 @@ Ejemplo:
 `/api/leads/sla?hours=24&limit=50`
 
 Devuelve leads `status=new` que superan el SLA configurado.
+
+## Alertas de fallo SMTP
+
+Cuando falla un envio SMTP (alerta interna o autorespuesta), el sistema guarda el error en Supabase para seguimiento.
+
+Tabla por defecto: `smtp_failures`
+
+SQL de creacion:
+
+`supabase/smtp-failures.sql`

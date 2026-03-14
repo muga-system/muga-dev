@@ -39,6 +39,8 @@ export const POST = async ({ request }) => {
   const supabaseServiceRoleKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
   const leadsTable = process.env.SUPABASE_LEADS_TABLE || import.meta.env.SUPABASE_LEADS_TABLE || "leads";
+  const smtpFailuresTable =
+    process.env.SUPABASE_SMTP_FAILURES_TABLE || import.meta.env.SUPABASE_SMTP_FAILURES_TABLE || "smtp_failures";
   const alertWebhookUrl = process.env.AUTOMATION_ALERT_WEBHOOK_URL || import.meta.env.AUTOMATION_ALERT_WEBHOOK_URL;
   const smtpHost = process.env.SMTP_HOST || import.meta.env.SMTP_HOST;
   const smtpPortRaw = process.env.SMTP_PORT || import.meta.env.SMTP_PORT;
@@ -63,6 +65,40 @@ export const POST = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const persistSmtpFailure = async (context, error) => {
+    const errorMessage =
+      typeof error === "object" && error !== null && "message" in error
+        ? String(error.message)
+        : String(error || "unknown_error");
+
+    const failurePayload = {
+      context,
+      error_message: errorMessage.slice(0, 1500),
+      lead_email: normalizedEmail || null,
+      lead_name: cleanedPayload?.name || null,
+      lead_stage: cleanedPayload?.lead_stage || null,
+      budget: cleanedPayload?.budget || null,
+      source: cleanedPayload?.source || null,
+      page: cleanedPayload?.page || null,
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      await fetch(`${supabaseUrl}/rest/v1/${smtpFailuresTable}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: supabaseServiceRoleKey,
+          Authorization: `Bearer ${supabaseServiceRoleKey}`,
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify(failurePayload),
+      });
+    } catch {
+      // Do not block lead capture on alert persistence failures.
+    }
+  };
 
   let payload;
   if (isJson) {
@@ -247,6 +283,7 @@ export const POST = async ({ request }) => {
       });
     } catch (error) {
       console.error("[api/contacto] SMTP alert failed", error);
+      await persistSmtpFailure("internal_alert", error);
     }
 
     const customerEmail = typeof cleanedPayload.email === "string" ? cleanedPayload.email : "";
@@ -298,6 +335,7 @@ export const POST = async ({ request }) => {
         });
       } catch (error) {
         console.error("[api/contacto] Customer reply failed", error);
+        await persistSmtpFailure("customer_reply", error);
       }
     }
   }
