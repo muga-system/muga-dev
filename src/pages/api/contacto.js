@@ -24,6 +24,128 @@ const isRateLimited = (key) => {
   return validTimestamps.length > RATE_LIMIT_MAX_REQUESTS;
 };
 
+const normalizeLowerText = (value) => String(value || "").trim().toLowerCase();
+
+const resolveLeadVariant = ({ leadTier, budget, leadStage }) => {
+  const normalizedTier = normalizeLowerText(leadTier);
+  const normalizedBudget = normalizeLowerText(budget);
+  const normalizedStage = normalizeLowerText(leadStage);
+
+  if (normalizedTier === "premium" || normalizedBudget === "premium" || normalizedStage === "high-intent") {
+    return "premium";
+  }
+
+  if (normalizedTier === "business" || normalizedBudget === "business" || normalizedStage === "qualified") {
+    return "business";
+  }
+
+  return "start";
+};
+
+const buildCustomerReply = ({ variant, name }) => {
+  const safeName = name || "";
+
+  if (variant === "premium") {
+    return {
+      subject: "Recibimos tu consulta premium en MUGA",
+      text: [
+        `Hola ${safeName},`,
+        "",
+        "Recibimos tu consulta y ya la estamos priorizando internamente.",
+        "Te respondemos dentro de 48 horas habiles con una propuesta clara de siguiente paso.",
+        "",
+        "Si queres avanzar mas rapido, respondenos este mail con 2 o 3 horarios posibles para una llamada breve.",
+        "",
+        "Equipo MUGA",
+        "muga.dev",
+      ].join("\n"),
+      html: `
+        <div style="font-family: Arial, sans-serif; background:#ffffff; color:#111111; padding:24px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:420px; margin:0 auto;">
+            <tr>
+              <td style="border:1px solid #e8e8e8; padding:30px 24px; background:#ffffff;">
+                <p style="margin:0 0 10px; font-size:12px; letter-spacing:1px; color:#ff5353; text-transform:uppercase;">MUGA · PRIORIDAD ALTA</p>
+                <h2 style="margin:0 0 20px; font-size:28px; line-height:1.2; color:#111111;">Recibimos tu consulta</h2>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Hola ${escapeHtml(safeName)},</p>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Recibimos tu consulta y ya la estamos priorizando internamente.</p>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Te respondemos dentro de 48 horas habiles con una propuesta clara de siguiente paso.</p>
+                <p style="margin:0 0 22px; line-height:1.8; color:#222222;">Si queres avanzar mas rapido, respondenos este mail con 2 o 3 horarios posibles para una llamada breve.</p>
+                <p style="margin:0; padding-top:14px; border-top:1px solid #ececec; color:#666666; font-size:13px;">Equipo MUGA · <a href="https://muga.dev" style="color:#ff5353; text-decoration:none;">muga.dev</a></p>
+              </td>
+            </tr>
+          </table>
+        </div>
+      `,
+    };
+  }
+
+  if (variant === "business") {
+    return {
+      subject: "Recibimos tu consulta business en MUGA",
+      text: [
+        `Hola ${safeName},`,
+        "",
+        "Gracias por escribirnos. Ya estamos revisando tu caso para ordenarte una recomendacion concreta.",
+        "Te respondemos dentro de 48 horas habiles.",
+        "",
+        "Si queres, podes responder este mail con tu disponibilidad para una llamada breve.",
+        "",
+        "Equipo MUGA",
+        "muga.dev",
+      ].join("\n"),
+      html: `
+        <div style="font-family: Arial, sans-serif; background:#ffffff; color:#111111; padding:24px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:420px; margin:0 auto;">
+            <tr>
+              <td style="border:1px solid #e8e8e8; padding:30px 24px; background:#ffffff;">
+                <p style="margin:0 0 10px; font-size:12px; letter-spacing:1px; color:#ff5353; text-transform:uppercase;">MUGA · BUSINESS</p>
+                <h2 style="margin:0 0 20px; font-size:28px; line-height:1.2; color:#111111;">Recibimos tu consulta</h2>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Hola ${escapeHtml(safeName)},</p>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Gracias por escribirnos. Ya estamos revisando tu caso para ordenarte una recomendacion concreta.</p>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Te respondemos dentro de 48 horas habiles.</p>
+                <p style="margin:0 0 22px; line-height:1.8; color:#222222;">Si queres, podes responder este mail con tu disponibilidad para una llamada breve.</p>
+                <p style="margin:0; padding-top:14px; border-top:1px solid #ececec; color:#666666; font-size:13px;">Equipo MUGA · <a href="https://muga.dev" style="color:#ff5353; text-decoration:none;">muga.dev</a></p>
+              </td>
+            </tr>
+          </table>
+        </div>
+      `,
+    };
+  }
+
+  return {
+    subject: "Recibimos tu consulta en MUGA",
+    text: [
+      `Hola ${safeName},`,
+      "",
+      "Recibimos tu consulta y ya estamos revisando tu caso.",
+      "Te respondemos dentro de 48 horas habiles con una devolucion clara sobre el mejor siguiente paso.",
+      "",
+      "Si queres sumar contexto antes de nuestra respuesta, podes responder este mismo email.",
+      "",
+      "Equipo MUGA",
+      "muga.dev",
+    ].join("\n"),
+    html: `
+      <div style="font-family: Arial, sans-serif; background:#ffffff; color:#111111; padding:24px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:420px; margin:0 auto;">
+          <tr>
+            <td style="border:1px solid #e8e8e8; padding:30px 24px; background:#ffffff;">
+              <p style="margin:0 0 10px; font-size:12px; letter-spacing:1px; color:#ff5353; text-transform:uppercase;">MUGA</p>
+              <h2 style="margin:0 0 20px; font-size:28px; line-height:1.2; color:#111111;">Recibimos tu consulta</h2>
+              <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Hola ${escapeHtml(safeName)},</p>
+              <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Gracias por escribirnos. Ya estamos revisando tu caso.</p>
+              <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Te respondemos dentro de 48 horas habiles con una devolucion clara sobre el mejor siguiente paso.</p>
+              <p style="margin:0 0 22px; line-height:1.8; color:#222222;">Si queres sumar contexto mientras tanto, podes responder este mismo email.</p>
+              <p style="margin:0; padding-top:14px; border-top:1px solid #ececec; color:#666666; font-size:13px;">Equipo MUGA · <a href="https://muga.dev" style="color:#ff5353; text-decoration:none;">muga.dev</a></p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    `,
+  };
+};
+
 const escapeHtml = (value) =>
   String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -41,6 +163,8 @@ export const POST = async ({ request }) => {
   const leadsTable = process.env.SUPABASE_LEADS_TABLE || import.meta.env.SUPABASE_LEADS_TABLE || "leads";
   const smtpFailuresTable =
     process.env.SUPABASE_SMTP_FAILURES_TABLE || import.meta.env.SUPABASE_SMTP_FAILURES_TABLE || "smtp_failures";
+  const emailEventsTable =
+    process.env.SUPABASE_EMAIL_EVENTS_TABLE || import.meta.env.SUPABASE_EMAIL_EVENTS_TABLE || "lead_email_events";
   const alertWebhookUrl = process.env.AUTOMATION_ALERT_WEBHOOK_URL || import.meta.env.AUTOMATION_ALERT_WEBHOOK_URL;
   const smtpHost = process.env.SMTP_HOST || import.meta.env.SMTP_HOST;
   const smtpPortRaw = process.env.SMTP_PORT || import.meta.env.SMTP_PORT;
@@ -65,6 +189,36 @@ export const POST = async ({ request }) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const persistEmailEvent = async ({ eventType, recipient, variant, status, detail }) => {
+    const eventPayload = {
+      event_type: eventType,
+      recipient: recipient || null,
+      variant: variant || null,
+      status,
+      detail: detail || null,
+      lead_email: normalizedEmail || null,
+      lead_name: cleanedPayload?.name || null,
+      lead_stage: cleanedPayload?.lead_stage || null,
+      budget: cleanedPayload?.budget || null,
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      await fetch(`${supabaseUrl}/rest/v1/${emailEventsTable}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: supabaseServiceRoleKey,
+          Authorization: `Bearer ${supabaseServiceRoleKey}`,
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify(eventPayload),
+      });
+    } catch {
+      // Never block lead flow on event tracking failures.
+    }
+  };
 
   const persistSmtpFailure = async (context, error) => {
     const errorMessage =
@@ -126,6 +280,11 @@ export const POST = async ({ request }) => {
   const normalizedEmail =
     typeof cleanedPayload.email === "string" ? cleanedPayload.email.toLowerCase() : "";
   cleanedPayload.email = normalizedEmail;
+  const leadVariant = resolveLeadVariant({
+    leadTier: cleanedPayload.lead_tier,
+    budget: cleanedPayload.budget,
+    leadStage: cleanedPayload.lead_stage,
+  });
 
   const honeypotValue =
     typeof cleanedPayload.company_website === "string" ? cleanedPayload.company_website.trim() : "";
@@ -168,6 +327,7 @@ export const POST = async ({ request }) => {
   if (!cleanedPayload.status) {
     cleanedPayload.status = "new";
   }
+  cleanedPayload.auto_reply_variant = leadVariant;
 
   const response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
     method: "POST",
@@ -277,6 +437,12 @@ export const POST = async ({ request }) => {
         text: leadSummary,
       });
       alertEmailSent = true;
+      await persistEmailEvent({
+        eventType: "internal_alert",
+        recipient: recipients.join(","),
+        variant: leadVariant,
+        status: "sent",
+      });
       console.info("[api/contacto] SMTP alert sent", {
         recipients,
         leadEmail: cleanedPayload.email || null,
@@ -284,6 +450,13 @@ export const POST = async ({ request }) => {
       });
     } catch (error) {
       console.error("[api/contacto] SMTP alert failed", error);
+      await persistEmailEvent({
+        eventType: "internal_alert",
+        recipient: recipients.join(","),
+        variant: leadVariant,
+        status: "failed",
+        detail: String(error),
+      });
       await persistSmtpFailure("internal_alert", error);
     }
 
@@ -291,51 +464,39 @@ export const POST = async ({ request }) => {
     const canSendCustomerReply = autoReplyEnabled && customerEmail.includes("@");
 
     if (canSendCustomerReply) {
-      const customerSubject = "Recibimos tu consulta en MUGA";
-      const customerText = [
-        `Hola ${cleanedPayload.name || ""},`,
-        "",
-        "Recibimos tu consulta y ya estamos revisando tu caso.",
-        "Te respondemos dentro de 48 horas habiles con una devolucion clara sobre el mejor siguiente paso.",
-        "",
-        "Si queres sumar contexto antes de nuestra respuesta, podes responder este mismo email.",
-        "",
-        "Equipo MUGA",
-        "muga.dev",
-      ].join("\n");
-      const customerHtml = `
-        <div style="font-family: Arial, sans-serif; background:#ffffff; color:#111111; padding:24px;">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:420px; margin:0 auto;">
-            <tr>
-              <td style="border:1px solid #e8e8e8; padding:30px 24px; background:#ffffff;">
-                <p style="margin:0 0 10px; font-size:12px; letter-spacing:1px; color:#ff5353; text-transform:uppercase;">MUGA</p>
-                <h2 style="margin:0 0 20px; font-size:28px; line-height:1.2; color:#111111;">Recibimos tu consulta</h2>
-                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Hola ${escapeHtml(cleanedPayload.name || "")},</p>
-                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Gracias por escribirnos. Ya estamos revisando tu caso.</p>
-                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Te respondemos dentro de 48 horas habiles con una devolucion clara sobre el mejor siguiente paso.</p>
-                <p style="margin:0 0 22px; line-height:1.8; color:#222222;">Si queres sumar contexto mientras tanto, podes responder este mismo email.</p>
-                <p style="margin:0; padding-top:14px; border-top:1px solid #ececec; color:#666666; font-size:13px;">Equipo MUGA · <a href="https://muga.dev" style="color:#ff5353; text-decoration:none;">muga.dev</a></p>
-              </td>
-            </tr>
-          </table>
-        </div>
-      `;
+      const customerReply = buildCustomerReply({
+        variant: leadVariant,
+        name: cleanedPayload.name,
+      });
 
       try {
         await transporter.sendMail({
           from: alertFromEmail,
           to: customerEmail,
-          subject: customerSubject,
-          text: customerText,
-          html: customerHtml,
+          subject: customerReply.subject,
+          text: customerReply.text,
+          html: customerReply.html,
           replyTo: alertToEmail,
         });
         customerReplySent = true;
+        await persistEmailEvent({
+          eventType: "customer_reply",
+          recipient: customerEmail,
+          variant: leadVariant,
+          status: "sent",
+        });
         console.info("[api/contacto] Customer reply sent", {
           customerEmail,
         });
       } catch (error) {
         console.error("[api/contacto] Customer reply failed", error);
+        await persistEmailEvent({
+          eventType: "customer_reply",
+          recipient: customerEmail,
+          variant: leadVariant,
+          status: "failed",
+          detail: String(error),
+        });
         await persistSmtpFailure("customer_reply", error);
       }
     }
@@ -349,6 +510,7 @@ export const POST = async ({ request }) => {
         alertEmailSent,
         customerReplySent,
         leadTag,
+        leadVariant,
       }),
       {
       status: 200,

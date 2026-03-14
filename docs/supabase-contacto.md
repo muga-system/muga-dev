@@ -8,6 +8,7 @@ Usa estas variables (ver `.env.example`):
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `SUPABASE_LEADS_TABLE` (default: `leads`)
 - `SUPABASE_SMTP_FAILURES_TABLE` (default: `smtp_failures`)
+- `SUPABASE_EMAIL_EVENTS_TABLE` (default: `lead_email_events`)
 - `AUTOMATION_ALERT_WEBHOOK_URL` (opcional, para alertas high-intent)
 - `SMTP_HOST` (opcional, alertas por email)
 - `SMTP_PORT` (opcional, alertas por email)
@@ -77,6 +78,27 @@ Si configuras SMTP (por ejemplo Hostinger):
 - se envia email interno para todos los leads a `ALERT_TO_EMAIL`
 - el asunto se etiqueta por nivel (`LEAD ALTO`, `LEAD CALIFICADO`, `LEAD NUEVO`)
 - se envia acuse de recibo al cliente indicando respuesta en 48 horas habiles (si `AUTO_REPLY_ENABLED` no es `false`)
+
+La autorespuesta se personaliza por variante de lead:
+
+- `start`
+- `business`
+- `premium`
+
+La variante se infiere por `lead_tier`, `budget` y `lead_stage`.
+
+## Tracking de eventos de correo
+
+Se registran eventos `sent/failed` para:
+
+- alerta interna
+- autorespuesta al cliente
+
+Tabla por defecto: `lead_email_events`
+
+SQL de creacion:
+
+`supabase/lead-email-events.sql`
 
 ## Anti-spam basico
 
