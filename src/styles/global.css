@@ -237,15 +237,15 @@ textarea {
   position: fixed;
   inset: 0;
   z-index: 80;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   background: rgba(10, 10, 10, 0.72);
   backdrop-filter: blur(3px);
 }
 
-.form-loading-overlay.hidden {
-  display: none !important;
+.form-loading-overlay.form-loading-overlay--active {
+  display: flex !important;
 }
 
 .form-loading-overlay__panel {
@@ -267,7 +267,9 @@ textarea {
 
 .form-loading-overlay__text {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: #f1f1f1;
 }
 

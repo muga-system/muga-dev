@@ -59,16 +59,14 @@ const initContactFormRedirect = () => {
   const showLoadingOverlay = () => {
     if (!loadingOverlay) return;
     overlayShownAt = performance.now();
-    loadingOverlay.style.display = "flex";
-    loadingOverlay.classList.remove("hidden");
+    loadingOverlay.classList.add("form-loading-overlay--active");
     loadingOverlay.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
   };
 
   const hideLoadingOverlay = () => {
     if (!loadingOverlay) return;
-    loadingOverlay.classList.add("hidden");
-    loadingOverlay.style.display = "none";
+    loadingOverlay.classList.remove("form-loading-overlay--active");
     loadingOverlay.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
   };

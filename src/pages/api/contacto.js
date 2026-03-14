@@ -242,14 +242,15 @@ export const POST = async ({ request }) => {
       ].join("\n");
       const customerHtml = `
         <div style="font-family: Arial, sans-serif; background:#ffffff; color:#111111; padding:24px;">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:720px; margin:0 auto;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:420px; margin:0 auto;">
             <tr>
-              <td style="border:1px solid #e8e8e8; padding:26px 26px 22px; background:#ffffff;">
+              <td style="border:1px solid #e8e8e8; padding:30px 24px; background:#ffffff;">
                 <p style="margin:0 0 10px; font-size:12px; letter-spacing:1px; color:#ff5353; text-transform:uppercase;">MUGA</p>
-                <h2 style="margin:0 0 16px; font-size:26px; line-height:1.2; color:#111111;">Recibimos tu consulta</h2>
-                <p style="margin:0 0 14px; line-height:1.75; color:#222222;">Hola ${escapeHtml(cleanedPayload.name || "")},</p>
-                <p style="margin:0 0 14px; line-height:1.75; color:#222222;">Gracias por escribirnos. Ya estamos revisando tu caso y te respondemos dentro de 48 horas habiles con una devolucion clara sobre el mejor siguiente paso.</p>
-                <p style="margin:0 0 18px; line-height:1.75; color:#222222;">Si queres sumar contexto mientras tanto, podes responder este mismo email.</p>
+                <h2 style="margin:0 0 20px; font-size:28px; line-height:1.2; color:#111111;">Recibimos tu consulta</h2>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Hola ${escapeHtml(cleanedPayload.name || "")},</p>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Gracias por escribirnos. Ya estamos revisando tu caso.</p>
+                <p style="margin:0 0 16px; line-height:1.8; color:#222222;">Te respondemos dentro de 48 horas habiles con una devolucion clara sobre el mejor siguiente paso.</p>
+                <p style="margin:0 0 22px; line-height:1.8; color:#222222;">Si queres sumar contexto mientras tanto, podes responder este mismo email.</p>
                 <p style="margin:0; padding-top:14px; border-top:1px solid #ececec; color:#666666; font-size:13px;">Equipo MUGA · <a href="https://muga.dev" style="color:#ff5353; text-decoration:none;">muga.dev</a></p>
               </td>
             </tr>
