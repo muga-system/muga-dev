@@ -49,9 +49,30 @@ const initContactFormRedirect = () => {
   let pendingSubmit = false;
   let hasUnsavedChanges = false;
   let timeoutId: number | null = null;
+  let sendingDotsIntervalId: number | null = null;
 
   const markAsDirty = () => {
     hasUnsavedChanges = true;
+  };
+
+  const startSendingDots = () => {
+    if (!btnText) return;
+    let frame = 0;
+    const frames = ["Enviando consulta", "Enviando consulta.", "Enviando consulta..", "Enviando consulta..."];
+
+    btnText.textContent = frames[0];
+    sendingDotsIntervalId = window.setInterval(() => {
+      frame = (frame + 1) % frames.length;
+      btnText.textContent = frames[frame];
+    }, 280);
+  };
+
+  const stopSendingDots = () => {
+    if (sendingDotsIntervalId !== null) {
+      window.clearInterval(sendingDotsIntervalId);
+      sendingDotsIntervalId = null;
+    }
+    if (btnText) btnText.textContent = defaultButtonText;
   };
 
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -146,7 +167,7 @@ const initContactFormRedirect = () => {
 
     if (submitBtn) submitBtn.disabled = true;
     if (submitBtn) submitBtn.setAttribute("aria-busy", "true");
-    if (btnText) btnText.textContent = "Enviando…";
+    startSendingDots();
     if (btnArrow) btnArrow.classList.add("hidden");
     if (btnSpinner) btnSpinner.classList.remove("hidden");
 
@@ -189,7 +210,7 @@ const initContactFormRedirect = () => {
       }
       if (submitBtn) submitBtn.disabled = false;
       if (submitBtn) submitBtn.setAttribute("aria-busy", "false");
-      if (btnText) btnText.textContent = defaultButtonText;
+      stopSendingDots();
       if (btnArrow) btnArrow.classList.remove("hidden");
       if (btnSpinner) btnSpinner.classList.add("hidden");
 
@@ -211,7 +232,7 @@ const initContactFormRedirect = () => {
 
       if (submitBtn) submitBtn.disabled = false;
       if (submitBtn) submitBtn.setAttribute("aria-busy", "false");
-      if (btnText) btnText.textContent = defaultButtonText;
+      stopSendingDots();
       if (btnArrow) btnArrow.classList.remove("hidden");
       if (btnSpinner) btnSpinner.classList.add("hidden");
 
