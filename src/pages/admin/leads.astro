@@ -42,6 +42,26 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
 
       <div id="admin-feedback" class="hidden border border-white/10 bg-muga-dark-800/45 px-4 py-3 text-sm text-graylight"></div>
 
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="border border-white/10 bg-muga-dark-800/35 p-4">
+          <p class="text-xs uppercase tracking-wider text-graylight">Leads totales</p>
+          <p id="metric-total" class="mt-2 text-2xl font-semibold text-white">-</p>
+          <p id="metric-24h" class="mt-1 text-xs text-graylight">24h: -</p>
+        </div>
+        <div class="border border-white/10 bg-muga-dark-800/35 p-4">
+          <p class="text-xs uppercase tracking-wider text-graylight">Estados</p>
+          <p id="metric-status" class="mt-2 text-sm leading-7 text-white">-</p>
+        </div>
+        <div class="border border-white/10 bg-muga-dark-800/35 p-4">
+          <p class="text-xs uppercase tracking-wider text-graylight">Prioridad</p>
+          <p id="metric-tiers" class="mt-2 text-sm leading-7 text-white">-</p>
+        </div>
+        <div class="border border-white/10 bg-muga-dark-800/35 p-4">
+          <p class="text-xs uppercase tracking-wider text-graylight">Embudo</p>
+          <p id="metric-funnel" class="mt-2 text-sm leading-7 text-white">-</p>
+        </div>
+      </div>
+
       <div class="flex items-center justify-between border border-white/10 bg-muga-dark-800/30 px-4 py-3 text-xs text-graylight">
         <p id="token-status">Token: no cargado</p>
         <p id="last-sync">Ultima actualizacion: -</p>
@@ -53,6 +73,7 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
             <tr>
               <th class="px-4 py-3 text-left font-semibold text-white">Lead</th>
               <th class="px-4 py-3 text-left font-semibold text-white">Contexto</th>
+              <th class="px-4 py-3 text-left font-semibold text-white">Prioridad</th>
               <th class="px-4 py-3 text-left font-semibold text-white">Estado</th>
               <th class="px-4 py-3 text-left font-semibold text-white">Accion</th>
             </tr>
@@ -117,6 +138,11 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
     const historySummary = document.getElementById("history-summary");
     const historyTableBody = document.getElementById("history-table-body");
     const historyCloseButton = document.getElementById("history-close-btn");
+    const metricTotal = document.getElementById("metric-total");
+    const metric24h = document.getElementById("metric-24h");
+    const metricStatus = document.getElementById("metric-status");
+    const metricTiers = document.getElementById("metric-tiers");
+    const metricFunnel = document.getElementById("metric-funnel");
 
     const statusOptions = ["new", "contacted", "qualified", "won", "lost"];
 
@@ -150,6 +176,74 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
       return Date.now() - createdAt > limit;
     };
 
+    const getPriority = (lead) => {
+      const stage = String(lead.lead_stage || "").toLowerCase();
+      const budget = String(lead.budget || "").toLowerCase();
+      if (stage === "high-intent" || budget === "premium") return "alta";
+      if (stage === "qualified" || budget === "business") return "media";
+      return "normal";
+    };
+
+    const priorityRank = {
+      alta: 3,
+      media: 2,
+      normal: 1,
+    };
+
+    const getPriorityBadge = (priority) => {
+      if (priority === "alta") {
+        return '<span class="inline-flex border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs text-accent">Alta</span>';
+      }
+      if (priority === "media") {
+        return '<span class="inline-flex border border-white/20 bg-white/5 px-2 py-0.5 text-xs text-white">Media</span>';
+      }
+      return '<span class="inline-flex border border-white/20 bg-transparent px-2 py-0.5 text-xs text-graylight">Normal</span>';
+    };
+
+    const sortRowsByPriority = (rows) => {
+      return [...rows].sort((a, b) => {
+        const priorityDiff = priorityRank[getPriority(b)] - priorityRank[getPriority(a)];
+        if (priorityDiff !== 0) return priorityDiff;
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA;
+      });
+    };
+
+    const renderMetrics = (payload) => {
+      if (!payload?.ok) return;
+
+      const { metrics, funnel } = payload;
+      if (metricTotal) metricTotal.textContent = String(metrics?.total ?? "-");
+      if (metric24h) metric24h.textContent = `24h: ${metrics?.last24h ?? "-"}`;
+
+      if (metricStatus) {
+        metricStatus.innerHTML = `
+          New: ${metrics?.byStatus?.new ?? 0}<br />
+          Contacted: ${metrics?.byStatus?.contacted ?? 0}<br />
+          Qualified: ${metrics?.byStatus?.qualified ?? 0}<br />
+          Won: ${metrics?.byStatus?.won ?? 0}<br />
+          Lost: ${metrics?.byStatus?.lost ?? 0}
+        `;
+      }
+
+      if (metricTiers) {
+        metricTiers.innerHTML = `
+          Alta: ${metrics?.byTier?.alto ?? 0}<br />
+          Media: ${metrics?.byTier?.calificado ?? 0}<br />
+          Normal: ${metrics?.byTier?.nuevo ?? 0}
+        `;
+      }
+
+      if (metricFunnel) {
+        metricFunnel.innerHTML = `
+          Contacto: ${funnel?.contactRate ?? 0}%<br />
+          Cualificacion: ${funnel?.qualificationRate ?? 0}%<br />
+          Cierre: ${funnel?.winRate ?? 0}%
+        `;
+      }
+    };
+
     const renderRows = (rows) => {
       if (!tableBody) return;
       tableBody.innerHTML = "";
@@ -163,6 +257,7 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
 
       rows.forEach((lead) => {
         const tr = document.createElement("tr");
+        const priority = getPriority(lead);
         const overdueBadge = isOverdue(lead)
           ? '<span class="ml-2 inline-flex border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs text-accent">SLA vencido</span>'
           : "";
@@ -179,6 +274,9 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
             <p>Presupuesto: ${lead.budget || "-"}</p>
             <p>Stage: ${lead.lead_stage || "-"}</p>
             <p class="text-xs mt-1">Ultimo contacto: ${formatDate(lead.last_contact_at)}</p>
+          </td>
+          <td class="px-4 py-3 align-top">
+            ${getPriorityBadge(priority)}
           </td>
           <td class="px-4 py-3 align-top">
             <select data-lead-status="${lead.id}" class="w-full border border-white/15 bg-obscure px-2 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
@@ -273,11 +371,30 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
         if (lastSync) {
           lastSync.textContent = `Ultima actualizacion: ${new Date().toLocaleTimeString("es-AR")}`;
         }
-        renderRows(data.rows || []);
+        renderRows(sortRowsByPriority(data.rows || []));
       } catch (error) {
         showFeedback(`Error de red consultando leads: ${error}`, true);
       } finally {
         state.loading = false;
+      }
+    };
+
+    const fetchMetrics = async () => {
+      if (!state.token) return;
+
+      try {
+        const response = await fetch(`/api/leads/metricas?_ts=${Date.now()}`, {
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${state.token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (!response.ok) return;
+        renderMetrics(data);
+      } catch {
+        // Keep dashboard usable even when metrics endpoint fails.
       }
     };
 
@@ -372,6 +489,7 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
       showFeedback("Token guardado localmente.");
       state.page = 1;
       fetchLeads();
+      fetchMetrics();
     });
 
     refreshButton?.addEventListener("click", () => {
@@ -424,9 +542,13 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
 
     if (state.token) {
       fetchLeads();
+      fetchMetrics();
 
       window.setInterval(() => {
-        if (!document.hidden) fetchLeads();
+        if (!document.hidden) {
+          fetchLeads();
+          fetchMetrics();
+        }
       }, 30000);
     }
   </script>

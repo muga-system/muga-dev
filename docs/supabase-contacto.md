@@ -153,6 +153,13 @@ Ruta interna: `/admin/leads`
 - consulta datos via `/api/leads/list`
 - actualiza estado via `/api/leads/estado`
 - historial por email via `/api/leads/historial`
+- metricas iniciales de embudo via `/api/leads/metricas`
+
+Notas:
+
+- si ves tabla vacia, primero guarda token admin en el panel
+- el panel refresca automaticamente cada 30 segundos
+- se fuerza `no-store` para evitar datos viejos en cache
 
 ## Alertas de fallo SMTP
 

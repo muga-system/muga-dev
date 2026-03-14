@@ -44,7 +44,7 @@
 
 - [x] Vista interna de leads.
 - [x] Resumen diario automático.
-- [ ] Métricas de embudo iniciales.
+- [x] Métricas de embudo iniciales.
 
 ## Checklist de validación
 
