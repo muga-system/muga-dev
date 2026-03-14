@@ -50,6 +50,13 @@ export const POST = async ({ request }) => {
   const alertToEmail = process.env.ALERT_TO_EMAIL || import.meta.env.ALERT_TO_EMAIL;
   const autoReplyEnabledRaw = process.env.AUTO_REPLY_ENABLED || import.meta.env.AUTO_REPLY_ENABLED || "true";
   const autoReplyEnabled = autoReplyEnabledRaw.toLowerCase() !== "false";
+  const whatsappAlertEnabledRaw =
+    process.env.WHATSAPP_ALERT_ENABLED || import.meta.env.WHATSAPP_ALERT_ENABLED || "false";
+  const whatsappAlertEnabled = whatsappAlertEnabledRaw.toLowerCase() === "true";
+  const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID || import.meta.env.TWILIO_ACCOUNT_SID;
+  const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN || import.meta.env.TWILIO_AUTH_TOKEN;
+  const twilioWhatsappFrom = process.env.TWILIO_WHATSAPP_FROM || import.meta.env.TWILIO_WHATSAPP_FROM;
+  const whatsappAlertTo = process.env.WHATSAPP_ALERT_TO || import.meta.env.WHATSAPP_ALERT_TO;
   const contentType = request.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
   let alertEmailSent = false;
@@ -209,6 +216,19 @@ export const POST = async ({ request }) => {
     `${cleanedPayload.message || "-"}`,
   ].join("\n");
 
+  const whatsappSummary = [
+    `*MUGA · Nuevo lead (${leadTag})*`,
+    `Nombre: ${cleanedPayload.name || "-"}`,
+    `Email: ${cleanedPayload.email || "-"}`,
+    `Telefono: ${cleanedPayload.phone || "-"}`,
+    `Proyecto: ${cleanedPayload.project || "-"}`,
+    `Presupuesto: ${cleanedPayload.budget || "-"}`,
+    `Stage: ${cleanedPayload.lead_stage || "-"}`,
+    `Pagina: ${cleanedPayload.page || "-"}`,
+    "",
+    `Mensaje: ${cleanedPayload.message || "-"}`,
+  ].join("\n");
+
 
   if (alertWebhookUrl && isHighIntentLead) {
     const alertPayload = {
@@ -337,6 +357,41 @@ export const POST = async ({ request }) => {
         console.error("[api/contacto] Customer reply failed", error);
         await persistSmtpFailure("customer_reply", error);
       }
+    }
+  }
+
+  if (
+    whatsappAlertEnabled &&
+    twilioAccountSid &&
+    twilioAuthToken &&
+    twilioWhatsappFrom &&
+    whatsappAlertTo
+  ) {
+    const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
+    const authHeader = `Basic ${Buffer.from(`${twilioAccountSid}:${twilioAuthToken}`).toString("base64")}`;
+
+    try {
+      const payload = new URLSearchParams();
+      payload.set("From", twilioWhatsappFrom);
+      payload.set("To", whatsappAlertTo);
+      payload.set("Body", whatsappSummary);
+
+      const waResponse = await fetch(twilioUrl, {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: payload.toString(),
+      });
+
+      if (!waResponse.ok) {
+        const detail = await waResponse.text();
+        throw new Error(`twilio_whatsapp_failed: ${detail}`);
+      }
+    } catch (error) {
+      console.error("[api/contacto] WhatsApp alert failed", error);
+      await persistSmtpFailure("whatsapp_alert", error);
     }
   }
 

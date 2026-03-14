@@ -35,7 +35,6 @@ export const GET = async ({ request, url }) => {
   const alertFromEmail = process.env.ALERT_FROM_EMAIL || import.meta.env.ALERT_FROM_EMAIL;
   const alertToEmail = process.env.ALERT_TO_EMAIL || import.meta.env.ALERT_TO_EMAIL;
   const cronToken = process.env.LEADS_CRON_TOKEN || import.meta.env.LEADS_CRON_TOKEN;
-  const adminToken = process.env.LEADS_ADMIN_TOKEN || import.meta.env.LEADS_ADMIN_TOKEN;
 
   if (!supabaseUrl || !supabaseServiceRoleKey || !smtpHost || !smtpPortRaw || !smtpUser || !smtpPass || !alertFromEmail || !alertToEmail) {
     return new Response(JSON.stringify({ error: "missing_server_config" }), {
@@ -45,7 +44,7 @@ export const GET = async ({ request, url }) => {
   }
 
   const suppliedToken = getBearerToken(request);
-  const expectedToken = cronToken || adminToken;
+  const expectedToken = cronToken;
 
   if (!expectedToken || suppliedToken !== expectedToken) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {

@@ -16,7 +16,12 @@ Usa estas variables (ver `.env.example`):
 - `ALERT_FROM_EMAIL` (opcional, alertas por email)
 - `ALERT_TO_EMAIL` (opcional, destino interno para todos los leads)
 - `AUTO_REPLY_ENABLED` (opcional, `true` por defecto)
-- `LEADS_ADMIN_TOKEN` (requerido para cambiar estado de leads desde API interna)
+- `WHATSAPP_ALERT_ENABLED` (opcional, `false` por defecto)
+- `TWILIO_ACCOUNT_SID` (opcional, alerta por WhatsApp)
+- `TWILIO_AUTH_TOKEN` (opcional, alerta por WhatsApp)
+- `TWILIO_WHATSAPP_FROM` (opcional, numero origen Twilio WhatsApp)
+- `WHATSAPP_ALERT_TO` (opcional, numero destino WhatsApp)
+- `LEADS_CRON_TOKEN` (token para ejecutar resumen diario)
 
 El formulario no escribe directo a Supabase desde el navegador.
 Envia a `src/pages/api/contacto.js` y ese endpoint inserta con `service_role`.
@@ -72,19 +77,22 @@ Mantene lectura/update/delete solo para roles internos.
 
 ## Automatizacion basica por email
 
-Si defines `AUTOMATION_ALERT_WEBHOOK_URL`, el endpoint `/api/contacto` enviara un webhook cuando:
-
-- `lead_stage = high-intent`, o
-- `budget = premium`
-
-El payload incluye `name`, `email`, `phone`, `project`, `budget`, `lead_stage`, `source` y `page`.
-Esto sirve para conectar Slack, Discord, Make, n8n, Zapier u otro receptor.
-
 Si configuras SMTP (por ejemplo Hostinger):
 
 - se envia email interno para todos los leads a `ALERT_TO_EMAIL`
 - el asunto se etiqueta por nivel (`LEAD ALTO`, `LEAD CALIFICADO`, `LEAD NUEVO`)
 - se envia acuse de recibo al cliente indicando respuesta en 48 horas habiles (si `AUTO_REPLY_ENABLED` no es `false`)
+
+## Alerta por WhatsApp (opcional)
+
+Si queres alerta interna por WhatsApp, activa:
+
+- `WHATSAPP_ALERT_ENABLED=true`
+- credenciales de Twilio (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`)
+- `TWILIO_WHATSAPP_FROM` (origen)
+- `WHATSAPP_ALERT_TO` (destino)
+
+El sistema envia un mensaje interno con datos del lead sin bloquear la captura si Twilio falla.
 
 ## Anti-spam basico
 
@@ -94,72 +102,6 @@ Si configuras SMTP (por ejemplo Hostinger):
 - rate limit en memoria por `IP + email` (3 envios por minuto)
 
 Si se supera el limite responde `429 rate_limited`.
-
-## Gestion de estado comercial
-
-Endpoint interno: `POST /api/leads/estado`
-
-Headers:
-
-- `Authorization: Bearer <LEADS_ADMIN_TOKEN>`
-- `Content-Type: application/json`
-
-Payload:
-
-```json
-{
-  "leadId": 123,
-  "status": "contacted",
-  "setLastContactAt": true
-}
-```
-
-Estados validos:
-
-- `new`
-- `contacted`
-- `qualified`
-- `won`
-- `lost`
-
-SQL recomendado para soporte de seguimiento:
-
-`supabase/leads-workflow.sql`
-
-## Endpoint de SLA
-
-Endpoint interno: `GET /api/leads/sla`
-
-Headers:
-
-- `Authorization: Bearer <LEADS_ADMIN_TOKEN>`
-
-Query params:
-
-- `hours` (default: `24`)
-- `limit` (default: `30`)
-
-Ejemplo:
-
-`/api/leads/sla?hours=24&limit=50`
-
-Devuelve leads `status=new` que superan el SLA configurado.
-
-## Vista interna de leads
-
-Ruta interna: `/admin/leads`
-
-- usa token local (`LEADS_ADMIN_TOKEN`) para consultar y actualizar estados
-- consulta datos via `/api/leads/list`
-- actualiza estado via `/api/leads/estado`
-- historial por email via `/api/leads/historial`
-- metricas iniciales de embudo via `/api/leads/metricas`
-
-Notas:
-
-- si ves tabla vacia, primero guarda token admin en el panel
-- el panel refresca automaticamente cada 30 segundos
-- se fuerza `no-store` para evitar datos viejos en cache
 
 ## Alertas de fallo SMTP
 
@@ -177,7 +119,7 @@ Endpoint interno: `GET /api/leads/resumen-diario`
 
 Headers:
 
-- `Authorization: Bearer <LEADS_CRON_TOKEN>` (o `LEADS_ADMIN_TOKEN` como fallback)
+- `Authorization: Bearer <LEADS_CRON_TOKEN>`
 
 Query params:
 
