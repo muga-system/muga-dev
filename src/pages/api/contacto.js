@@ -18,9 +18,13 @@ export const POST = async ({ request }) => {
   const smtpPass = import.meta.env.SMTP_PASS || process.env.SMTP_PASS;
   const alertFromEmail = import.meta.env.ALERT_FROM_EMAIL || process.env.ALERT_FROM_EMAIL;
   const alertToEmail = import.meta.env.ALERT_TO_EMAIL || process.env.ALERT_TO_EMAIL;
+  const autoReplyEnabledRaw =
+    import.meta.env.AUTO_REPLY_ENABLED || process.env.AUTO_REPLY_ENABLED || "true";
+  const autoReplyEnabled = autoReplyEnabledRaw.toLowerCase() !== "false";
   const contentType = request.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
   let alertEmailSent = false;
+  let customerReplySent = false;
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
     return new Response(JSON.stringify({ error: "missing_server_config" }), {
@@ -122,6 +126,23 @@ export const POST = async ({ request }) => {
   const leadStage = (cleanedPayload.lead_stage || "").toString().toLowerCase();
   const budget = (cleanedPayload.budget || "").toString().toLowerCase();
   const isHighIntentLead = leadStage === "high-intent" || budget === "premium";
+  const isQualifiedLead = leadStage === "qualified" || budget === "business";
+  const leadTag = isHighIntentLead ? "LEAD ALTO" : isQualifiedLead ? "LEAD CALIFICADO" : "LEAD NUEVO";
+  const leadSummary = [
+    `Tipo: ${leadTag}`,
+    `Accion: ${existingLead?.id ? "Actualizado" : "Nuevo"}`,
+    `Nombre: ${cleanedPayload.name || "-"}`,
+    `Email: ${cleanedPayload.email || "-"}`,
+    `Telefono: ${cleanedPayload.phone || "-"}`,
+    `Proyecto: ${cleanedPayload.project || "-"}`,
+    `Presupuesto: ${cleanedPayload.budget || "-"}`,
+    `Lead stage: ${cleanedPayload.lead_stage || "-"}`,
+    `Fuente: ${cleanedPayload.source || "-"}`,
+    `Pagina: ${cleanedPayload.page || "-"}`,
+    "",
+    "Mensaje:",
+    `${cleanedPayload.message || "-"}`,
+  ].join("\n");
 
   if (alertWebhookUrl && isHighIntentLead) {
     const alertPayload = {
@@ -154,60 +175,99 @@ export const POST = async ({ request }) => {
     }
   }
 
-  if (
-    isHighIntentLead &&
-    smtpHost &&
-    smtpPortRaw &&
-    smtpUser &&
-    smtpPass &&
-    alertFromEmail &&
-    alertToEmail
-  ) {
+  if (smtpHost && smtpPortRaw && smtpUser && smtpPass && alertFromEmail && alertToEmail) {
     const smtpPort = Number(smtpPortRaw);
+    const recipients = alertToEmail
+      .split(",")
+      .map((recipient) => recipient.trim())
+      .filter(Boolean);
+
     const transporter = nodemailer.createTransport({
       host: smtpHost,
       port: smtpPort,
       secure: smtpPort === 465,
+      requireTLS: smtpPort !== 465,
       auth: {
         user: smtpUser,
         pass: smtpPass,
       },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      tls: {
+        minVersion: "TLSv1.2",
+      },
     });
 
-    const subject = `[Lead alto] ${cleanedPayload.name || "Sin nombre"} - ${cleanedPayload.project || "sin formato"} - ${cleanedPayload.budget || "sin presupuesto"}`;
-    const text = [
-      "Nuevo lead high-intent",
-      "",
-      `Nombre: ${cleanedPayload.name || "-"}`,
-      `Email: ${cleanedPayload.email || "-"}`,
-      `Telefono: ${cleanedPayload.phone || "-"}`,
-      `Proyecto: ${cleanedPayload.project || "-"}`,
-      `Presupuesto: ${cleanedPayload.budget || "-"}`,
-      `Lead stage: ${cleanedPayload.lead_stage || "-"}`,
-      `Fuente: ${cleanedPayload.source || "-"}`,
-      `Pagina: ${cleanedPayload.page || "-"}`,
-      "",
-      `Mensaje: ${cleanedPayload.message || "-"}`,
-    ].join("\n");
+    const subject = `[${leadTag}] ${cleanedPayload.name || "Sin nombre"} - ${cleanedPayload.project || "sin formato"} - ${cleanedPayload.budget || "sin presupuesto"}`;
 
     try {
       await transporter.sendMail({
         from: alertFromEmail,
-        to: alertToEmail,
+        to: recipients,
+        replyTo: typeof cleanedPayload.email === "string" ? cleanedPayload.email : undefined,
         subject,
-        text,
+        text: leadSummary,
       });
       alertEmailSent = true;
+      console.info("[api/contacto] SMTP alert sent", {
+        recipients,
+        leadEmail: cleanedPayload.email || null,
+        leadTag,
+      });
     } catch (error) {
       console.error("[api/contacto] SMTP alert failed", error);
+    }
+
+    const customerEmail = typeof cleanedPayload.email === "string" ? cleanedPayload.email : "";
+    const canSendCustomerReply = autoReplyEnabled && customerEmail.includes("@");
+
+    if (canSendCustomerReply) {
+      const customerSubject = "Recibimos tu consulta en MUGA";
+      const customerText = [
+        `Hola ${cleanedPayload.name || ""},`,
+        "",
+        "Recibimos tu consulta y ya estamos revisando tu caso.",
+        "Te respondemos dentro de 48 horas habiles con una devolucion clara sobre el mejor siguiente paso.",
+        "",
+        "Si queres sumar contexto antes de nuestra respuesta, podes responder este mismo email.",
+        "",
+        "Equipo MUGA",
+        "muga.dev",
+      ].join("\n");
+
+      try {
+        await transporter.sendMail({
+          from: alertFromEmail,
+          to: customerEmail,
+          subject: customerSubject,
+          text: customerText,
+          replyTo: alertToEmail,
+        });
+        customerReplySent = true;
+        console.info("[api/contacto] Customer reply sent", {
+          customerEmail,
+        });
+      } catch (error) {
+        console.error("[api/contacto] Customer reply failed", error);
+      }
     }
   }
 
   if (isJson) {
-    return new Response(JSON.stringify({ ok: true, redirectTo: "/contacto/enviado", alertEmailSent }), {
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        redirectTo: "/contacto/enviado",
+        alertEmailSent,
+        customerReplySent,
+        leadTag,
+      }),
+      {
       status: 200,
       headers: { "Content-Type": "application/json" },
-    });
+      },
+    );
   }
 
   return Response.redirect(new URL("/contacto/enviado", request.url), 303);

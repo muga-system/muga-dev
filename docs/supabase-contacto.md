@@ -13,10 +13,11 @@ Usa estas variables (ver `.env.example`):
 - `SMTP_USER` (opcional, alertas por email)
 - `SMTP_PASS` (opcional, alertas por email)
 - `ALERT_FROM_EMAIL` (opcional, alertas por email)
-- `ALERT_TO_EMAIL` (opcional, alertas por email)
+- `ALERT_TO_EMAIL` (opcional, destino interno para todos los leads)
+- `AUTO_REPLY_ENABLED` (opcional, `true` por defecto)
 
 El formulario no escribe directo a Supabase desde el navegador.
-Envia a `src/pages/api/contacto.ts` y ese endpoint inserta con `service_role`.
+Envia a `src/pages/api/contacto.js` y ese endpoint inserta con `service_role`.
 
 ## Tabla sugerida
 
@@ -67,7 +68,7 @@ with check (true);
 
 Mantene lectura/update/delete solo para roles internos.
 
-## Automatizacion basica: alerta high-intent
+## Automatizacion basica por email
 
 Si defines `AUTOMATION_ALERT_WEBHOOK_URL`, el endpoint `/api/contacto` enviara un webhook cuando:
 
@@ -77,4 +78,8 @@ Si defines `AUTOMATION_ALERT_WEBHOOK_URL`, el endpoint `/api/contacto` enviara u
 El payload incluye `name`, `email`, `phone`, `project`, `budget`, `lead_stage`, `source` y `page`.
 Esto sirve para conectar Slack, Discord, Make, n8n, Zapier u otro receptor.
 
-Si configuras SMTP (por ejemplo Hostinger), tambien se envia email interno cuando el lead es high-intent.
+Si configuras SMTP (por ejemplo Hostinger):
+
+- se envia email interno para todos los leads a `ALERT_TO_EMAIL`
+- el asunto se etiqueta por nivel (`LEAD ALTO`, `LEAD CALIFICADO`, `LEAD NUEVO`)
+- se envia acuse de recibo al cliente indicando respuesta en 48 horas habiles (si `AUTO_REPLY_ENABLED` no es `false`)
