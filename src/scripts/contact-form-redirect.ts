@@ -219,20 +219,8 @@ const initContactFormRedirect = () => {
         window.clearTimeout(timeoutId);
         timeoutId = null;
       }
-      if (submitBtn) submitBtn.disabled = false;
-      if (submitBtn) submitBtn.setAttribute("aria-busy", "false");
-      stopSendingDots();
-      if (btnArrow) btnArrow.classList.remove("hidden");
-      if (btnSpinner) btnSpinner.classList.add("hidden");
-
-      form.reset();
-      hasUnsavedChanges = false;
-      updateAttributionFields();
-      updateLeadSegmentation();
-
-      if (formMessages) formMessages.classList.remove("hidden");
-      if (successMessage) successMessage.classList.remove("hidden");
-
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitBtn) submitBtn.setAttribute("aria-busy", "true");
       emitFormTrackingEvent("form_submit_success");
 
       await new Promise((resolve) => window.setTimeout(resolve, 700));

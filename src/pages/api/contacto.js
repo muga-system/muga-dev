@@ -13,17 +13,18 @@ const escapeHtml = (value) =>
 export const prerender = false;
 
 export const POST = async ({ request }) => {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const leadsTable = process.env.SUPABASE_LEADS_TABLE || "leads";
-  const alertWebhookUrl = process.env.AUTOMATION_ALERT_WEBHOOK_URL;
-  const smtpHost = process.env.SMTP_HOST;
-  const smtpPortRaw = process.env.SMTP_PORT;
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-  const alertFromEmail = process.env.ALERT_FROM_EMAIL;
-  const alertToEmail = process.env.ALERT_TO_EMAIL;
-  const autoReplyEnabledRaw = process.env.AUTO_REPLY_ENABLED || "true";
+  const supabaseUrl = process.env.SUPABASE_URL || import.meta.env.SUPABASE_URL;
+  const supabaseServiceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+  const leadsTable = process.env.SUPABASE_LEADS_TABLE || import.meta.env.SUPABASE_LEADS_TABLE || "leads";
+  const alertWebhookUrl = process.env.AUTOMATION_ALERT_WEBHOOK_URL || import.meta.env.AUTOMATION_ALERT_WEBHOOK_URL;
+  const smtpHost = process.env.SMTP_HOST || import.meta.env.SMTP_HOST;
+  const smtpPortRaw = process.env.SMTP_PORT || import.meta.env.SMTP_PORT;
+  const smtpUser = process.env.SMTP_USER || import.meta.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS || import.meta.env.SMTP_PASS;
+  const alertFromEmail = process.env.ALERT_FROM_EMAIL || import.meta.env.ALERT_FROM_EMAIL;
+  const alertToEmail = process.env.ALERT_TO_EMAIL || import.meta.env.ALERT_TO_EMAIL;
+  const autoReplyEnabledRaw = process.env.AUTO_REPLY_ENABLED || import.meta.env.AUTO_REPLY_ENABLED || "true";
   const autoReplyEnabled = autoReplyEnabledRaw.toLowerCase() !== "false";
   const contentType = request.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
@@ -31,7 +32,11 @@ export const POST = async ({ request }) => {
   let customerReplySent = false;
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
-    return new Response(JSON.stringify({ error: "missing_server_config" }), {
+    const missing = [
+      !supabaseUrl ? "SUPABASE_URL" : null,
+      !supabaseServiceRoleKey ? "SUPABASE_SERVICE_ROLE_KEY" : null,
+    ].filter(Boolean);
+    return new Response(JSON.stringify({ error: "missing_server_config", missing }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -82,34 +87,8 @@ export const POST = async ({ request }) => {
     }
   });
 
-  const existingResponse = await fetch(
-    `${supabaseUrl}/rest/v1/${leadsTable}?select=id&email=eq.${encodeURIComponent(normalizedEmail)}&order=id.desc&limit=1`,
-    {
-      headers: {
-        apikey: supabaseServiceRoleKey,
-        Authorization: `Bearer ${supabaseServiceRoleKey}`,
-      },
-    },
-  );
-
-  if (!existingResponse.ok) {
-    const detail = await existingResponse.text();
-    return new Response(JSON.stringify({ error: "supabase_lookup_failed", detail }), {
-      status: 502,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  const existingLeads = await existingResponse.json();
-  const existingLead = Array.isArray(existingLeads) ? existingLeads[0] : null;
-
-  const supabaseEndpoint = existingLead?.id
-    ? `${supabaseUrl}/rest/v1/${leadsTable}?id=eq.${existingLead.id}`
-    : `${supabaseUrl}/rest/v1/${leadsTable}`;
-  const supabaseMethod = existingLead?.id ? "PATCH" : "POST";
-
-  const response = await fetch(supabaseEndpoint, {
-    method: supabaseMethod,
+  const response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       apikey: supabaseServiceRoleKey,
@@ -134,7 +113,7 @@ export const POST = async ({ request }) => {
   const leadTag = isHighIntentLead ? "LEAD ALTO" : isQualifiedLead ? "LEAD CALIFICADO" : "LEAD NUEVO";
   const leadSummary = [
     `Tipo: ${leadTag}`,
-    `Accion: ${existingLead?.id ? "Actualizado" : "Nuevo"}`,
+    "Accion: Nuevo",
     `Nombre: ${cleanedPayload.name || "-"}`,
     `Email: ${cleanedPayload.email || "-"}`,
     `Telefono: ${cleanedPayload.phone || "-"}`,
@@ -152,10 +131,10 @@ export const POST = async ({ request }) => {
   if (alertWebhookUrl && isHighIntentLead) {
     const alertPayload = {
       type: "high_intent_lead",
-      action: existingLead?.id ? "updated" : "created",
+      action: "created",
       at: new Date().toISOString(),
       lead: {
-        id: existingLead?.id || null,
+        id: null,
         name: cleanedPayload.name || null,
         email: cleanedPayload.email || null,
         phone: cleanedPayload.phone || null,

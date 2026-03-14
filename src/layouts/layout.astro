@@ -116,7 +116,9 @@ try {
     <main id="main-content">
       <slot />
     </main>
-    <script src="../scripts/analytics.ts" defer></script>
+    <script type="module">
+      import "../scripts/analytics.ts";
+    </script>
     <Footer />
     <SpeedInsights />
   </body>
