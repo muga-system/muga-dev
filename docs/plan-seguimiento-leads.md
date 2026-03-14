@@ -22,7 +22,7 @@
 
 - [x] Crear vista interna de leads (`/admin/leads`) con filtros por fecha, estado y presupuesto.
 - [ ] Mostrar historial por contacto (mismo email).
-- [ ] Agregar resumen diario interno de leads (correo automático).
+- [x] Agregar resumen diario interno de leads (correo automático).
 - [ ] Personalizar secuencia de correos según tipo de lead (`start`, `business`, `premium`).
 
 ### Prioridad baja
@@ -43,7 +43,7 @@
 ### Semana 2 (escala y visibilidad)
 
 - [x] Vista interna de leads.
-- [ ] Resumen diario automático.
+- [x] Resumen diario automático.
 - [ ] Métricas de embudo iniciales.
 
 ## Checklist de validación

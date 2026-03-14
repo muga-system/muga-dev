@@ -162,3 +162,26 @@ Tabla por defecto: `smtp_failures`
 SQL de creacion:
 
 `supabase/smtp-failures.sql`
+
+## Resumen diario automatico
+
+Endpoint interno: `GET /api/leads/resumen-diario`
+
+Headers:
+
+- `Authorization: Bearer <LEADS_CRON_TOKEN>` (o `LEADS_ADMIN_TOKEN` como fallback)
+
+Query params:
+
+- `hours` (default `24`)
+
+Ejemplo manual:
+
+```bash
+curl -sS "https://muga.dev/api/leads/resumen-diario?hours=24" \
+  -H "Authorization: Bearer $LEADS_CRON_TOKEN"
+```
+
+Programacion en Vercel:
+
+- `vercel.json` ejecuta este endpoint todos los dias (`0 12 * * *`).
