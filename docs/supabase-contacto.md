@@ -145,6 +145,14 @@ Ejemplo:
 
 Devuelve leads `status=new` que superan el SLA configurado.
 
+## Vista interna de leads
+
+Ruta interna: `/admin/leads`
+
+- usa token local (`LEADS_ADMIN_TOKEN`) para consultar y actualizar estados
+- consulta datos via `/api/leads/list`
+- actualiza estado via `/api/leads/estado`
+
 ## Alertas de fallo SMTP
 
 Cuando falla un envio SMTP (alerta interna o autorespuesta), el sistema guarda el error en Supabase para seguimiento.

@@ -1,0 +1,303 @@
+---
+import Layout from "../../layouts/layout.astro";
+import Navigation from "../../components/ui/Navigation/Navigation.astro";
+---
+
+<Layout title="Leads | Admin MUGA" description="Panel interno para seguimiento de leads.">
+  <Navigation />
+
+  <section class="section-space section-space-after-hero">
+    <div class="page-container space-y-6">
+      <div class="space-y-2">
+        <span class="muga-badge muga-badge--sm">Interno</span>
+        <h1 class="section-title">Leads</h1>
+        <p class="section-lead">Vista interna para revisar ingresos, filtrar por estado y actualizar seguimiento comercial.</p>
+      </div>
+
+      <div class="grid gap-4 border border-white/10 bg-muga-dark-800/45 p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label class="space-y-2">
+          <span class="text-xs uppercase tracking-wider text-graylight">Token admin</span>
+          <input id="admin-token" type="password" autocomplete="off" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" />
+        </label>
+        <label class="space-y-2">
+          <span class="text-xs uppercase tracking-wider text-graylight">Estado</span>
+          <select id="status-filter" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <option value="all">Todos</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="qualified">Qualified</option>
+            <option value="won">Won</option>
+            <option value="lost">Lost</option>
+          </select>
+        </label>
+        <label class="space-y-2">
+          <span class="text-xs uppercase tracking-wider text-graylight">Buscar</span>
+          <input id="search-input" type="text" placeholder="Nombre, email o telefono" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white placeholder:text-graylight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" />
+        </label>
+        <div class="flex items-end gap-2">
+          <button id="save-token-btn" type="button" class="inline-flex w-full items-center justify-center border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90">Guardar token</button>
+          <button id="refresh-btn" type="button" class="inline-flex w-full items-center justify-center border border-white/20 bg-transparent px-4 py-2 text-sm font-semibold text-white hover:border-white/40">Actualizar</button>
+        </div>
+      </div>
+
+      <div id="admin-feedback" class="hidden border border-white/10 bg-muga-dark-800/45 px-4 py-3 text-sm text-graylight"></div>
+
+      <div class="overflow-x-auto border border-white/10 bg-muga-dark-800/45">
+        <table class="min-w-full divide-y divide-white/10 text-sm">
+          <thead class="bg-white/5">
+            <tr>
+              <th class="px-4 py-3 text-left font-semibold text-white">Lead</th>
+              <th class="px-4 py-3 text-left font-semibold text-white">Contexto</th>
+              <th class="px-4 py-3 text-left font-semibold text-white">Estado</th>
+              <th class="px-4 py-3 text-left font-semibold text-white">Accion</th>
+            </tr>
+          </thead>
+          <tbody id="leads-table-body" class="divide-y divide-white/10"></tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between text-sm text-graylight">
+        <p id="pagination-info">Sin datos</p>
+        <div class="flex gap-2">
+          <button id="prev-page-btn" type="button" class="border border-white/20 px-3 py-1 text-white disabled:opacity-40">Anterior</button>
+          <button id="next-page-btn" type="button" class="border border-white/20 px-3 py-1 text-white disabled:opacity-40">Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    const state = {
+      page: 1,
+      totalPages: 1,
+      token: localStorage.getItem("muga_leads_admin_token") || "",
+      loading: false,
+    };
+
+    const tokenInput = document.getElementById("admin-token");
+    const statusFilter = document.getElementById("status-filter");
+    const searchInput = document.getElementById("search-input");
+    const saveTokenButton = document.getElementById("save-token-btn");
+    const refreshButton = document.getElementById("refresh-btn");
+    const feedbackBox = document.getElementById("admin-feedback");
+    const tableBody = document.getElementById("leads-table-body");
+    const paginationInfo = document.getElementById("pagination-info");
+    const prevPageButton = document.getElementById("prev-page-btn");
+    const nextPageButton = document.getElementById("next-page-btn");
+
+    const statusOptions = ["new", "contacted", "qualified", "won", "lost"];
+
+    if (tokenInput) tokenInput.value = state.token;
+
+    const showFeedback = (message, isError = false) => {
+      if (!feedbackBox) return;
+      feedbackBox.textContent = message;
+      feedbackBox.classList.remove("hidden");
+      feedbackBox.classList.toggle("text-red-400", isError);
+      feedbackBox.classList.toggle("text-graylight", !isError);
+    };
+
+    const formatDate = (value) => {
+      if (!value) return "-";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "-";
+      return date.toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" });
+    };
+
+    const isOverdue = (lead) => {
+      if (lead.status !== "new") return false;
+      const createdAt = new Date(lead.created_at).getTime();
+      if (Number.isNaN(createdAt)) return false;
+      const limit = 24 * 60 * 60 * 1000;
+      return Date.now() - createdAt > limit;
+    };
+
+    const renderRows = (rows) => {
+      if (!tableBody) return;
+      tableBody.innerHTML = "";
+
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = '<td colspan="4" class="px-4 py-6 text-center text-graylight">No hay leads para este filtro.</td>';
+        tableBody.appendChild(tr);
+        return;
+      }
+
+      rows.forEach((lead) => {
+        const tr = document.createElement("tr");
+        const overdueBadge = isOverdue(lead)
+          ? '<span class="ml-2 inline-flex border border-accent/40 bg-accent/10 px-2 py-0.5 text-xs text-accent">SLA vencido</span>'
+          : "";
+
+        tr.innerHTML = `
+          <td class="px-4 py-3 align-top">
+            <p class="font-semibold text-white">${lead.name || "-"}${overdueBadge}</p>
+            <p class="text-graylight">${lead.email || "-"}</p>
+            <p class="text-graylight">${lead.phone || "-"}</p>
+            <p class="text-xs text-graylight/80 mt-1">Alta: ${formatDate(lead.created_at)}</p>
+          </td>
+          <td class="px-4 py-3 align-top text-graylight">
+            <p>Proyecto: ${lead.project || "-"}</p>
+            <p>Presupuesto: ${lead.budget || "-"}</p>
+            <p>Stage: ${lead.lead_stage || "-"}</p>
+            <p class="text-xs mt-1">Ultimo contacto: ${formatDate(lead.last_contact_at)}</p>
+          </td>
+          <td class="px-4 py-3 align-top">
+            <select data-lead-status="${lead.id}" class="w-full border border-white/15 bg-obscure px-2 py-1 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+              ${statusOptions
+                .map((status) => `<option value="${status}" ${status === lead.status ? "selected" : ""}>${status}</option>`)
+                .join("")}
+            </select>
+          </td>
+          <td class="px-4 py-3 align-top">
+            <button data-save-lead="${lead.id}" class="border border-accent/70 bg-accent px-3 py-1 text-xs font-semibold text-obscure hover:bg-accent/90">Guardar</button>
+          </td>
+        `;
+
+        tableBody.appendChild(tr);
+      });
+    };
+
+    const fetchLeads = async () => {
+      if (!state.token) {
+        showFeedback("Cargá y guardá el token admin para consultar leads.", true);
+        return;
+      }
+
+      if (state.loading) return;
+      state.loading = true;
+
+      const params = new URLSearchParams({
+        page: String(state.page),
+        limit: "20",
+        status: statusFilter?.value || "all",
+        q: searchInput?.value || "",
+      });
+
+      try {
+        const response = await fetch(`/api/leads/list?${params.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${state.token}`,
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showFeedback(`Error al consultar leads: ${data.error || response.status}`, true);
+          renderRows([]);
+          return;
+        }
+
+        state.totalPages = data.totalPages || 1;
+        if (paginationInfo) {
+          paginationInfo.textContent = `Pagina ${state.page} de ${state.totalPages} · ${data.total || 0} leads`;
+        }
+        if (prevPageButton) prevPageButton.disabled = state.page <= 1;
+        if (nextPageButton) nextPageButton.disabled = state.page >= state.totalPages;
+
+        showFeedback("Leads actualizados.");
+        renderRows(data.rows || []);
+      } catch (error) {
+        showFeedback(`Error de red consultando leads: ${error}`, true);
+      } finally {
+        state.loading = false;
+      }
+    };
+
+    const updateLeadStatus = async (leadId) => {
+      if (!state.token) {
+        showFeedback("Token admin requerido.", true);
+        return;
+      }
+
+      const select = document.querySelector(`[data-lead-status="${leadId}"]`);
+      if (!select) return;
+
+      const nextStatus = select.value;
+
+      try {
+        const response = await fetch("/api/leads/estado", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${state.token}`,
+          },
+          body: JSON.stringify({
+            leadId,
+            status: nextStatus,
+            setLastContactAt: true,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          showFeedback(`No se pudo actualizar estado: ${data.error || response.status}`, true);
+          return;
+        }
+
+        showFeedback(`Lead #${leadId} actualizado a ${nextStatus}.`);
+        fetchLeads();
+      } catch (error) {
+        showFeedback(`Error de red al actualizar lead: ${error}`, true);
+      }
+    };
+
+    saveTokenButton?.addEventListener("click", () => {
+      const token = tokenInput?.value?.trim() || "";
+      state.token = token;
+
+      if (!token) {
+        localStorage.removeItem("muga_leads_admin_token");
+        showFeedback("Token eliminado.");
+        return;
+      }
+
+      localStorage.setItem("muga_leads_admin_token", token);
+      showFeedback("Token guardado localmente.");
+      state.page = 1;
+      fetchLeads();
+    });
+
+    refreshButton?.addEventListener("click", () => {
+      state.page = 1;
+      fetchLeads();
+    });
+
+    statusFilter?.addEventListener("change", () => {
+      state.page = 1;
+      fetchLeads();
+    });
+
+    searchInput?.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      state.page = 1;
+      fetchLeads();
+    });
+
+    prevPageButton?.addEventListener("click", () => {
+      if (state.page <= 1) return;
+      state.page -= 1;
+      fetchLeads();
+    });
+
+    nextPageButton?.addEventListener("click", () => {
+      if (state.page >= state.totalPages) return;
+      state.page += 1;
+      fetchLeads();
+    });
+
+    tableBody?.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const leadId = target.getAttribute("data-save-lead");
+      if (!leadId) return;
+      updateLeadStatus(Number(leadId));
+    });
+
+    if (state.token) {
+      fetchLeads();
+    }
+  </script>
+</Layout>
