@@ -41,6 +41,7 @@ const initContactFormRedirect = () => {
   const btnText = document.getElementById("btn-text") as HTMLSpanElement | null;
   const btnArrow = document.getElementById("btn-arrow") as HTMLSpanElement | null;
   const btnSpinner = document.getElementById("btn-spinner") as HTMLDivElement | null;
+  const loadingOverlay = document.getElementById("contact-form-loading-overlay") as HTMLDivElement | null;
   const formMessages = document.getElementById("form-messages") as HTMLDivElement | null;
   const successMessage = document.getElementById("success-message") as HTMLDivElement | null;
   const errorMessage = document.getElementById("error-message") as HTMLDivElement | null;
@@ -52,6 +53,20 @@ const initContactFormRedirect = () => {
 
   const markAsDirty = () => {
     hasUnsavedChanges = true;
+  };
+
+  const showLoadingOverlay = () => {
+    if (!loadingOverlay) return;
+    loadingOverlay.classList.remove("hidden");
+    loadingOverlay.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  };
+
+  const hideLoadingOverlay = () => {
+    if (!loadingOverlay) return;
+    loadingOverlay.classList.add("hidden");
+    loadingOverlay.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
   };
 
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -152,6 +167,7 @@ const initContactFormRedirect = () => {
     if (formMessages) formMessages.classList.add("hidden");
     if (successMessage) successMessage.classList.add("hidden");
     if (errorMessage) errorMessage.classList.add("hidden");
+    showLoadingOverlay();
 
     const formData = new FormData(form);
     const payload: Record<string, string> = {};
@@ -211,6 +227,7 @@ const initContactFormRedirect = () => {
 
       if (formMessages) formMessages.classList.remove("hidden");
       if (errorMessage) errorMessage.classList.remove("hidden");
+      hideLoadingOverlay();
 
       emitFormTrackingEvent("form_submit_error", {
         error_type: abortController.signal.aborted ? "timeout" : "network",

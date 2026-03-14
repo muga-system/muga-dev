@@ -232,3 +232,45 @@ textarea {
     0 0 0 2px var(--color-accent),
     0 0 0 4px var(--color-obscure);
 }
+
+.form-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+.form-loading-overlay__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(12, 12, 12, 0.92);
+  padding: 1rem 1.25rem;
+}
+
+.form-loading-overlay__spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--color-accent);
+  animation: form-loader-spin 0.85s linear infinite;
+}
+
+.form-loading-overlay__text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #f1f1f1;
+}
+
+@keyframes form-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
