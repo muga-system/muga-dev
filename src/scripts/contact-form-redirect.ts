@@ -171,6 +171,11 @@ const initContactFormRedirect = () => {
     if (btnArrow) btnArrow.classList.add("hidden");
     if (btnSpinner) btnSpinner.classList.remove("hidden");
 
+    if (submitBtn) {
+      // Force a repaint so loading state is visible before network request.
+      submitBtn.offsetHeight;
+    }
+
     if (formMessages) formMessages.classList.add("hidden");
     if (successMessage) successMessage.classList.add("hidden");
     if (errorMessage) errorMessage.classList.add("hidden");
@@ -183,6 +188,12 @@ const initContactFormRedirect = () => {
     });
 
     const abortController = new AbortController();
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
 
     if (timeoutId) window.clearTimeout(timeoutId);
     timeoutId = window.setTimeout(() => {
@@ -224,7 +235,7 @@ const initContactFormRedirect = () => {
 
       emitFormTrackingEvent("form_submit_success");
 
-      await new Promise((resolve) => window.setTimeout(resolve, 450));
+      await new Promise((resolve) => window.setTimeout(resolve, 700));
 
       window.location.assign("/contacto/enviado");
     } catch {
