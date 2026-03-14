@@ -41,7 +41,6 @@ const initContactFormRedirect = () => {
   const btnText = document.getElementById("btn-text") as HTMLSpanElement | null;
   const btnArrow = document.getElementById("btn-arrow") as HTMLSpanElement | null;
   const btnSpinner = document.getElementById("btn-spinner") as HTMLDivElement | null;
-  const loadingOverlay = document.getElementById("contact-form-loading-overlay") as HTMLDivElement | null;
   const formMessages = document.getElementById("form-messages") as HTMLDivElement | null;
   const successMessage = document.getElementById("success-message") as HTMLDivElement | null;
   const errorMessage = document.getElementById("error-message") as HTMLDivElement | null;
@@ -50,28 +49,10 @@ const initContactFormRedirect = () => {
   let pendingSubmit = false;
   let hasUnsavedChanges = false;
   let timeoutId: number | null = null;
-  let overlayShownAt = 0;
 
   const markAsDirty = () => {
     hasUnsavedChanges = true;
   };
-
-  const showLoadingOverlay = () => {
-    if (!loadingOverlay) return;
-    overlayShownAt = performance.now();
-    loadingOverlay.classList.add("form-loading-overlay--active");
-    loadingOverlay.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
-  };
-
-  const hideLoadingOverlay = () => {
-    if (!loadingOverlay) return;
-    loadingOverlay.classList.remove("form-loading-overlay--active");
-    loadingOverlay.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
-  };
-
-  hideLoadingOverlay();
 
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     if (!hasUnsavedChanges || pendingSubmit) return;
@@ -164,6 +145,7 @@ const initContactFormRedirect = () => {
     pendingSubmit = true;
 
     if (submitBtn) submitBtn.disabled = true;
+    if (submitBtn) submitBtn.setAttribute("aria-busy", "true");
     if (btnText) btnText.textContent = "Enviando…";
     if (btnArrow) btnArrow.classList.add("hidden");
     if (btnSpinner) btnSpinner.classList.remove("hidden");
@@ -171,7 +153,6 @@ const initContactFormRedirect = () => {
     if (formMessages) formMessages.classList.add("hidden");
     if (successMessage) successMessage.classList.add("hidden");
     if (errorMessage) errorMessage.classList.add("hidden");
-    showLoadingOverlay();
 
     const formData = new FormData(form);
     const payload: Record<string, string> = {};
@@ -207,6 +188,7 @@ const initContactFormRedirect = () => {
         timeoutId = null;
       }
       if (submitBtn) submitBtn.disabled = false;
+      if (submitBtn) submitBtn.setAttribute("aria-busy", "false");
       if (btnText) btnText.textContent = defaultButtonText;
       if (btnArrow) btnArrow.classList.remove("hidden");
       if (btnSpinner) btnSpinner.classList.add("hidden");
@@ -221,25 +203,20 @@ const initContactFormRedirect = () => {
 
       emitFormTrackingEvent("form_submit_success");
 
-      const minimumOverlayDuration = 550;
-      const elapsed = performance.now() - overlayShownAt;
-      const remaining = Math.max(0, minimumOverlayDuration - elapsed);
-      if (remaining > 0) {
-        await new Promise((resolve) => window.setTimeout(resolve, remaining));
-      }
+      await new Promise((resolve) => window.setTimeout(resolve, 450));
 
       window.location.assign("/contacto/enviado");
     } catch {
       pendingSubmit = false;
 
       if (submitBtn) submitBtn.disabled = false;
+      if (submitBtn) submitBtn.setAttribute("aria-busy", "false");
       if (btnText) btnText.textContent = defaultButtonText;
       if (btnArrow) btnArrow.classList.remove("hidden");
       if (btnSpinner) btnSpinner.classList.add("hidden");
 
       if (formMessages) formMessages.classList.remove("hidden");
       if (errorMessage) errorMessage.classList.remove("hidden");
-      hideLoadingOverlay();
 
       emitFormTrackingEvent("form_submit_error", {
         error_type: abortController.signal.aborted ? "timeout" : "network",
