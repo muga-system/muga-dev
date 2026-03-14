@@ -124,3 +124,22 @@ Estados validos:
 SQL recomendado para soporte de seguimiento:
 
 `supabase/leads-workflow.sql`
+
+## Endpoint de SLA
+
+Endpoint interno: `GET /api/leads/sla`
+
+Headers:
+
+- `Authorization: Bearer <LEADS_ADMIN_TOKEN>`
+
+Query params:
+
+- `hours` (default: `24`)
+- `limit` (default: `30`)
+
+Ejemplo:
+
+`/api/leads/sla?hours=24&limit=50`
+
+Devuelve leads `status=new` que superan el SLA configurado.
