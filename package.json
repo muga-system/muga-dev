@@ -7,8 +7,10 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "dev:node22": "npx -y node@22 node_modules/astro/astro.js dev",
     "prebuild": "node scripts/generate-build-id.mjs",
     "build": "astro build",
+    "build:node22": "npx -y node@22 scripts/generate-build-id.mjs && npx -y node@22 node_modules/astro/astro.js build",
     "preview": "astro preview",
     "astro": "astro"
   },
