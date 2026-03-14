@@ -327,7 +327,6 @@ export const POST = async ({ request }) => {
   if (!cleanedPayload.status) {
     cleanedPayload.status = "new";
   }
-  cleanedPayload.auto_reply_variant = leadVariant;
 
   const response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
     method: "POST",
