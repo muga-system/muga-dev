@@ -1,6 +1,28 @@
 import nodemailer from "nodemailer";
 
 const requiredFields = ["name", "email", "message"];
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 3;
+const recentSubmissions = new Map();
+
+const getClientIp = (request) => {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0].trim();
+  return (
+    request.headers.get("x-real-ip") ||
+    request.headers.get("cf-connecting-ip") ||
+    "unknown"
+  );
+};
+
+const isRateLimited = (key) => {
+  const now = Date.now();
+  const previousTimestamps = recentSubmissions.get(key) || [];
+  const validTimestamps = previousTimestamps.filter((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS);
+  validTimestamps.push(now);
+  recentSubmissions.set(key, validTimestamps);
+  return validTimestamps.length > RATE_LIMIT_MAX_REQUESTS;
+};
 
 const escapeHtml = (value) =>
   String(value ?? "")
@@ -69,6 +91,26 @@ export const POST = async ({ request }) => {
     typeof cleanedPayload.email === "string" ? cleanedPayload.email.toLowerCase() : "";
   cleanedPayload.email = normalizedEmail;
 
+  const honeypotValue =
+    typeof cleanedPayload.company_website === "string" ? cleanedPayload.company_website.trim() : "";
+  delete cleanedPayload.company_website;
+
+  if (honeypotValue) {
+    return new Response(JSON.stringify({ ok: true, redirectTo: "/contacto/enviado" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const clientIp = getClientIp(request);
+  const rateLimitKey = `${clientIp}:${normalizedEmail || "no-email"}`;
+  if (isRateLimited(rateLimitKey)) {
+    return new Response(JSON.stringify({ error: "rate_limited" }), {
+      status: 429,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   delete cleanedPayload.created_at;
 
   for (const field of requiredFields) {
@@ -86,6 +128,10 @@ export const POST = async ({ request }) => {
       cleanedPayload[key] = null;
     }
   });
+
+  if (!cleanedPayload.status) {
+    cleanedPayload.status = "new";
+  }
 
   const response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
     method: "POST",

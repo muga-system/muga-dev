@@ -83,3 +83,12 @@ Si configuras SMTP (por ejemplo Hostinger):
 - se envia email interno para todos los leads a `ALERT_TO_EMAIL`
 - el asunto se etiqueta por nivel (`LEAD ALTO`, `LEAD CALIFICADO`, `LEAD NUEVO`)
 - se envia acuse de recibo al cliente indicando respuesta en 48 horas habiles (si `AUTO_REPLY_ENABLED` no es `false`)
+
+## Anti-spam basico
+
+`/api/contacto` incluye:
+
+- honeypot (`company_website`) para frenar bots simples
+- rate limit en memoria por `IP + email` (3 envios por minuto)
+
+Si se supera el limite responde `429 rate_limited`.
