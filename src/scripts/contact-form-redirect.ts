@@ -69,6 +69,8 @@ const initContactFormRedirect = () => {
     document.body.style.overflow = "";
   };
 
+  hideLoadingOverlay();
+
   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
     if (!hasUnsavedChanges || pendingSubmit) return;
 
