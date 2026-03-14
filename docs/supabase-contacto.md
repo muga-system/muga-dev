@@ -16,11 +16,6 @@ Usa estas variables (ver `.env.example`):
 - `ALERT_FROM_EMAIL` (opcional, alertas por email)
 - `ALERT_TO_EMAIL` (opcional, destino interno para todos los leads)
 - `AUTO_REPLY_ENABLED` (opcional, `true` por defecto)
-- `WHATSAPP_ALERT_ENABLED` (opcional, `false` por defecto)
-- `TWILIO_ACCOUNT_SID` (opcional, alerta por WhatsApp)
-- `TWILIO_AUTH_TOKEN` (opcional, alerta por WhatsApp)
-- `TWILIO_WHATSAPP_FROM` (opcional, numero origen Twilio WhatsApp)
-- `WHATSAPP_ALERT_TO` (opcional, numero destino WhatsApp)
 - `LEADS_CRON_TOKEN` (token para ejecutar resumen diario)
 
 El formulario no escribe directo a Supabase desde el navegador.
@@ -82,17 +77,6 @@ Si configuras SMTP (por ejemplo Hostinger):
 - se envia email interno para todos los leads a `ALERT_TO_EMAIL`
 - el asunto se etiqueta por nivel (`LEAD ALTO`, `LEAD CALIFICADO`, `LEAD NUEVO`)
 - se envia acuse de recibo al cliente indicando respuesta en 48 horas habiles (si `AUTO_REPLY_ENABLED` no es `false`)
-
-## Alerta por WhatsApp (opcional)
-
-Si queres alerta interna por WhatsApp, activa:
-
-- `WHATSAPP_ALERT_ENABLED=true`
-- credenciales de Twilio (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`)
-- `TWILIO_WHATSAPP_FROM` (origen)
-- `WHATSAPP_ALERT_TO` (destino)
-
-El sistema envia un mensaje interno con datos del lead sin bloquear la captura si Twilio falla.
 
 ## Anti-spam basico
 
