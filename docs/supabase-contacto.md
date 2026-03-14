@@ -15,6 +15,7 @@ Usa estas variables (ver `.env.example`):
 - `ALERT_FROM_EMAIL` (opcional, alertas por email)
 - `ALERT_TO_EMAIL` (opcional, destino interno para todos los leads)
 - `AUTO_REPLY_ENABLED` (opcional, `true` por defecto)
+- `LEADS_ADMIN_TOKEN` (requerido para cambiar estado de leads desde API interna)
 
 El formulario no escribe directo a Supabase desde el navegador.
 Envia a `src/pages/api/contacto.js` y ese endpoint inserta con `service_role`.
@@ -92,3 +93,34 @@ Si configuras SMTP (por ejemplo Hostinger):
 - rate limit en memoria por `IP + email` (3 envios por minuto)
 
 Si se supera el limite responde `429 rate_limited`.
+
+## Gestion de estado comercial
+
+Endpoint interno: `POST /api/leads/estado`
+
+Headers:
+
+- `Authorization: Bearer <LEADS_ADMIN_TOKEN>`
+- `Content-Type: application/json`
+
+Payload:
+
+```json
+{
+  "leadId": 123,
+  "status": "contacted",
+  "setLastContactAt": true
+}
+```
+
+Estados validos:
+
+- `new`
+- `contacted`
+- `qualified`
+- `won`
+- `lost`
+
+SQL recomendado para soporte de seguimiento:
+
+`supabase/leads-workflow.sql`
