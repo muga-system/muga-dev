@@ -5,21 +5,17 @@ const requiredFields = ["name", "email", "message"];
 export const prerender = false;
 
 export const POST = async ({ request }) => {
-  const supabaseUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL;
-  const supabaseServiceRoleKey =
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const leadsTable =
-    import.meta.env.SUPABASE_LEADS_TABLE || process.env.SUPABASE_LEADS_TABLE || "leads";
-  const alertWebhookUrl =
-    import.meta.env.AUTOMATION_ALERT_WEBHOOK_URL || process.env.AUTOMATION_ALERT_WEBHOOK_URL;
-  const smtpHost = import.meta.env.SMTP_HOST || process.env.SMTP_HOST;
-  const smtpPortRaw = import.meta.env.SMTP_PORT || process.env.SMTP_PORT;
-  const smtpUser = import.meta.env.SMTP_USER || process.env.SMTP_USER;
-  const smtpPass = import.meta.env.SMTP_PASS || process.env.SMTP_PASS;
-  const alertFromEmail = import.meta.env.ALERT_FROM_EMAIL || process.env.ALERT_FROM_EMAIL;
-  const alertToEmail = import.meta.env.ALERT_TO_EMAIL || process.env.ALERT_TO_EMAIL;
-  const autoReplyEnabledRaw =
-    import.meta.env.AUTO_REPLY_ENABLED || process.env.AUTO_REPLY_ENABLED || "true";
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const leadsTable = process.env.SUPABASE_LEADS_TABLE || "leads";
+  const alertWebhookUrl = process.env.AUTOMATION_ALERT_WEBHOOK_URL;
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpPortRaw = process.env.SMTP_PORT;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const alertFromEmail = process.env.ALERT_FROM_EMAIL;
+  const alertToEmail = process.env.ALERT_TO_EMAIL;
+  const autoReplyEnabledRaw = process.env.AUTO_REPLY_ENABLED || "true";
   const autoReplyEnabled = autoReplyEnabledRaw.toLowerCase() !== "false";
   const contentType = request.headers.get("content-type") || "";
   const isJson = contentType.includes("application/json");
