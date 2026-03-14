@@ -50,6 +50,7 @@ const initContactFormRedirect = () => {
   let pendingSubmit = false;
   let hasUnsavedChanges = false;
   let timeoutId: number | null = null;
+  let overlayShownAt = 0;
 
   const markAsDirty = () => {
     hasUnsavedChanges = true;
@@ -57,6 +58,8 @@ const initContactFormRedirect = () => {
 
   const showLoadingOverlay = () => {
     if (!loadingOverlay) return;
+    overlayShownAt = performance.now();
+    loadingOverlay.style.display = "flex";
     loadingOverlay.classList.remove("hidden");
     loadingOverlay.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -65,6 +68,7 @@ const initContactFormRedirect = () => {
   const hideLoadingOverlay = () => {
     if (!loadingOverlay) return;
     loadingOverlay.classList.add("hidden");
+    loadingOverlay.style.display = "none";
     loadingOverlay.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
   };
@@ -218,6 +222,14 @@ const initContactFormRedirect = () => {
       if (successMessage) successMessage.classList.remove("hidden");
 
       emitFormTrackingEvent("form_submit_success");
+
+      const minimumOverlayDuration = 550;
+      const elapsed = performance.now() - overlayShownAt;
+      const remaining = Math.max(0, minimumOverlayDuration - elapsed);
+      if (remaining > 0) {
+        await new Promise((resolve) => window.setTimeout(resolve, remaining));
+      }
+
       window.location.assign("/contacto/enviado");
     } catch {
       pendingSubmit = false;

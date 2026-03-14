@@ -1,6 +1,15 @@
 import nodemailer from "nodemailer";
 
 const requiredFields = ["name", "email", "message"];
+const mugaLogoUrl = "https://muga.dev/logo/logo.png";
+
+const escapeHtml = (value) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 
 export const prerender = false;
 
@@ -140,6 +149,34 @@ export const POST = async ({ request }) => {
     `${cleanedPayload.message || "-"}`,
   ].join("\n");
 
+  const internalEmailHtml = `
+    <div style="font-family: Arial, sans-serif; background:#0f0f0f; color:#f3f3f3; padding:24px;">
+      <div style="max-width:640px; margin:0 auto; border:1px solid rgba(255,255,255,0.12); background:#141414; padding:20px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+          <img src="${mugaLogoUrl}" alt="MUGA" width="44" height="44" style="border-radius:999px; border:1px solid rgba(255,255,255,0.2);" />
+          <div>
+            <p style="margin:0; font-size:12px; letter-spacing:1px; color:#ff5353; text-transform:uppercase;">${escapeHtml(leadTag)}</p>
+            <h2 style="margin:4px 0 0; font-size:18px; color:#fff;">Nuevo ingreso de formulario</h2>
+          </div>
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:14px;">
+          <tr><td style="padding:6px 0; color:#a0a0a0;">Nombre</td><td style="padding:6px 0; color:#fff;">${escapeHtml(cleanedPayload.name || "-")}</td></tr>
+          <tr><td style="padding:6px 0; color:#a0a0a0;">Email</td><td style="padding:6px 0; color:#fff;">${escapeHtml(cleanedPayload.email || "-")}</td></tr>
+          <tr><td style="padding:6px 0; color:#a0a0a0;">Telefono</td><td style="padding:6px 0; color:#fff;">${escapeHtml(cleanedPayload.phone || "-")}</td></tr>
+          <tr><td style="padding:6px 0; color:#a0a0a0;">Proyecto</td><td style="padding:6px 0; color:#fff;">${escapeHtml(cleanedPayload.project || "-")}</td></tr>
+          <tr><td style="padding:6px 0; color:#a0a0a0;">Presupuesto</td><td style="padding:6px 0; color:#fff;">${escapeHtml(cleanedPayload.budget || "-")}</td></tr>
+          <tr><td style="padding:6px 0; color:#a0a0a0;">Stage</td><td style="padding:6px 0; color:#fff;">${escapeHtml(cleanedPayload.lead_stage || "-")}</td></tr>
+          <tr><td style="padding:6px 0; color:#a0a0a0;">Fuente</td><td style="padding:6px 0; color:#fff;">${escapeHtml(cleanedPayload.source || "-")}</td></tr>
+          <tr><td style="padding:6px 0; color:#a0a0a0;">Pagina</td><td style="padding:6px 0; color:#fff;">${escapeHtml(cleanedPayload.page || "-")}</td></tr>
+        </table>
+        <div style="margin-top:18px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.12);">
+          <p style="margin:0 0 6px; font-size:12px; color:#a0a0a0; text-transform:uppercase; letter-spacing:0.8px;">Mensaje</p>
+          <p style="margin:0; line-height:1.6; color:#fff;">${escapeHtml(cleanedPayload.message || "-")}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
   if (alertWebhookUrl && isHighIntentLead) {
     const alertPayload = {
       type: "high_intent_lead",
@@ -204,6 +241,7 @@ export const POST = async ({ request }) => {
         replyTo: typeof cleanedPayload.email === "string" ? cleanedPayload.email : undefined,
         subject,
         text: leadSummary,
+        html: internalEmailHtml,
       });
       alertEmailSent = true;
       console.info("[api/contacto] SMTP alert sent", {
@@ -231,6 +269,25 @@ export const POST = async ({ request }) => {
         "Equipo MUGA",
         "muga.dev",
       ].join("\n");
+      const customerHtml = `
+        <div style="font-family: Arial, sans-serif; background:#0f0f0f; color:#f3f3f3; padding:24px;">
+          <div style="max-width:640px; margin:0 auto; border:1px solid rgba(255,255,255,0.12); background:#141414; padding:20px;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+              <img src="${mugaLogoUrl}" alt="MUGA" width="44" height="44" style="border-radius:999px; border:1px solid rgba(255,255,255,0.2);" />
+              <div>
+                <p style="margin:0; font-size:12px; letter-spacing:1px; color:#ff5353; text-transform:uppercase;">MUGA</p>
+                <h2 style="margin:4px 0 0; font-size:18px; color:#fff;">Recibimos tu consulta</h2>
+              </div>
+            </div>
+            <p style="margin:0 0 12px; line-height:1.7; color:#fff;">Hola ${escapeHtml(cleanedPayload.name || "")},</p>
+            <p style="margin:0 0 12px; line-height:1.7; color:#fff;">Gracias por escribirnos. Ya estamos revisando tu caso y te respondemos dentro de 48 horas habiles con una devolucion clara sobre el mejor siguiente paso.</p>
+            <p style="margin:0 0 16px; line-height:1.7; color:#fff;">Si queres sumar contexto mientras tanto, podes responder este mismo email.</p>
+            <div style="padding-top:14px; border-top:1px solid rgba(255,255,255,0.12);">
+              <p style="margin:0; color:#a0a0a0; font-size:13px;">Equipo MUGA · <a href="https://muga.dev" style="color:#ff5353; text-decoration:none;">muga.dev</a></p>
+            </div>
+          </div>
+        </div>
+      `;
 
       try {
         await transporter.sendMail({
@@ -238,6 +295,7 @@ export const POST = async ({ request }) => {
           to: customerEmail,
           subject: customerSubject,
           text: customerText,
+          html: customerHtml,
           replyTo: alertToEmail,
         });
         customerReplySent = true;
