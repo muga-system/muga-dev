@@ -49,6 +49,14 @@ const clientCases: ClientCase[] = [
     href: "https://elmetodoadulma.com/",
     analyticsLabel: "el_metodo_adulma",
   },
+  {
+    label: "Cliente 03",
+    name: "Mandorla",
+    description: "Caso publicado con foco en propuesta de valor clara, navegación ordenada y recorrido orientado a contacto.",
+    domain: "muga-mandorla.vercel.app",
+    href: "https://muga-mandorla.vercel.app/",
+    analyticsLabel: "mandorla",
+  },
 ];
 
 const structureReferences: StructureReference[] = [
@@ -118,7 +126,7 @@ const structureReferences: StructureReference[] = [
 
       <h2 class="mb-6 text-xl font-semibold text-white">Casos de clientes</h2>
 
-      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {clientCases.map((item) => (
           <article class="flex h-full flex-col border border-white/10 bg-muga-dark-800/40 p-6">
             <p class="mb-3 font-mono text-xs uppercase tracking-[0.28em] text-accent">{item.label}</p>

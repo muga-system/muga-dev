@@ -1,0 +1,195 @@
+---
+import Layout from "../layouts/layout.astro";
+import Navigation from "../components/ui/Navigation/Navigation.astro";
+import Breadcrumb from "../components/ui/Breadcrumb/Breadcrumb.astro";
+import type { BreadcrumbItem } from "../types";
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  {
+    label: "Metricas",
+    href: "/metricas",
+    active: true,
+  },
+];
+
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+const leadsTable = import.meta.env.SUPABASE_LEADS_TABLE || "leads";
+
+const getLeadTier = (lead: { lead_stage?: string; budget?: string }) => {
+  const stage = String(lead?.lead_stage || "").toLowerCase();
+  const budget = String(lead?.budget || "").toLowerCase();
+  if (stage === "high-intent" || budget === "premium") return "alto";
+  if (stage === "qualified" || budget === "business") return "calificado";
+  return "nuevo";
+};
+
+let loadError = "";
+
+const metrics = {
+  total: 0,
+  last24h: 0,
+  byStatus: {
+    new: 0,
+    contacted: 0,
+    qualified: 0,
+    won: 0,
+    lost: 0,
+  },
+  byTier: {
+    alto: 0,
+    calificado: 0,
+    nuevo: 0,
+  },
+  sources: [] as Array<{ source: string; count: number }>,
+};
+
+const funnel = {
+  contactRate: 0,
+  qualificationRate: 0,
+  winRate: 0,
+};
+
+if (!supabaseUrl || !supabaseServiceRoleKey) {
+  loadError = "Faltan variables de servidor para cargar metricas.";
+} else {
+  const query = new URL(`${supabaseUrl}/rest/v1/${leadsTable}`);
+  query.searchParams.set("select", "id,created_at,status,lead_stage,budget,source");
+  query.searchParams.set("order", "created_at.desc");
+  query.searchParams.set("limit", "5000");
+
+  const response = await fetch(query.toString(), {
+    headers: {
+      apikey: supabaseServiceRoleKey,
+      Authorization: `Bearer ${supabaseServiceRoleKey}`,
+    },
+  });
+
+  if (!response.ok) {
+    loadError = `No se pudieron cargar metricas (${response.status}).`;
+  } else {
+    const rows = (await response.json()) as Array<{
+      created_at?: string;
+      status?: string;
+      lead_stage?: string;
+      budget?: string;
+      source?: string;
+    }>;
+
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const sourceCounter = new Map<string, number>();
+
+    metrics.total = rows.length;
+
+    rows.forEach((lead) => {
+      const status = String(lead.status || "new").toLowerCase();
+      if (status in metrics.byStatus) {
+        metrics.byStatus[status as keyof typeof metrics.byStatus] += 1;
+      }
+
+      const tier = getLeadTier(lead);
+      metrics.byTier[tier as keyof typeof metrics.byTier] += 1;
+
+      const source = (lead.source || "desconocido").toLowerCase();
+      sourceCounter.set(source, (sourceCounter.get(source) || 0) + 1);
+
+      const createdAt = new Date(String(lead.created_at || "")).getTime();
+      if (!Number.isNaN(createdAt) && now - createdAt <= dayMs) {
+        metrics.last24h += 1;
+      }
+    });
+
+    metrics.sources = [...sourceCounter.entries()]
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    const contactedOrMore =
+      metrics.byStatus.contacted +
+      metrics.byStatus.qualified +
+      metrics.byStatus.won +
+      metrics.byStatus.lost;
+    const qualifiedOrMore = metrics.byStatus.qualified + metrics.byStatus.won;
+
+    funnel.contactRate = metrics.total
+      ? Number(((contactedOrMore / metrics.total) * 100).toFixed(1))
+      : 0;
+    funnel.qualificationRate = metrics.total
+      ? Number(((qualifiedOrMore / metrics.total) * 100).toFixed(1))
+      : 0;
+    funnel.winRate = metrics.total
+      ? Number(((metrics.byStatus.won / metrics.total) * 100).toFixed(1))
+      : 0;
+  }
+}
+---
+
+<Layout title="Metricas | MUGA" description="Panel simple de metricas de leads.">
+  <Navigation>
+    <Breadcrumb slot="mobile-breadcrumb" items={breadcrumbItems} />
+  </Navigation>
+  <div class="hidden lg:block">
+    <Breadcrumb items={breadcrumbItems} />
+  </div>
+
+  <section class="section-space section-space-after-hero">
+    <div class="page-container space-y-6">
+      <div class="space-y-2">
+        <span class="muga-badge muga-badge--sm">Interno</span>
+        <h1 class="section-title">Metricas de leads</h1>
+        <p class="section-lead">Resumen simple para leer volumen, prioridad y conversion del embudo comercial.</p>
+      </div>
+
+      {loadError ? (
+        <div class="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{loadError}</div>
+      ) : (
+        <>
+          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Leads totales</p>
+              <p class="mt-2 text-3xl font-semibold text-white">{metrics.total}</p>
+              <p class="mt-1 text-xs text-graylight">Ultimas 24h: {metrics.last24h}</p>
+            </article>
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Estados</p>
+              <p class="mt-2 text-sm leading-7 text-white">New: {metrics.byStatus.new}</p>
+              <p class="text-sm leading-7 text-white">Contacted: {metrics.byStatus.contacted}</p>
+              <p class="text-sm leading-7 text-white">Qualified: {metrics.byStatus.qualified}</p>
+              <p class="text-sm leading-7 text-white">Won: {metrics.byStatus.won}</p>
+              <p class="text-sm leading-7 text-white">Lost: {metrics.byStatus.lost}</p>
+            </article>
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Prioridad</p>
+              <p class="mt-2 text-sm leading-7 text-white">Alta: {metrics.byTier.alto}</p>
+              <p class="text-sm leading-7 text-white">Calificado: {metrics.byTier.calificado}</p>
+              <p class="text-sm leading-7 text-white">Normal: {metrics.byTier.nuevo}</p>
+            </article>
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Embudo</p>
+              <p class="mt-2 text-sm leading-7 text-white">Contacto: {funnel.contactRate}%</p>
+              <p class="text-sm leading-7 text-white">Cualificacion: {funnel.qualificationRate}%</p>
+              <p class="text-sm leading-7 text-white">Cierre: {funnel.winRate}%</p>
+            </article>
+          </div>
+
+          <div class="border border-white/10 bg-muga-dark-800/35 p-5">
+            <h2 class="text-lg font-semibold text-white">Fuentes principales</h2>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {metrics.sources.length ? (
+                metrics.sources.map((item) => (
+                  <div class="border border-white/10 bg-obscure/40 px-4 py-3">
+                    <p class="text-xs uppercase tracking-wider text-graylight">{item.source}</p>
+                    <p class="mt-1 text-2xl font-semibold text-white">{item.count}</p>
+                  </div>
+                ))
+              ) : (
+                <p class="text-sm text-graylight">Sin datos de fuente por ahora.</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  </section>
+</Layout>
