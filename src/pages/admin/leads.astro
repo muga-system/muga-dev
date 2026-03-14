@@ -42,6 +42,11 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
 
       <div id="admin-feedback" class="hidden border border-white/10 bg-muga-dark-800/45 px-4 py-3 text-sm text-graylight"></div>
 
+      <div class="flex items-center justify-between border border-white/10 bg-muga-dark-800/30 px-4 py-3 text-xs text-graylight">
+        <p id="token-status">Token: no cargado</p>
+        <p id="last-sync">Ultima actualizacion: -</p>
+      </div>
+
       <div class="overflow-x-auto border border-white/10 bg-muga-dark-800/45">
         <table class="min-w-full divide-y divide-white/10 text-sm">
           <thead class="bg-white/5">
@@ -54,6 +59,28 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
           </thead>
           <tbody id="leads-table-body" class="divide-y divide-white/10"></tbody>
         </table>
+      </div>
+
+      <div id="history-panel" class="hidden border border-white/10 bg-muga-dark-800/45 p-4">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white">Historial por contacto</h2>
+          <button id="history-close-btn" type="button" class="border border-white/20 px-3 py-1 text-xs text-white hover:border-white/40">Cerrar</button>
+        </div>
+        <p id="history-summary" class="mb-3 text-xs text-graylight">Sin datos</p>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-white/10 text-sm">
+            <thead class="bg-white/5">
+              <tr>
+                <th class="px-3 py-2 text-left font-semibold text-white">Fecha</th>
+                <th class="px-3 py-2 text-left font-semibold text-white">Estado</th>
+                <th class="px-3 py-2 text-left font-semibold text-white">Proyecto</th>
+                <th class="px-3 py-2 text-left font-semibold text-white">Presupuesto</th>
+                <th class="px-3 py-2 text-left font-semibold text-white">Mensaje</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body" class="divide-y divide-white/10"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="flex items-center justify-between text-sm text-graylight">
@@ -84,10 +111,21 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
     const paginationInfo = document.getElementById("pagination-info");
     const prevPageButton = document.getElementById("prev-page-btn");
     const nextPageButton = document.getElementById("next-page-btn");
+    const tokenStatus = document.getElementById("token-status");
+    const lastSync = document.getElementById("last-sync");
+    const historyPanel = document.getElementById("history-panel");
+    const historySummary = document.getElementById("history-summary");
+    const historyTableBody = document.getElementById("history-table-body");
+    const historyCloseButton = document.getElementById("history-close-btn");
 
     const statusOptions = ["new", "contacted", "qualified", "won", "lost"];
 
     if (tokenInput) tokenInput.value = state.token;
+    if (tokenStatus) {
+      tokenStatus.textContent = state.token
+        ? "Token: cargado localmente"
+        : "Token: no cargado";
+    }
 
     const showFeedback = (message, isError = false) => {
       if (!feedbackBox) return;
@@ -150,11 +188,41 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
             </select>
           </td>
           <td class="px-4 py-3 align-top">
-            <button data-save-lead="${lead.id}" class="border border-accent/70 bg-accent px-3 py-1 text-xs font-semibold text-obscure hover:bg-accent/90">Guardar</button>
+            <div class="flex flex-wrap gap-2">
+              <button data-save-lead="${lead.id}" class="border border-accent/70 bg-accent px-3 py-1 text-xs font-semibold text-obscure hover:bg-accent/90">Guardar</button>
+              <button data-history-email="${lead.email || ""}" class="border border-white/20 px-3 py-1 text-xs font-semibold text-white hover:border-white/40">Historial</button>
+            </div>
           </td>
         `;
 
         tableBody.appendChild(tr);
+      });
+    };
+
+    const renderHistory = (email, rows) => {
+      if (!historyPanel || !historySummary || !historyTableBody) return;
+
+      historyPanel.classList.remove("hidden");
+      historySummary.textContent = `${email} · ${rows.length} registros`;
+      historyTableBody.innerHTML = "";
+
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = '<td colspan="5" class="px-3 py-4 text-center text-graylight">No hay historial para este contacto.</td>';
+        historyTableBody.appendChild(tr);
+        return;
+      }
+
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-3 py-2 align-top text-graylight">${formatDate(row.created_at)}</td>
+          <td class="px-3 py-2 align-top text-white">${row.status || "-"}</td>
+          <td class="px-3 py-2 align-top text-graylight">${row.project || "-"}</td>
+          <td class="px-3 py-2 align-top text-graylight">${row.budget || "-"}</td>
+          <td class="px-3 py-2 align-top text-graylight">${row.message || "-"}</td>
+        `;
+        historyTableBody.appendChild(tr);
       });
     };
 
@@ -172,10 +240,12 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
         limit: "20",
         status: statusFilter?.value || "all",
         q: searchInput?.value || "",
+        _ts: String(Date.now()),
       });
 
       try {
         const response = await fetch(`/api/leads/list?${params.toString()}`, {
+          cache: "no-store",
           headers: {
             Authorization: `Bearer ${state.token}`,
           },
@@ -184,6 +254,9 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
         const data = await response.json();
 
         if (!response.ok) {
+          if (response.status === 401) {
+            showFeedback("Token admin inválido o vencido.", true);
+          }
           showFeedback(`Error al consultar leads: ${data.error || response.status}`, true);
           renderRows([]);
           return;
@@ -197,6 +270,9 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
         if (nextPageButton) nextPageButton.disabled = state.page >= state.totalPages;
 
         showFeedback("Leads actualizados.");
+        if (lastSync) {
+          lastSync.textContent = `Ultima actualizacion: ${new Date().toLocaleTimeString("es-AR")}`;
+        }
         renderRows(data.rows || []);
       } catch (error) {
         showFeedback(`Error de red consultando leads: ${error}`, true);
@@ -219,6 +295,7 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
       try {
         const response = await fetch("/api/leads/estado", {
           method: "POST",
+          cache: "no-store",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${state.token}`,
@@ -243,17 +320,55 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
       }
     };
 
+    const fetchHistory = async (email) => {
+      if (!state.token) {
+        showFeedback("Token admin requerido.", true);
+        return;
+      }
+      if (!email || !email.includes("@")) {
+        showFeedback("Lead sin email válido para historial.", true);
+        return;
+      }
+
+      try {
+        const params = new URLSearchParams({
+          email,
+          limit: "50",
+          _ts: String(Date.now()),
+        });
+
+        const response = await fetch(`/api/leads/historial?${params.toString()}`, {
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${state.token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          showFeedback(`No se pudo obtener historial: ${data.error || response.status}`, true);
+          return;
+        }
+
+        renderHistory(email, data.rows || []);
+      } catch (error) {
+        showFeedback(`Error de red al obtener historial: ${error}`, true);
+      }
+    };
+
     saveTokenButton?.addEventListener("click", () => {
       const token = tokenInput?.value?.trim() || "";
       state.token = token;
 
       if (!token) {
         localStorage.removeItem("muga_leads_admin_token");
+        if (tokenStatus) tokenStatus.textContent = "Token: no cargado";
         showFeedback("Token eliminado.");
         return;
       }
 
       localStorage.setItem("muga_leads_admin_token", token);
+      if (tokenStatus) tokenStatus.textContent = "Token: cargado localmente";
       showFeedback("Token guardado localmente.");
       state.page = 1;
       fetchLeads();
@@ -292,12 +407,27 @@ import Navigation from "../../components/ui/Navigation/Navigation.astro";
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
       const leadId = target.getAttribute("data-save-lead");
-      if (!leadId) return;
-      updateLeadStatus(Number(leadId));
+      if (leadId) {
+        updateLeadStatus(Number(leadId));
+        return;
+      }
+
+      const email = target.getAttribute("data-history-email");
+      if (email) {
+        fetchHistory(email);
+      }
+    });
+
+    historyCloseButton?.addEventListener("click", () => {
+      historyPanel?.classList.add("hidden");
     });
 
     if (state.token) {
       fetchLeads();
+
+      window.setInterval(() => {
+        if (!document.hidden) fetchLeads();
+      }, 30000);
     }
   </script>
 </Layout>

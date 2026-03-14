@@ -152,6 +152,7 @@ Ruta interna: `/admin/leads`
 - usa token local (`LEADS_ADMIN_TOKEN`) para consultar y actualizar estados
 - consulta datos via `/api/leads/list`
 - actualiza estado via `/api/leads/estado`
+- historial por email via `/api/leads/historial`
 
 ## Alertas de fallo SMTP
 
@@ -184,4 +185,4 @@ curl -sS "https://muga.dev/api/leads/resumen-diario?hours=24" \
 
 Programacion en Vercel:
 
-- `vercel.json` ejecuta este endpoint todos los dias (`0 12 * * *`).
+- `vercel.json` ejecuta este endpoint todos los dias a las 20:00 de Argentina (`0 23 * * *` UTC).
