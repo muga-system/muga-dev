@@ -13,6 +13,125 @@ const getQueryValue = (name: string) => {
   return new URLSearchParams(window.location.search).get(name) || "";
 };
 
+const ATTRIBUTION_STORAGE_KEY = "muga_attribution_v1";
+
+type AttributionSnapshot = {
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_term?: string;
+  utm_content?: string;
+  gclid?: string;
+  fbclid?: string;
+  landing_page?: string;
+  captured_at?: string;
+};
+
+type AttributionStore = {
+  firstTouch?: AttributionSnapshot;
+  lastTouch?: AttributionSnapshot;
+};
+
+const safeLower = (value: string) => String(value || "").trim().toLowerCase();
+
+const readAttributionStore = (): AttributionStore => {
+  try {
+    const raw = window.localStorage.getItem(ATTRIBUTION_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as AttributionStore;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeAttributionStore = (store: AttributionStore) => {
+  try {
+    window.localStorage.setItem(ATTRIBUTION_STORAGE_KEY, JSON.stringify(store));
+  } catch {
+    // Ignore storage write errors.
+  }
+};
+
+const buildCurrentAttribution = (): AttributionSnapshot => {
+  const snapshot: AttributionSnapshot = {
+    utm_source: getQueryValue("utm_source"),
+    utm_medium: getQueryValue("utm_medium"),
+    utm_campaign: getQueryValue("utm_campaign"),
+    utm_term: getQueryValue("utm_term"),
+    utm_content: getQueryValue("utm_content"),
+    gclid: getQueryValue("gclid"),
+    fbclid: getQueryValue("fbclid"),
+    landing_page: window.location.pathname,
+    captured_at: new Date().toISOString(),
+  };
+
+  const hasUtmData =
+    !!snapshot.utm_source ||
+    !!snapshot.utm_medium ||
+    !!snapshot.utm_campaign ||
+    !!snapshot.utm_term ||
+    !!snapshot.utm_content ||
+    !!snapshot.gclid ||
+    !!snapshot.fbclid;
+
+  return hasUtmData ? snapshot : {};
+};
+
+const inferFallbackAttribution = () => {
+  const gclid = getQueryValue("gclid");
+  const fbclid = getQueryValue("fbclid");
+
+  if (gclid) {
+    return { utm_source: "google", utm_medium: "cpc", gclid };
+  }
+
+  if (fbclid) {
+    return { utm_source: "facebook", utm_medium: "cpc", fbclid };
+  }
+
+  const referrer = document.referrer || "";
+  if (!referrer) return { utm_source: "direct", utm_medium: "none" };
+
+  try {
+    const referrerHost = new URL(referrer).hostname;
+    const currentHost = window.location.hostname;
+    if (!referrerHost || referrerHost === currentHost) {
+      return { utm_source: "direct", utm_medium: "none" };
+    }
+    return { utm_source: safeLower(referrerHost), utm_medium: "referral" };
+  } catch {
+    return { utm_source: "direct", utm_medium: "none" };
+  }
+};
+
+const resolveAttributionValues = () => {
+  const store = readAttributionStore();
+  const current = buildCurrentAttribution();
+  const hasCurrentData = Object.keys(current).length > 0;
+
+  if (hasCurrentData) {
+    const nextStore: AttributionStore = {
+      firstTouch: store.firstTouch || current,
+      lastTouch: current,
+    };
+    writeAttributionStore(nextStore);
+    return {
+      ...inferFallbackAttribution(),
+      ...nextStore.firstTouch,
+      ...nextStore.lastTouch,
+    };
+  }
+
+  const merged = {
+    ...inferFallbackAttribution(),
+    ...(store.firstTouch || {}),
+    ...(store.lastTouch || {}),
+  };
+
+  return merged;
+};
+
 const emitFormTrackingEvent = (
   eventName: string,
   payload: Record<string, string> = {},
@@ -135,13 +254,15 @@ const initContactFormRedirect = () => {
     if (timezoneField) timezoneField.value = Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown";
     if (userAgentField) userAgentField.value = navigator.userAgent || "unknown";
 
-    if (utmSourceField) utmSourceField.value = getQueryValue("utm_source");
-    if (utmMediumField) utmMediumField.value = getQueryValue("utm_medium");
-    if (utmCampaignField) utmCampaignField.value = getQueryValue("utm_campaign");
-    if (utmTermField) utmTermField.value = getQueryValue("utm_term");
-    if (utmContentField) utmContentField.value = getQueryValue("utm_content");
-    if (gclidField) gclidField.value = getQueryValue("gclid");
-    if (fbclidField) fbclidField.value = getQueryValue("fbclid");
+    const attribution = resolveAttributionValues();
+
+    if (utmSourceField) utmSourceField.value = String(attribution.utm_source || "");
+    if (utmMediumField) utmMediumField.value = String(attribution.utm_medium || "");
+    if (utmCampaignField) utmCampaignField.value = String(attribution.utm_campaign || "");
+    if (utmTermField) utmTermField.value = String(attribution.utm_term || "");
+    if (utmContentField) utmContentField.value = String(attribution.utm_content || "");
+    if (gclidField) gclidField.value = String(attribution.gclid || "");
+    if (fbclidField) fbclidField.value = String(attribution.fbclid || "");
   };
 
   updateAttributionFields();

@@ -114,6 +114,21 @@ SQL de creacion:
 
 `supabase/lead-email-events.sql`
 
+## Atribucion UTM
+
+El formulario captura UTM por query params y conserva atribucion de primera/ultima visita en navegador para no perderla cuando el usuario navega entre paginas antes de enviar.
+
+Fallback automatico:
+
+- si no hay UTM explicita y existe `gclid` -> `utm_source=google`, `utm_medium=cpc`
+- si no hay UTM explicita y existe `fbclid` -> `utm_source=facebook`, `utm_medium=cpc`
+- si no hay UTM y hay referer externo -> `utm_medium=referral`
+- si no hay señales -> `utm_source=direct`, `utm_medium=none`
+
+Para historicos:
+
+- `supabase/leads-backfill-utm.sql`
+
 ## Anti-spam basico
 
 `/api/contacto` incluye:

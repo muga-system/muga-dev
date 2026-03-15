@@ -26,6 +26,36 @@ const isRateLimited = (key) => {
 
 const normalizeLowerText = (value) => String(value || "").trim().toLowerCase();
 
+const parseHostname = (urlValue) => {
+  try {
+    return new URL(String(urlValue || "")).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+};
+
+const inferUtmSource = (payload) => {
+  const existing = normalizeLowerText(payload.utm_source);
+  if (existing) return existing;
+
+  if (normalizeLowerText(payload.gclid)) return "google";
+  if (normalizeLowerText(payload.fbclid)) return "facebook";
+
+  const referrerHost = parseHostname(payload.referrer);
+  if (referrerHost) return referrerHost;
+
+  return "direct";
+};
+
+const inferUtmMedium = (payload) => {
+  const existing = normalizeLowerText(payload.utm_medium);
+  if (existing) return existing;
+
+  if (normalizeLowerText(payload.gclid) || normalizeLowerText(payload.fbclid)) return "cpc";
+  if (parseHostname(payload.referrer)) return "referral";
+  return "none";
+};
+
 const resolveLeadVariant = ({ leadTier, budget, leadStage }) => {
   const normalizedTier = normalizeLowerText(leadTier);
   const normalizedBudget = normalizeLowerText(budget);
@@ -323,6 +353,9 @@ export const POST = async ({ request }) => {
       cleanedPayload[key] = null;
     }
   });
+
+  cleanedPayload.utm_source = inferUtmSource(cleanedPayload);
+  cleanedPayload.utm_medium = inferUtmMedium(cleanedPayload);
 
   if (!cleanedPayload.status) {
     cleanedPayload.status = "new";
