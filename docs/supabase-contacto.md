@@ -156,6 +156,31 @@ Programacion en Vercel:
 
 - `vercel.json` ejecuta este endpoint todos los dias a las 20:00 de Argentina (`0 23 * * *` UTC).
 
+## Alerta SLA automatica
+
+Endpoint interno: `GET /api/leads/alerta-sla`
+
+Headers:
+
+- `Authorization: Bearer <LEADS_CRON_TOKEN>`
+
+Query params opcionales:
+
+- `warning_hours` (default `24`)
+- `critical_hours` (default `48`)
+- `top` (default `12`, max `30`)
+
+Ejemplo manual:
+
+```bash
+curl -sS "https://muga.dev/api/leads/alerta-sla?warning_hours=24&critical_hours=48" \
+  -H "Authorization: Bearer $LEADS_CRON_TOKEN"
+```
+
+Programacion en Vercel:
+
+- `vercel.json` ejecuta este endpoint todos los dias a las 12:00 de Argentina (`0 15 * * *` UTC).
+
 ## Panel de metricas protegido
 
 Ruta interna: `/metricas`

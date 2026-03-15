@@ -21,7 +21,7 @@
 - [x] Registrar `last_contact_at` para control operativo.
 - [x] Implementar anti-spam básico (honeypot + rate limit por IP/email).
 - [x] Crear alertas de error SMTP (cuando no se pueda enviar correo).
-- [ ] Alertas automáticas de SLA vencido (`new` >24h y >48h).
+- [x] Alertas automáticas de SLA vencido (`new` >24h y >48h).
 
 ### Prioridad media
 
@@ -56,7 +56,7 @@
 
 ### Semana 3 (optimización operativa)
 
-- [ ] SLA automático con alertas escalonadas.
+- [x] SLA automático con alertas escalonadas.
 - [ ] Métricas con UTM por canal/campaña.
 - [ ] Reporte semanal con comparativa vs semana anterior.
 

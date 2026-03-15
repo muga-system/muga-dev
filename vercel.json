@@ -3,6 +3,10 @@
     {
       "path": "/api/leads/resumen-diario",
       "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/leads/alerta-sla",
+      "schedule": "0 15 * * *"
     }
   ]
 }
