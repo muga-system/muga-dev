@@ -161,6 +161,21 @@ const leadsRecientes: Array<{
   status: string;
   project: string;
 }> = [];
+const bandejaHoy: Array<{
+  id: number;
+  createdAt: string;
+  name: string;
+  email: string;
+  project: string;
+  ageHours: number;
+  urgency: "normal" | "warning" | "critico";
+}> = [];
+const bandejaResumen = {
+  total: 0,
+  normal: 0,
+  warning: 0,
+  critico: 0,
+};
 
 if (!isAuthorized) {
   loadError = "";
@@ -278,6 +293,60 @@ if (!isAuthorized) {
       if (selectedUtmSource !== "all" && utmSource !== selectedUtmSource) return false;
       if (selectedUtmCampaign !== "all" && utmCampaign !== selectedUtmCampaign) return false;
       return true;
+    });
+
+    const newQueueRows = safeRows
+      .filter((lead) => {
+        const status = String(lead.status || "new").toLowerCase();
+        const source = String(lead.source || "desconocido").toLowerCase();
+        const utmSource = String(lead.utm_source || "sin_utm").trim().toLowerCase();
+        const utmCampaign = String(lead.utm_campaign || "sin_campana").trim().toLowerCase();
+
+        if (status !== "new") return false;
+        if (selectedSource !== "all" && source !== selectedSource) return false;
+        if (selectedUtmSource !== "all" && utmSource !== selectedUtmSource) return false;
+        if (selectedUtmCampaign !== "all" && utmCampaign !== selectedUtmCampaign) return false;
+        return true;
+      })
+      .map((lead) => {
+        const createdDate = new Date(String(lead.created_at || ""));
+        const ageHours = Number.isNaN(createdDate.getTime())
+          ? 0
+          : Math.max(0, (Date.now() - createdDate.getTime()) / (1000 * 60 * 60));
+        const urgency: "normal" | "warning" | "critico" =
+          ageHours >= 48 ? "critico" : ageHours >= 24 ? "warning" : "normal";
+
+        return {
+          lead,
+          createdDate,
+          ageHours,
+          urgency,
+        };
+      })
+      .sort((a, b) => b.ageHours - a.ageHours);
+
+    bandejaResumen.total = newQueueRows.length;
+    bandejaResumen.normal = newQueueRows.filter((row) => row.urgency === "normal").length;
+    bandejaResumen.warning = newQueueRows.filter((row) => row.urgency === "warning").length;
+    bandejaResumen.critico = newQueueRows.filter((row) => row.urgency === "critico").length;
+
+    newQueueRows.slice(0, 15).forEach(({ lead, createdDate, ageHours, urgency }) => {
+      const createdAt = Number.isNaN(createdDate.getTime())
+        ? "-"
+        : createdDate.toLocaleString("es-AR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          });
+
+      bandejaHoy.push({
+        id: Number(lead.id || 0),
+        createdAt,
+        name: String(lead.name || "Sin nombre"),
+        email: String(lead.email || "sin-email"),
+        project: String(lead.project || "-"),
+        ageHours,
+        urgency,
+      });
     });
 
     metrics.total = filteredRows.length;
@@ -427,6 +496,16 @@ const topUtmSourceItems = metrics.attribution.utmSources.slice(0, 6);
 const overflowUtmSourceItems = metrics.attribution.utmSources.slice(6);
 const topUtmCampaignItems = metrics.attribution.utmCampaigns.slice(0, 6);
 const overflowUtmCampaignItems = metrics.attribution.utmCampaigns.slice(6);
+const urgencyLabels = {
+  normal: "En tiempo",
+  warning: "Warning >24h",
+  critico: "Critico >48h",
+};
+const urgencyClass = {
+  normal: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+  warning: "border-amber-500/30 bg-amber-500/10 text-amber-300",
+  critico: "border-red-500/30 bg-red-500/10 text-red-300",
+};
 const statusUpdateMessages: Record<string, { text: string; className: string }> = {
   ok: {
     text: "Estado actualizado correctamente.",
@@ -673,6 +752,64 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                 <p class="text-sm text-graylight">Sin datos de fuente para los filtros actuales.</p>
               )}
             </div>
+          </article>
+
+          <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+            <h2 class="text-lg font-semibold text-white">Bandeja hoy · leads nuevos</h2>
+            <p class="mt-2 text-sm text-graylight">Ordenada por antiguedad para priorizar seguimiento operativo.</p>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div class="border border-white/10 bg-obscure/40 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-graylight">Pendientes</p>
+                <p class="mt-1 text-2xl font-semibold text-white">{bandejaResumen.total}</p>
+              </div>
+              <div class="border border-red-500/30 bg-red-500/10 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-red-300">Criticos >48h</p>
+                <p class="mt-1 text-2xl font-semibold text-red-200">{bandejaResumen.critico}</p>
+              </div>
+              <div class="border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-amber-300">Warning >24h</p>
+                <p class="mt-1 text-2xl font-semibold text-amber-200">{bandejaResumen.warning}</p>
+              </div>
+              <div class="border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-emerald-300">En tiempo</p>
+                <p class="mt-1 text-2xl font-semibold text-emerald-200">{bandejaResumen.normal}</p>
+              </div>
+            </div>
+            {bandejaHoy.length ? (
+              <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-white/10 text-left text-xs uppercase tracking-wider text-graylight">
+                      <th class="px-3 py-2">Antiguedad</th>
+                      <th class="px-3 py-2">Prioridad</th>
+                      <th class="px-3 py-2">Lead</th>
+                      <th class="px-3 py-2">Proyecto</th>
+                      <th class="px-3 py-2">Alta</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bandejaHoy.map((lead) => (
+                      <tr class="border-b border-white/10 last:border-0">
+                        <td class="px-3 py-2 font-semibold text-white">{formatHours(lead.ageHours)}</td>
+                        <td class="px-3 py-2">
+                          <span class={`inline-flex border px-2 py-1 text-xs font-semibold ${urgencyClass[lead.urgency]}`}>
+                            {urgencyLabels[lead.urgency]}
+                          </span>
+                        </td>
+                        <td class="px-3 py-2">
+                          <p class="font-semibold text-white">{lead.name}</p>
+                          <p class="text-xs text-graylight">{lead.email}</p>
+                        </td>
+                        <td class="px-3 py-2 text-graylight">{lead.project}</td>
+                        <td class="px-3 py-2 text-graylight">{lead.createdAt}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p class="mt-4 text-sm text-graylight">No hay leads nuevos pendientes para este periodo/filtro.</p>
+            )}
           </article>
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
