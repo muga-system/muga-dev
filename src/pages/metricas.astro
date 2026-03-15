@@ -717,9 +717,6 @@ const statusUpdateMessages: Record<string, { text: string; className: string }> 
 const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
 
 const knownCountryItems = metrics.countries.filter((item) => item.code !== "ZZ");
-const unknownCountryCount = metrics.countries
-  .filter((item) => item.code === "ZZ")
-  .reduce((acc, item) => acc + item.count, 0);
 
 const mapLeadsGeoJson = {
   type: "FeatureCollection",
@@ -1149,12 +1146,6 @@ const mapLeadsGeoJson = {
                 ) : (
                   <p class="text-sm text-graylight">Sin datos de pais identificable para los filtros actuales.</p>
                 )}
-                {unknownCountryCount ? (
-                  <div class="flex items-center justify-between text-sm">
-                    <p class="text-graylight">Sin geodato (ZZ)</p>
-                    <p class="font-semibold text-white">{unknownCountryCount}</p>
-                  </div>
-                ) : null}
               </div>
             </article>
           </div>
@@ -1241,7 +1232,7 @@ const mapLeadsGeoJson = {
 
       const { default: maplibregl } = await import("maplibre-gl");
 
-      const createMap = (styleUrl) => new maplibregl.Map({
+      const createMap = (styleUrl: string) => new maplibregl.Map({
         container,
         style: styleUrl,
         center: [0, 20],
@@ -1251,9 +1242,9 @@ const mapLeadsGeoJson = {
 
       let map = createMap("https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json");
 
-      const applyMapTheme = (instance) => {
+      const applyMapTheme = (instance: any) => {
         const layers = instance.getStyle()?.layers || [];
-        layers.forEach((layer) => {
+        layers.forEach((layer: any) => {
           const id = String(layer.id || "").toLowerCase();
 
           if (layer.type === "background") {
