@@ -15,6 +15,17 @@ const getClientIp = (request) => {
   );
 };
 
+const getGeoContext = (request) => {
+  const country = (request.headers.get("x-vercel-ip-country") || "").trim().toUpperCase();
+  const region = (request.headers.get("x-vercel-ip-country-region") || "").trim();
+  const city = (request.headers.get("x-vercel-ip-city") || "").trim();
+  return {
+    country: /^[A-Z]{2}$/.test(country) ? country : "",
+    region,
+    city,
+  };
+};
+
 const isRateLimited = (key) => {
   const now = Date.now();
   const previousTimestamps = recentSubmissions.get(key) || [];
@@ -328,6 +339,7 @@ export const POST = async ({ request }) => {
   }
 
   const clientIp = getClientIp(request);
+  const geo = getGeoContext(request);
   const rateLimitKey = `${clientIp}:${normalizedEmail || "no-email"}`;
   if (isRateLimited(rateLimitKey)) {
     return new Response(JSON.stringify({ error: "rate_limited" }), {
@@ -356,12 +368,15 @@ export const POST = async ({ request }) => {
 
   cleanedPayload.utm_source = inferUtmSource(cleanedPayload);
   cleanedPayload.utm_medium = inferUtmMedium(cleanedPayload);
+  cleanedPayload.ip_country = geo.country || null;
+  cleanedPayload.ip_region = geo.region || null;
+  cleanedPayload.ip_city = geo.city || null;
 
   if (!cleanedPayload.status) {
     cleanedPayload.status = "new";
   }
 
-  const response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
+  let response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -371,6 +386,24 @@ export const POST = async ({ request }) => {
     },
     body: JSON.stringify(cleanedPayload),
   });
+
+  if (!response.ok && response.status === 400) {
+    const fallbackPayload = { ...cleanedPayload };
+    delete fallbackPayload.ip_country;
+    delete fallbackPayload.ip_region;
+    delete fallbackPayload.ip_city;
+
+    response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: supabaseServiceRoleKey,
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify(fallbackPayload),
+    });
+  }
 
   if (!response.ok) {
     const detail = await response.text();

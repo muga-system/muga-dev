@@ -101,6 +101,79 @@ const formatHours = (value: number) => {
   return `${value.toFixed(1)} h`;
 };
 
+const parseHourFromDate = (date: Date, timezone?: string) => {
+  if (Number.isNaN(date.getTime())) return 0;
+  if (!timezone) return date.getUTCHours();
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      hour: "2-digit",
+      hour12: false,
+      timeZone: timezone,
+    }).formatToParts(date);
+    const hourPart = parts.find((part) => part.type === "hour")?.value || "0";
+    const parsed = Number(hourPart);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(23, parsed)) : 0;
+  } catch {
+    return date.getUTCHours();
+  }
+};
+
+const countryFromLocale = (locale?: string) => {
+  const value = String(locale || "").trim();
+  if (!value.includes("-")) return "";
+  const code = value.split("-").pop() || "";
+  return code.length === 2 ? code.toUpperCase() : "";
+};
+
+const COUNTRY_FROM_TIMEZONE_PREFIX: Record<string, string> = {
+  "America/Argentina": "AR",
+  "America/Sao_Paulo": "BR",
+  "America/Santiago": "CL",
+  "America/Bogota": "CO",
+  "America/Lima": "PE",
+  "America/Montevideo": "UY",
+  "America/Mexico_City": "MX",
+  "America/New_York": "US",
+  "Europe/Madrid": "ES",
+};
+
+const countryFromTimezone = (timezone?: string) => {
+  const value = String(timezone || "").trim();
+  if (!value) return "";
+  const exact = COUNTRY_FROM_TIMEZONE_PREFIX[value];
+  if (exact) return exact;
+  const prefixed = Object.entries(COUNTRY_FROM_TIMEZONE_PREFIX).find(([prefix]) => value.startsWith(prefix));
+  return prefixed ? prefixed[1] : "";
+};
+
+const normalizeCountryCode = (value?: string) => {
+  const code = String(value || "").trim().toUpperCase();
+  if (code.length !== 2) return "";
+  return /^[A-Z]{2}$/.test(code) ? code : "";
+};
+
+const inferLeadCountry = (lead: { ip_country?: string; locale?: string; timezone?: string }) => {
+  return (
+    normalizeCountryCode(lead.ip_country) ||
+    normalizeCountryCode(countryFromLocale(lead.locale)) ||
+    normalizeCountryCode(countryFromTimezone(lead.timezone)) ||
+    "ZZ"
+  );
+};
+
+const COUNTRY_COORDS: Record<string, { x: number; y: number; label: string }> = {
+  AR: { x: 150, y: 160, label: "Argentina" },
+  BR: { x: 170, y: 130, label: "Brasil" },
+  CL: { x: 130, y: 145, label: "Chile" },
+  UY: { x: 155, y: 148, label: "Uruguay" },
+  US: { x: 95, y: 78, label: "Estados Unidos" },
+  MX: { x: 78, y: 98, label: "Mexico" },
+  ES: { x: 285, y: 78, label: "Espana" },
+  CO: { x: 128, y: 112, label: "Colombia" },
+  PE: { x: 122, y: 132, label: "Peru" },
+  ZZ: { x: 330, y: 188, label: "Sin dato" },
+};
+
 const diasOpciones = [1, 7, 30, 90];
 
 const selectedDays = parsePositiveInt(Astro.url.searchParams.get("dias"), 30);
@@ -150,6 +223,8 @@ const metrics = {
     contactedWithin24h: 0,
     measuredLeads: 0,
   },
+  activityByHour: Array.from({ length: 24 }, (_, hour) => ({ hour, total: 0 })),
+  countries: [] as Array<{ code: string; label: string; count: number; x: number; y: number }>,
 };
 
 const funnel = {
@@ -194,8 +269,9 @@ if (!isAuthorized) {
   const cutoffIso = new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString();
 
   const selectCandidates = [
-    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at",
-    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign",
+    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at,timezone,locale,ip_country",
+    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,timezone,locale",
+    "id,created_at,name,email,project,status,lead_stage,budget,source,timezone,locale",
     "id,created_at,name,email,project,status,lead_stage,budget,source",
   ];
 
@@ -213,6 +289,9 @@ if (!isAuthorized) {
     utm_medium?: string;
     utm_campaign?: string;
     first_contact_at?: string;
+    timezone?: string;
+    locale?: string;
+    ip_country?: string;
   }> | null = null;
   let lastStatus = 500;
 
@@ -246,6 +325,9 @@ if (!isAuthorized) {
         utm_medium?: string;
         utm_campaign?: string;
         first_contact_at?: string;
+        timezone?: string;
+        locale?: string;
+        ip_country?: string;
       }>;
       break;
     }
@@ -270,6 +352,9 @@ if (!isAuthorized) {
       utm_medium?: string;
       utm_campaign?: string;
       first_contact_at?: string;
+      timezone?: string;
+      locale?: string;
+      ip_country?: string;
     }>;
 
     const allSourceCounter = new Map<string, number>();
@@ -363,6 +448,8 @@ if (!isAuthorized) {
     const filteredDaily = new Map<string, number>();
     const filteredUtmSourceCounter = new Map<string, number>();
     const filteredUtmCampaignCounter = new Map<string, number>();
+    const filteredCountryCounter = new Map<string, number>();
+    const hourlyCounter = Array.from({ length: 24 }, () => 0);
     let firstContactHoursTotal = 0;
     let firstContactMeasured = 0;
     let firstContactWithin24h = 0;
@@ -388,7 +475,13 @@ if (!isAuthorized) {
       if (!Number.isNaN(createdDate.getTime())) {
         const key = createdDate.toISOString().slice(0, 10);
         filteredDaily.set(key, (filteredDaily.get(key) || 0) + 1);
+
+        const leadHour = parseHourFromDate(createdDate, String(lead.timezone || ""));
+        hourlyCounter[leadHour] += 1;
       }
+
+      const countryCode = inferLeadCountry(lead);
+      filteredCountryCounter.set(countryCode, (filteredCountryCounter.get(countryCode) || 0) + 1);
 
       const firstContactRaw = String(lead.first_contact_at || "");
       if (firstContactRaw) {
@@ -454,6 +547,22 @@ if (!isAuthorized) {
       ? Number(((firstContactWithin24h / firstContactMeasured) * 100).toFixed(1))
       : 0;
 
+    metrics.activityByHour = hourlyCounter.map((total, hour) => ({ hour, total }));
+
+    metrics.countries = [...filteredCountryCounter.entries()]
+      .map(([code, count]) => {
+        const coord = COUNTRY_COORDS[code] || COUNTRY_COORDS.ZZ;
+        return {
+          code,
+          count,
+          label: coord.label,
+          x: coord.x,
+          y: coord.y,
+        };
+      })
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+
     const contactedOrMore =
       metrics.byStatus.contacted +
       metrics.byStatus.qualified +
@@ -501,6 +610,7 @@ const prioridadItems = [
 const maxEstado = Math.max(1, ...estadoItems.map((item) => item.value));
 const maxPrioridad = Math.max(1, ...prioridadItems.map((item) => item.value));
 const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
+const maxActividadHora = Math.max(1, ...metrics.activityByHour.map((item) => item.total));
 const topUtmSourceItems = metrics.attribution.utmSources.slice(0, 6);
 const overflowUtmSourceItems = metrics.attribution.utmSources.slice(6);
 const topUtmCampaignItems = metrics.attribution.utmCampaigns.slice(0, 6);
@@ -963,6 +1073,52 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
               <p class="mt-4 text-sm text-graylight">Sin leads para actualizar con los filtros actuales.</p>
             )}
           </article>
+
+          <div class="grid gap-4 lg:grid-cols-2">
+            <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+              <h2 class="text-lg font-semibold text-white">Actividad por hora</h2>
+              <p class="mt-2 text-sm text-graylight">Distribucion de envios segun hora local estimada del lead.</p>
+              <div class="mt-4 grid grid-cols-12 gap-1">
+                {metrics.activityByHour.map((item) => (
+                  <div class="space-y-1 text-center">
+                    <div class="mx-auto flex h-20 w-full max-w-[18px] items-end bg-white/5 p-[1px]">
+                      <div class="w-full bg-accent/85" style={`height:${(item.total / maxActividadHora) * 100}%`}></div>
+                    </div>
+                    <p class="text-[10px] text-graylight">{String(item.hour).padStart(2, "0")}</p>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+              <h2 class="text-lg font-semibold text-white">Origen por pais (estimado)</h2>
+              <p class="mt-2 text-sm text-graylight">Se estima por IP de Vercel y fallback por locale/timezone.</p>
+              <div class="mt-4 border border-white/10 bg-obscure/30 p-3">
+                <svg viewBox="0 0 360 200" class="h-auto w-full" role="img" aria-label="Mapa simple de origen por pais">
+                  <rect x="0" y="0" width="360" height="200" fill="rgba(255,255,255,0.02)"></rect>
+                  <path d="M20 75 L95 48 L145 58 L198 75 L246 68 L320 82 L340 115 L290 146 L238 136 L182 148 L132 142 L88 150 L42 126 Z" fill="rgba(255,255,255,0.05)"></path>
+                  {metrics.countries.map((item) => (
+                    <g>
+                      <circle cx={item.x} cy={item.y} r={Math.max(3, Math.min(10, 2 + item.count))} fill="rgba(255,83,83,0.85)"></circle>
+                      <text x={item.x + 6} y={item.y - 6} fill="rgba(255,255,255,0.9)" font-size="9">{item.code}</text>
+                    </g>
+                  ))}
+                </svg>
+              </div>
+              <div class="mt-3 space-y-2">
+                {metrics.countries.length ? (
+                  metrics.countries.map((item) => (
+                    <div class="flex items-center justify-between text-sm">
+                      <p class="text-graylight">{item.label} ({item.code})</p>
+                      <p class="font-semibold text-white">{item.count}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p class="text-sm text-graylight">Sin datos de pais para los filtros actuales.</p>
+                )}
+              </div>
+            </article>
+          </div>
 
           <div class="grid gap-4 lg:grid-cols-2">
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">

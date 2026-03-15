@@ -129,6 +129,17 @@ Para historicos:
 
 - `supabase/leads-backfill-utm.sql`
 
+## Analitica por hora y pais
+
+El panel `/metricas` ahora incluye:
+
+- actividad por hora de envio (estimada con `created_at` + `timezone` del navegador)
+- mapa simple por pais (estimado por `x-vercel-ip-country`, con fallback por `locale/timezone`)
+
+Para persistir pais/region/ciudad por IP, ejecutar:
+
+- `supabase/leads-geo.sql`
+
 ## Anti-spam basico
 
 `/api/contacto` incluye:
