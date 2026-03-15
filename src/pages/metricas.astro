@@ -127,6 +127,7 @@ const countryFromLocale = (locale?: string) => {
 
 const COUNTRY_FROM_TIMEZONE_PREFIX: Record<string, string> = {
   "America/Argentina": "AR",
+  "America/Buenos_Aires": "AR",
   "America/Sao_Paulo": "BR",
   "America/Santiago": "CL",
   "America/Bogota": "CO",
@@ -134,7 +135,15 @@ const COUNTRY_FROM_TIMEZONE_PREFIX: Record<string, string> = {
   "America/Montevideo": "UY",
   "America/Mexico_City": "MX",
   "America/New_York": "US",
+  "America/Los_Angeles": "US",
+  "America/Toronto": "CA",
   "Europe/Madrid": "ES",
+  "Europe/Lisbon": "PT",
+  "Europe/Paris": "FR",
+  "Europe/Berlin": "DE",
+  "Europe/Rome": "IT",
+  "Europe/London": "GB",
+  "Australia/Sydney": "AU",
 };
 
 const countryFromTimezone = (timezone?: string) => {
@@ -166,11 +175,20 @@ const COUNTRY_COORDS: Record<string, { x: number; y: number; label: string }> = 
   BR: { x: 170, y: 130, label: "Brasil" },
   CL: { x: 130, y: 145, label: "Chile" },
   UY: { x: 155, y: 148, label: "Uruguay" },
+  PY: { x: 154, y: 137, label: "Paraguay" },
+  BO: { x: 145, y: 136, label: "Bolivia" },
   US: { x: 95, y: 78, label: "Estados Unidos" },
+  CA: { x: 90, y: 58, label: "Canada" },
   MX: { x: 78, y: 98, label: "Mexico" },
   ES: { x: 285, y: 78, label: "Espana" },
+  PT: { x: 279, y: 82, label: "Portugal" },
+  FR: { x: 292, y: 73, label: "Francia" },
+  DE: { x: 299, y: 67, label: "Alemania" },
+  IT: { x: 306, y: 81, label: "Italia" },
+  GB: { x: 286, y: 61, label: "Reino Unido" },
   CO: { x: 128, y: 112, label: "Colombia" },
   PE: { x: 122, y: 132, label: "Peru" },
+  AU: { x: 330, y: 154, label: "Australia" },
   ZZ: { x: 330, y: 188, label: "Sin dato" },
 };
 
@@ -1095,11 +1113,22 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
               <p class="mt-2 text-sm text-graylight">Se estima por IP de Vercel y fallback por locale/timezone.</p>
               <div class="mt-4 border border-white/10 bg-obscure/30 p-3">
                 <svg viewBox="0 0 360 200" class="h-auto w-full" role="img" aria-label="Mapa simple de origen por pais">
-                  <rect x="0" y="0" width="360" height="200" fill="rgba(255,255,255,0.02)"></rect>
-                  <path d="M20 75 L95 48 L145 58 L198 75 L246 68 L320 82 L340 115 L290 146 L238 136 L182 148 L132 142 L88 150 L42 126 Z" fill="rgba(255,255,255,0.05)"></path>
+                  <defs>
+                    <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="rgba(255,255,255,0.06)"></stop>
+                      <stop offset="100%" stop-color="rgba(255,255,255,0.02)"></stop>
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="360" height="200" fill="url(#ocean)"></rect>
+                  <path d="M24 75 C37 60, 56 54, 78 51 C93 49, 103 55, 108 65 C112 74, 108 83, 95 91 C85 98, 75 102, 66 111 C54 123, 41 124, 31 116 C21 108, 18 94, 24 75 Z" fill="rgba(255,255,255,0.08)"></path>
+                  <path d="M82 108 C94 101, 109 102, 120 109 C129 115, 133 124, 129 132 C124 141, 116 149, 108 161 C102 170, 93 176, 82 172 C74 169, 70 159, 74 147 C77 139, 75 130, 75 121 C75 114, 78 110, 82 108 Z" fill="rgba(255,255,255,0.08)"></path>
+                  <path d="M175 70 C191 61, 215 61, 233 67 C251 73, 264 80, 279 87 C292 94, 303 92, 312 98 C321 105, 324 118, 315 123 C303 130, 284 130, 269 127 C252 123, 242 129, 229 129 C214 129, 204 121, 190 118 C179 115, 168 107, 167 97 C166 87, 168 77, 175 70 Z" fill="rgba(255,255,255,0.08)"></path>
+                  <path d="M316 147 C325 143, 338 144, 344 151 C350 159, 347 170, 339 176 C329 183, 317 182, 308 174 C302 169, 301 158, 307 152 C310 149, 313 148, 316 147 Z" fill="rgba(255,255,255,0.08)"></path>
+                  <path d="M303 136 C308 132, 315 133, 319 137 C323 142, 322 148, 317 151 C311 155, 304 154, 300 149 C297 144, 298 139, 303 136 Z" fill="rgba(255,255,255,0.08)"></path>
                   {metrics.countries.map((item) => (
                     <g>
                       <circle cx={item.x} cy={item.y} r={Math.max(3, Math.min(10, 2 + item.count))} fill="rgba(255,83,83,0.85)"></circle>
+                      <circle cx={item.x} cy={item.y} r={Math.max(5, Math.min(15, 4 + item.count))} fill="none" stroke="rgba(255,83,83,0.35)" stroke-width="1"></circle>
                       <text x={item.x + 6} y={item.y - 6} fill="rgba(255,255,255,0.9)" font-size="9">{item.code}</text>
                     </g>
                   ))}

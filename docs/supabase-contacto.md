@@ -140,6 +140,10 @@ Para persistir pais/region/ciudad por IP, ejecutar:
 
 - `supabase/leads-geo.sql`
 
+Para historicos (estimado por `locale/timezone`):
+
+- `supabase/leads-backfill-geo.sql`
+
 ## Anti-spam basico
 
 `/api/contacto` incluye:
