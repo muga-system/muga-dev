@@ -57,6 +57,18 @@ create table if not exists public.leads (
 );
 ```
 
+## Migraciones para métricas
+
+Si tu tabla `leads` ya existe en producción, aplica estas migraciones:
+
+- Estructura e índices para métricas: `supabase/leads-metricas.sql`
+- Backfill de timestamps de contacto: `supabase/leads-backfill-contact-timestamps.sql`
+
+Orden recomendado:
+
+1. Ejecutar `supabase/leads-metricas.sql`
+2. Ejecutar `supabase/leads-backfill-contact-timestamps.sql`
+
 ## RLS recomendado
 
 ```sql
