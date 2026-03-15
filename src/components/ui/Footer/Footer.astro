@@ -8,8 +8,11 @@ const primaryLinks = [
   { href: "/criterios", label: "Criterios" },
   { href: "/casos", label: "Referencias" },
   { href: "/modelo", label: "Modelo" },
+  { href: "https://muga-blog.vercel.app/", label: "Blog" },
   { href: "/contacto", label: "Contacto" },
 ];
+
+const isExternalLink = (href: string) => href.startsWith("http://") || href.startsWith("https://");
 ---
 
 <footer class="mt-20 border-t border-white/10 bg-obscure">
@@ -41,7 +44,7 @@ const primaryLinks = [
       <ul class="flex flex-wrap items-center gap-x-6 gap-y-3">
         {primaryLinks.map((link) => (
           <li>
-            <a href={link.href} class="inline-flex min-h-10 items-center py-1 text-sm text-graylight transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" data-analytics-event="footer_link_click" data-analytics-label={link.label.toLowerCase()} data-analytics-location="footer" data-analytics-destination={link.href}>
+            <a href={link.href} target={isExternalLink(link.href) ? "_blank" : undefined} rel={isExternalLink(link.href) ? "noopener noreferrer" : undefined} class="inline-flex min-h-10 items-center py-1 text-sm text-graylight transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" data-analytics-event="footer_link_click" data-analytics-label={link.label.toLowerCase()} data-analytics-location="footer" data-analytics-destination={link.href}>
               {link.label}
             </a>
           </li>

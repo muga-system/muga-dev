@@ -10,6 +10,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Formatos", href: "/formatos" },
   { label: "Modelo", href: "/modelo" },
+  { label: "Blog", href: "https://muga-blog.vercel.app/" },
   { label: "Nosotros", href: "/nosotros" },
   { label: "Contacto", href: "/contacto" },
 ];
@@ -23,6 +24,8 @@ const currentPath = Astro.url.pathname;
 
 const isActive = (href: string) =>
   href === "/contacto" ? currentPath.startsWith("/contacto") : currentPath === href;
+
+const isExternalLink = (href: string) => href.startsWith("http://") || href.startsWith("https://");
 ---
 
 <header id="navbar" class="fixed inset-x-0 top-0 z-50 transition-colors duration-300 navbar-scrolled" transition:animate="none">
@@ -45,6 +48,8 @@ const isActive = (href: string) =>
             href={item.href}
             class={`text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure ${isActive(item.href) ? "text-white" : "text-graylight hover:text-white"} ${index > 0 ? "ml-4" : ""}`}
             aria-current={isActive(item.href) ? "page" : undefined}
+            target={isExternalLink(item.href) ? "_blank" : undefined}
+            rel={isExternalLink(item.href) ? "noopener noreferrer" : undefined}
             data-analytics-event="nav_click"
             data-analytics-label={item.label.toLowerCase()}
             data-analytics-location="desktop_nav"
@@ -111,7 +116,7 @@ const isActive = (href: string) =>
         <div class="-my-6 divide-y divide-white/10">
           <div class="space-y-2 py-6">
             {navItems.map((item) => (
-              <a href={item.href} class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" aria-current={isActive(item.href) ? "page" : undefined} data-analytics-event="nav_click" data-analytics-label={item.label.toLowerCase()} data-analytics-location="mobile_nav" data-analytics-destination={item.href}>
+              <a href={item.href} class="block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" aria-current={isActive(item.href) ? "page" : undefined} target={isExternalLink(item.href) ? "_blank" : undefined} rel={isExternalLink(item.href) ? "noopener noreferrer" : undefined} data-analytics-event="nav_click" data-analytics-label={item.label.toLowerCase()} data-analytics-location="mobile_nav" data-analytics-destination={item.href}>
                 {item.label}
               </a>
             ))}
