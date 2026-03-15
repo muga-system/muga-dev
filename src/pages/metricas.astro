@@ -716,9 +716,14 @@ const statusUpdateMessages: Record<string, { text: string; className: string }> 
 };
 const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
 
+const knownCountryItems = metrics.countries.filter((item) => item.code !== "ZZ");
+const unknownCountryCount = metrics.countries
+  .filter((item) => item.code === "ZZ")
+  .reduce((acc, item) => acc + item.count, 0);
+
 const mapLeadsGeoJson = {
   type: "FeatureCollection",
-  features: metrics.countries
+  features: knownCountryItems
     .filter((item) => Number.isFinite(item.lon) && Number.isFinite(item.lat))
     .map((item) => ({
       type: "Feature",
@@ -1129,21 +1134,27 @@ const mapLeadsGeoJson = {
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
               <h2 class="text-lg font-semibold text-white">Origen por pais (estimado)</h2>
               <p class="mt-2 text-sm text-graylight">Se estima por IP de Vercel y fallback por locale/timezone.</p>
-              <div class="mt-4 overflow-hidden border border-white/10 bg-obscure/30">
+              <div class="relative mt-4 overflow-hidden border border-white/10 bg-obscure/30">
                 <div id="world-leads-map" class="h-[260px] w-full" data-leads-geojson={JSON.stringify(mapLeadsGeoJson)}></div>
                 <div id="world-leads-map-tooltip" class="pointer-events-none absolute z-20 hidden border border-[#3A3A3A] bg-[#191717] px-2 py-1 text-xs text-white"></div>
               </div>
               <div class="mt-3 space-y-2">
-                {metrics.countries.length ? (
-                  metrics.countries.map((item) => (
+                {knownCountryItems.length ? (
+                  knownCountryItems.map((item) => (
                     <div class="flex items-center justify-between text-sm">
                       <p class="text-graylight">{item.label} ({item.code})</p>
                       <p class="font-semibold text-white">{item.count}</p>
                     </div>
                   ))
                 ) : (
-                  <p class="text-sm text-graylight">Sin datos de pais para los filtros actuales.</p>
+                  <p class="text-sm text-graylight">Sin datos de pais identificable para los filtros actuales.</p>
                 )}
+                {unknownCountryCount ? (
+                  <div class="flex items-center justify-between text-sm">
+                    <p class="text-graylight">Sin geodato (ZZ)</p>
+                    <p class="font-semibold text-white">{unknownCountryCount}</p>
+                  </div>
+                ) : null}
               </div>
             </article>
           </div>
@@ -1230,60 +1241,97 @@ const mapLeadsGeoJson = {
 
       const { default: maplibregl } = await import("maplibre-gl");
 
-      const map = new maplibregl.Map({
+      const createMap = (styleUrl) => new maplibregl.Map({
         container,
-        style: "https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json",
+        style: styleUrl,
         center: [0, 20],
         zoom: 1.4,
-        projection: { type: "mercator" },
         attributionControl: false,
       });
 
-      map.on("load", () => {
-        const layers = map.getStyle()?.layers || [];
+      let map = createMap("https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json");
+
+      const applyMapTheme = (instance) => {
+        const layers = instance.getStyle()?.layers || [];
         layers.forEach((layer) => {
           const id = String(layer.id || "").toLowerCase();
 
           if (layer.type === "background") {
-            map.setPaintProperty(layer.id, "background-color", "#191717");
+            instance.setPaintProperty(layer.id, "background-color", "#191717");
             return;
           }
 
-          if (layer.type === "symbol" || id.includes("label") || id.includes("road") || id.includes("poi")) {
-            map.setLayoutProperty(layer.id, "visibility", "none");
+          if (layer.type === "symbol" || id.includes("label") || id.includes("road") || id.includes("poi") || id.includes("rail") || id.includes("airport") || id.includes("transit")) {
+            instance.setLayoutProperty(layer.id, "visibility", "none");
             return;
           }
 
           if (layer.type === "fill") {
             if (id.includes("water") || id.includes("ocean") || id.includes("sea")) {
-              map.setPaintProperty(layer.id, "fill-color", "#191717");
+              instance.setPaintProperty(layer.id, "fill-color", "#191717");
               return;
             }
-            map.setPaintProperty(layer.id, "fill-color", "#2D2E2E");
+
+            if (id.includes("land") || id.includes("earth") || id.includes("park") || id.includes("landcover") || id.includes("landuse")) {
+              instance.setPaintProperty(layer.id, "fill-color", "#2D2E2E");
+              instance.setPaintProperty(layer.id, "fill-opacity", 1);
+              return;
+            }
+
+            instance.setPaintProperty(layer.id, "fill-opacity", 0);
           }
 
-          if (layer.type === "line" && (id.includes("boundary") || id.includes("admin") || id.includes("country"))) {
-            map.setPaintProperty(layer.id, "line-color", "#3A3A3A");
+          if (layer.type === "line") {
+            if (id.includes("boundary") || id.includes("admin") || id.includes("country") || id.includes("coast")) {
+              instance.setPaintProperty(layer.id, "line-color", "#3A3A3A");
+              instance.setPaintProperty(layer.id, "line-width", 1);
+              instance.setPaintProperty(layer.id, "line-opacity", 1);
+              return;
+            }
+
+            if (id.includes("road") || id.includes("highway") || id.includes("street") || id.includes("path")) {
+              instance.setLayoutProperty(layer.id, "visibility", "none");
+            }
           }
         });
+      };
 
-        map.addSource("leads-source", {
-          type: "geojson",
-          data: leadsGeojson,
-        });
+      let hasLoaded = false;
 
-        map.addLayer({
-          id: "leads-circles",
-          type: "circle",
-          source: "leads-source",
-          paint: {
-            "circle-radius": 6,
-            "circle-color": "#FF5353",
-            "circle-opacity": 0.9,
-          },
-        });
+      map.on("error", () => {
+        if (hasLoaded) return;
+        if (String(map.getStyle()?.sprite || "").includes("demotiles")) return;
+        map.remove();
+        map = createMap("https://demotiles.maplibre.org/style.json");
+        bindLoadEvents();
+      });
 
-        map.on("mousemove", "leads-circles", (event) => {
+      const bindLoadEvents = () => {
+        map.on("load", () => {
+          hasLoaded = true;
+          applyMapTheme(map);
+
+          if (!map.getSource("leads-source")) {
+            map.addSource("leads-source", {
+              type: "geojson",
+              data: leadsGeojson,
+            });
+          }
+
+          if (!map.getLayer("leads-circles")) {
+            map.addLayer({
+              id: "leads-circles",
+              type: "circle",
+              source: "leads-source",
+              paint: {
+                "circle-radius": 6,
+                "circle-color": "#FF5353",
+                "circle-opacity": 0.9,
+              },
+            });
+          }
+
+          map.on("mousemove", "leads-circles", (event) => {
           const feature = event.features?.[0];
           if (!feature || !tooltip) return;
 
@@ -1297,11 +1345,14 @@ const mapLeadsGeoJson = {
           map.getCanvas().style.cursor = "pointer";
         });
 
-        map.on("mouseleave", "leads-circles", () => {
-          if (tooltip) tooltip.classList.add("hidden");
-          map.getCanvas().style.cursor = "";
+          map.on("mouseleave", "leads-circles", () => {
+            if (tooltip) tooltip.classList.add("hidden");
+            map.getCanvas().style.cursor = "";
+          });
         });
-      });
+      };
+
+      bindLoadEvents();
     };
 
     initWorldLeadsMap();
