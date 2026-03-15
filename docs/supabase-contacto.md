@@ -33,6 +33,7 @@ create table if not exists public.leads (
   name text not null,
   email text not null,
   phone text,
+  province text,
   project text,
   budget text,
   message text not null,
@@ -139,6 +140,10 @@ El panel `/metricas` ahora incluye:
 Para persistir pais/region/ciudad por IP, ejecutar:
 
 - `supabase/leads-geo.sql`
+
+Para capturar provincia declarada en formulario (opcional):
+
+- `supabase/leads-province.sql`
 
 Para historicos (estimado por `locale/timezone`):
 

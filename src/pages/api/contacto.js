@@ -410,6 +410,7 @@ export const POST = async ({ request }) => {
     delete fallbackPayload.ip_country;
     delete fallbackPayload.ip_region;
     delete fallbackPayload.ip_city;
+    delete fallbackPayload.province;
 
     response = await fetch(`${supabaseUrl}/rest/v1/${leadsTable}`, {
       method: "POST",

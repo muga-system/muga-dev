@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
 import { geoCentroid } from "d3-geo";
 
 type WorldLeadsMapProps = {
   countryCounts: Record<string, number>;
+  argentinaProvinceCounts?: Record<string, number>;
   className?: string;
 };
 
@@ -35,11 +36,43 @@ const COUNTRY_NAME_ALIASES: Record<string, string[]> = {
   GB: ["United Kingdom", "UK", "Great Britain"],
 };
 
+const ARGENTINA_PROVINCE_COORDS: Record<string, [number, number]> = {
+  "Buenos Aires": [-58.5, -36.7],
+  CABA: [-58.43, -34.6],
+  Catamarca: [-65.78, -28.47],
+  Chaco: [-59.0, -26.4],
+  Chubut: [-66.2, -43.5],
+  Cordoba: [-64.2, -31.4],
+  Corrientes: [-58.8, -28.8],
+  "Entre Rios": [-59.2, -32.1],
+  Formosa: [-58.2, -24.9],
+  Jujuy: [-65.3, -23.5],
+  "La Pampa": [-64.9, -36.5],
+  "La Rioja": [-66.85, -29.4],
+  Mendoza: [-68.9, -34.5],
+  Misiones: [-55.8, -27.4],
+  Neuquen: [-69.1, -38.9],
+  "Rio Negro": [-67.4, -40.3],
+  Salta: [-65.4, -24.8],
+  "San Juan": [-68.5, -30.4],
+  "San Luis": [-66.3, -33.7],
+  "Santa Cruz": [-69.2, -49.2],
+  "Santa Fe": [-60.7, -31.0],
+  "Santiago del Estero": [-63.9, -27.8],
+  "Tierra del Fuego": [-67.7, -54.4],
+  Tucuman: [-65.3, -26.8],
+};
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-const DEFAULT_POSITION = {
+const DEFAULT_WORLD_POSITION = {
   coordinates: [0, 20] as [number, number],
   zoom: 1.4,
+};
+
+const DEFAULT_ARGENTINA_POSITION = {
+  coordinates: [-64, -35] as [number, number],
+  zoom: 4.1,
 };
 
 const colorForCountry = (count: number, max: number) => {
@@ -53,21 +86,42 @@ const colorForCountry = (count: number, max: number) => {
 
 export default function WorldLeadsMap({
   countryCounts,
+  argentinaProvinceCounts = {},
   className,
 }: WorldLeadsMapProps) {
   const [tooltip, setTooltip] = useState<{
     x: number;
     y: number;
-    email: string;
-    country: string;
+    title: string;
+    detail: string;
   } | null>(null);
-  const [position, setPosition] = useState(DEFAULT_POSITION);
+  const [position, setPosition] = useState(DEFAULT_WORLD_POSITION);
   const [zoneMode, setZoneMode] = useState<"soft" | "medium" | "strong">("medium");
+  const [mapMode, setMapMode] = useState<"world" | "argentina">("world");
 
-  const maxCount = useMemo(() => {
+  const hasArgentinaProvinceData = useMemo(() => {
+    return Object.values(argentinaProvinceCounts).some((count) => count > 0);
+  }, [argentinaProvinceCounts]);
+
+  useEffect(() => {
+    if (mapMode === "argentina" && !hasArgentinaProvinceData) {
+      setMapMode("world");
+    }
+  }, [mapMode, hasArgentinaProvinceData]);
+
+  useEffect(() => {
+    setPosition(mapMode === "argentina" ? DEFAULT_ARGENTINA_POSITION : DEFAULT_WORLD_POSITION);
+  }, [mapMode]);
+
+  const maxCountryCount = useMemo(() => {
     const values = Object.values(countryCounts);
     return values.length ? Math.max(...values) : 0;
   }, [countryCounts]);
+
+  const maxProvinceCount = useMemo(() => {
+    const values = Object.values(argentinaProvinceCounts);
+    return values.length ? Math.max(...values) : 0;
+  }, [argentinaProvinceCounts]);
 
   const zoneStyle = useMemo(() => {
     if (zoneMode === "soft") return { radiusBoost: 3, opacity: 0.14 };
@@ -86,15 +140,8 @@ export default function WorldLeadsMap({
     return map;
   }, []);
 
-  const highlightedCountryNames = useMemo(() => {
-    return Object.entries(countryCounts)
-      .filter(([, count]) => count > 0)
-      .map(([code]) => COUNTRY_NAME_BY_CODE[code] || "")
-      .filter(Boolean);
-  }, [countryCounts]);
-
   return (
-    <div className={className} style={{ position: "relative", width: "100%", height: "260px", background: "#191717" }}>
+    <div className={className} style={{ position: "relative", width: "100%", height: "280px", background: "#191717" }}>
       <div style={{ position: "absolute", right: 8, top: 8, zIndex: 20, display: "flex", gap: 6 }}>
         <button
           type="button"
@@ -114,7 +161,7 @@ export default function WorldLeadsMap({
         </button>
         <button
           type="button"
-          onClick={() => setPosition(DEFAULT_POSITION)}
+          onClick={() => setPosition(mapMode === "argentina" ? DEFAULT_ARGENTINA_POSITION : DEFAULT_WORLD_POSITION)}
           style={{ border: "1px solid #3A3A3A", background: "#191717", color: "#FF5353", padding: "2px 6px", fontSize: 12 }}
           aria-label="Reset mapa"
         >
@@ -123,6 +170,39 @@ export default function WorldLeadsMap({
       </div>
 
       <div style={{ position: "absolute", left: 8, top: 8, zIndex: 20, display: "flex", gap: 4 }}>
+        <button
+          type="button"
+          onClick={() => setMapMode("world")}
+          style={{
+            border: "1px solid #3A3A3A",
+            background: "#191717",
+            color: mapMode === "world" ? "#FF5353" : "#D0D0D0",
+            padding: "2px 6px",
+            fontSize: 10,
+            textTransform: "uppercase",
+          }}
+        >
+          Mundo
+        </button>
+        {hasArgentinaProvinceData ? (
+          <button
+            type="button"
+            onClick={() => setMapMode("argentina")}
+            style={{
+              border: "1px solid #3A3A3A",
+              background: "#191717",
+              color: mapMode === "argentina" ? "#FF5353" : "#D0D0D0",
+              padding: "2px 6px",
+              fontSize: 10,
+              textTransform: "uppercase",
+            }}
+          >
+            Argentina
+          </button>
+        ) : null}
+      </div>
+
+      <div style={{ position: "absolute", left: 8, top: 36, zIndex: 20, display: "flex", gap: 4 }}>
         {(["soft", "medium", "strong"] as const).map((mode) => (
           <button
             key={mode}
@@ -152,7 +232,7 @@ export default function WorldLeadsMap({
           zoom={position.zoom}
           minZoom={1.2}
           maxZoom={8}
-          onMoveEnd={({ coordinates, zoom }) => {
+          onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) => {
             setPosition({
               coordinates: [clamp(coordinates[0], -180, 180), clamp(coordinates[1], -85, 85)],
               zoom: clamp(zoom, 1.2, 8),
@@ -164,16 +244,16 @@ export default function WorldLeadsMap({
           ]}
         >
           <Geographies geography={GEO_URL}>
-            {({ geographies }) => {
+            {({ geographies }: { geographies: any[] }) => {
               const centroids = new Map<string, [number, number]>();
 
-              const geoElements = geographies.map((geo) => {
+              const geoElements = geographies.map((geo: any) => {
                 const countryName = String(
                   geo.properties?.name || geo.properties?.NAME || geo.properties?.name_en || "",
                 );
                 const code = countryNameToCode.get(countryName.toLowerCase()) || "";
                 const count = code ? countryCounts[code] || 0 : 0;
-                const isHighlighted = highlightedCountryNames.includes(countryName);
+                const isArgentina = code === "AR";
 
                 if (code) {
                   const [lon, lat] = geoCentroid(geo) as [number, number];
@@ -182,27 +262,36 @@ export default function WorldLeadsMap({
                   }
                 }
 
+                const fill =
+                  mapMode === "world"
+                    ? colorForCountry(count, maxCountryCount)
+                    : isArgentina
+                      ? "#3F2A2A"
+                      : "#232323";
+
+                const strokeWidth = isArgentina && mapMode === "argentina" ? 1.4 : 0.8;
+
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     style={{
                       default: {
-                        fill: colorForCountry(count, maxCount),
+                        fill,
                         stroke: "#3A3A3A",
-                        strokeWidth: isHighlighted ? 1.2 : 0.8,
+                        strokeWidth,
                         outline: "none",
                       },
                       hover: {
-                        fill: colorForCountry(count, maxCount),
+                        fill,
                         stroke: "#3A3A3A",
-                        strokeWidth: isHighlighted ? 1.2 : 0.8,
+                        strokeWidth,
                         outline: "none",
                       },
                       pressed: {
-                        fill: colorForCountry(count, maxCount),
+                        fill,
                         stroke: "#3A3A3A",
-                        strokeWidth: isHighlighted ? 1.2 : 0.8,
+                        strokeWidth,
                         outline: "none",
                       },
                     }}
@@ -210,7 +299,7 @@ export default function WorldLeadsMap({
                 );
               });
 
-              const markerElements = Object.entries(countryCounts)
+              const worldMarkers = Object.entries(countryCounts)
                 .filter(([, count]) => count > 0)
                 .map(([code, count]) => {
                   const coords = centroids.get(code);
@@ -234,8 +323,45 @@ export default function WorldLeadsMap({
                           setTooltip({
                             x: event.clientX,
                             y: event.clientY,
-                            email: `${count} leads`,
-                            country: code,
+                            title: `${count} leads`,
+                            detail: code,
+                          });
+                        }}
+                        onMouseLeave={() => setTooltip(null)}
+                      />
+                    </Marker>
+                  );
+                });
+
+              const provinceMarkers = Object.entries(argentinaProvinceCounts)
+                .filter(([, count]) => count > 0)
+                .map(([province, count]) => {
+                  const coords = ARGENTINA_PROVINCE_COORDS[province];
+                  if (!coords) return null;
+
+                  const provinceRatio = maxProvinceCount > 0 ? count / maxProvinceCount : 0;
+                  const radius = Math.max(6, Math.min(18, 7 + provinceRatio * 10 + zoneStyle.radiusBoost));
+
+                  return (
+                    <Marker key={province} coordinates={coords}>
+                      <circle
+                        r={radius}
+                        fill="#FF5353"
+                        fillOpacity={Math.min(0.35, zoneStyle.opacity + 0.05)}
+                        stroke="none"
+                        pointerEvents="none"
+                      />
+                      <circle
+                        r={4}
+                        fill="#FF5353"
+                        fillOpacity={0.95}
+                        stroke="none"
+                        onMouseMove={(event) => {
+                          setTooltip({
+                            x: event.clientX,
+                            y: event.clientY,
+                            title: `${count} leads`,
+                            detail: province,
                           });
                         }}
                         onMouseLeave={() => setTooltip(null)}
@@ -247,7 +373,7 @@ export default function WorldLeadsMap({
               return (
                 <>
                   {geoElements}
-                  {markerElements}
+                  {mapMode === "world" ? worldMarkers : provinceMarkers}
                 </>
               );
             }}
@@ -271,8 +397,8 @@ export default function WorldLeadsMap({
             zIndex: 60,
           }}
         >
-          <div style={{ fontWeight: 600 }}>{tooltip.email}</div>
-          <div>{tooltip.country}</div>
+          <div style={{ fontWeight: 600 }}>{tooltip.title}</div>
+          <div>{tooltip.detail}</div>
         </div>
       ) : null}
     </div>

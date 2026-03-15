@@ -180,6 +180,95 @@ const inferLeadCountry = (lead: { ip_country?: string; locale?: string; timezone
   );
 };
 
+const normalizeRegionKey = (value?: string) => {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+};
+
+const ARGENTINA_PROVINCE_BY_CODE: Record<string, string> = {
+  A: "Salta",
+  B: "Buenos Aires",
+  C: "CABA",
+  D: "San Luis",
+  E: "Entre Rios",
+  F: "La Rioja",
+  G: "Santiago del Estero",
+  H: "Chaco",
+  J: "San Juan",
+  K: "Catamarca",
+  L: "La Pampa",
+  M: "Mendoza",
+  N: "Misiones",
+  P: "Formosa",
+  Q: "Neuquen",
+  R: "Rio Negro",
+  S: "Santa Fe",
+  T: "Tucuman",
+  U: "Chubut",
+  V: "Tierra del Fuego",
+  W: "Corrientes",
+  X: "Cordoba",
+  Y: "Jujuy",
+  Z: "Santa Cruz",
+};
+
+const ARGENTINA_PROVINCE_ALIASES: Record<string, string> = {
+  "buenos aires": "Buenos Aires",
+  "provincia de buenos aires": "Buenos Aires",
+  caba: "CABA",
+  "ciudad autonoma de buenos aires": "CABA",
+  "capital federal": "CABA",
+  catamarca: "Catamarca",
+  chaco: "Chaco",
+  chubut: "Chubut",
+  cordoba: "Cordoba",
+  corrientes: "Corrientes",
+  "entre rios": "Entre Rios",
+  formosa: "Formosa",
+  jujuy: "Jujuy",
+  "la pampa": "La Pampa",
+  "la rioja": "La Rioja",
+  mendoza: "Mendoza",
+  misiones: "Misiones",
+  neuquen: "Neuquen",
+  "rio negro": "Rio Negro",
+  salta: "Salta",
+  "san juan": "San Juan",
+  "san luis": "San Luis",
+  "santa cruz": "Santa Cruz",
+  "santa fe": "Santa Fe",
+  "santiago del estero": "Santiago del Estero",
+  "tierra del fuego": "Tierra del Fuego",
+  tucuman: "Tucuman",
+};
+
+const inferArgentinaProvince = (lead: { countryCode?: string; province?: string; ip_region?: string }) => {
+  if (lead.countryCode !== "AR") return "";
+
+  const provinceKey = normalizeRegionKey(lead.province);
+  if (provinceKey && ARGENTINA_PROVINCE_ALIASES[provinceKey]) {
+    return ARGENTINA_PROVINCE_ALIASES[provinceKey];
+  }
+
+  const regionRaw = String(lead.ip_region || "").trim();
+  const regionCode = regionRaw.toUpperCase();
+  if (regionCode.length === 1 && ARGENTINA_PROVINCE_BY_CODE[regionCode]) {
+    return ARGENTINA_PROVINCE_BY_CODE[regionCode];
+  }
+
+  const regionKey = normalizeRegionKey(regionRaw);
+  if (regionKey && ARGENTINA_PROVINCE_ALIASES[regionKey]) {
+    return ARGENTINA_PROVINCE_ALIASES[regionKey];
+  }
+
+  return "";
+};
+
 const COUNTRY_COORDS: Record<string, { lon: number; lat: number; label: string }> = {
   AR: { lon: -64, lat: -34, label: "Argentina" },
   BR: { lon: -52, lat: -10, label: "Brasil" },
@@ -254,6 +343,8 @@ const metrics = {
   activityByHour: Array.from({ length: 24 }, (_, hour) => ({ hour, total: 0 })),
   countries: [] as Array<{ code: string; label: string; count: number; lon: number; lat: number }>,
   countriesMap: [] as Array<{ code: string; label: string; count: number; lon: number; lat: number }>,
+  provinces: [] as Array<{ province: string; count: number }>,
+  provincesMap: [] as Array<{ province: string; count: number }>,
 };
 
 const funnel = {
@@ -298,7 +389,9 @@ if (!isAuthorized) {
   const cutoffIso = new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString();
 
   const selectCandidates = [
-    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at,timezone,locale,ip_country",
+    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at,timezone,locale,ip_country,ip_region,province",
+    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at,timezone,locale,ip_country,ip_region",
+    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,timezone,locale,ip_country",
     "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,timezone,locale",
     "id,created_at,name,email,project,status,lead_stage,budget,source,timezone,locale",
     "id,created_at,name,email,project,status,lead_stage,budget,source",
@@ -321,6 +414,8 @@ if (!isAuthorized) {
     timezone?: string;
     locale?: string;
     ip_country?: string;
+    ip_region?: string;
+    province?: string;
   }> | null = null;
   let lastStatus = 500;
 
@@ -357,6 +452,8 @@ if (!isAuthorized) {
         timezone?: string;
         locale?: string;
         ip_country?: string;
+        ip_region?: string;
+        province?: string;
       }>;
       break;
     }
@@ -384,6 +481,8 @@ if (!isAuthorized) {
       timezone?: string;
       locale?: string;
       ip_country?: string;
+      ip_region?: string;
+      province?: string;
     }>;
 
     const allSourceCounter = new Map<string, number>();
@@ -478,6 +577,7 @@ if (!isAuthorized) {
     const filteredUtmSourceCounter = new Map<string, number>();
     const filteredUtmCampaignCounter = new Map<string, number>();
     const filteredCountryCounter = new Map<string, number>();
+    const filteredProvinceCounter = new Map<string, number>();
     const hourlyCounter = Array.from({ length: 24 }, () => 0);
     let firstContactHoursTotal = 0;
     let firstContactMeasured = 0;
@@ -511,6 +611,15 @@ if (!isAuthorized) {
 
       const countryCode = inferLeadCountry(lead);
       filteredCountryCounter.set(countryCode, (filteredCountryCounter.get(countryCode) || 0) + 1);
+
+      const province = inferArgentinaProvince({
+        countryCode,
+        province: lead.province,
+        ip_region: lead.ip_region,
+      });
+      if (province) {
+        filteredProvinceCounter.set(province, (filteredProvinceCounter.get(province) || 0) + 1);
+      }
 
       const firstContactRaw = String(lead.first_contact_at || "");
       if (firstContactRaw) {
@@ -593,6 +702,11 @@ if (!isAuthorized) {
 
     metrics.countriesMap = countriesComputed.filter((item) => item.code !== "ZZ");
     metrics.countries = countriesComputed.slice(0, 8);
+    const provincesComputed = [...filteredProvinceCounter.entries()]
+      .map(([province, count]) => ({ province, count }))
+      .sort((a, b) => b.count - a.count);
+    metrics.provincesMap = provincesComputed;
+    metrics.provinces = provincesComputed.slice(0, 8);
 
     const contactedOrMore =
       metrics.byStatus.contacted +
@@ -731,6 +845,11 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
 const knownCountryItems = metrics.countries.filter((item) => item.code !== "ZZ");
 const mapCountryCounts = metrics.countriesMap.reduce((acc, item) => {
   acc[item.code] = item.count;
+  return acc;
+}, {} as Record<string, number>);
+const knownProvinceItems = metrics.provinces;
+const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
+  acc[item.province] = item.count;
   return acc;
 }, {} as Record<string, number>);
 ---
@@ -1111,9 +1230,9 @@ const mapCountryCounts = metrics.countriesMap.reduce((acc, item) => {
 
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
               <h2 class="text-lg font-semibold text-white">Origen por pais (estimado)</h2>
-              <p class="mt-2 text-sm text-graylight">Se estima por IP de Vercel y fallback por locale/timezone.</p>
+              <p class="mt-2 text-sm text-graylight">Se estima por IP de Vercel y fallback por locale/timezone. Si hay datos AR, habilita vista por provincia.</p>
               <div class="relative mt-4 overflow-hidden border border-white/10 bg-obscure/30">
-                <WorldLeadsMap countryCounts={mapCountryCounts} client:visible />
+                <WorldLeadsMap countryCounts={mapCountryCounts} argentinaProvinceCounts={mapProvinceCounts} client:visible />
               </div>
               <div class="mt-3 space-y-2">
                 {knownCountryItems.length ? (
@@ -1127,6 +1246,19 @@ const mapCountryCounts = metrics.countriesMap.reduce((acc, item) => {
                   <p class="text-sm text-graylight">Sin datos de pais identificable para los filtros actuales.</p>
                 )}
               </div>
+              {knownProvinceItems.length ? (
+                <div class="mt-4 border-t border-white/10 pt-3">
+                  <p class="text-xs uppercase tracking-wider text-graylight">Argentina por provincia</p>
+                  <div class="mt-2 space-y-1">
+                    {knownProvinceItems.map((item) => (
+                      <div class="flex items-center justify-between text-sm">
+                        <p class="text-graylight">{item.province}</p>
+                        <p class="font-semibold text-white">{item.count}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </article>
           </div>
 
