@@ -1,44 +1,61 @@
 # muga-dev-site
 
-**Estado:** 🟢 Activo
+**Estado:** Activo
 
-Sitio oficial de MUGA.dev.
-Presenta el área de desarrollo web del estudio, su enfoque, productos y manera de trabajar.
-
-## Qué es
-La presencia pública de MUGA.dev como área especializada.
-Un sitio pensado para comunicar arquitectura, criterio técnico y continuidad,
-no un portfolio experimental ni una demo de framework.
-
-## Para qué sirve
-- Presentar MUGA.dev a clientes y colaboradores.
-- Explicar el enfoque de trabajo y los productos disponibles.
-- Centralizar el acceso a proyectos y casos reales.
-
-## Público objetivo
-- Clientes que buscan soluciones web claras y sostenibles.
-- Colaboradores técnicos.
-- Personas interesadas en arquitectura web aplicada.
-
-## Enfoque
-- Arquitectura como sistema.
-- Claridad antes que complejidad.
-- Código mantenible y decisiones explícitas.
-- Continuidad a largo plazo, no soluciones descartables.
-
-## Contenido
-- Presentación del área MUGA.dev.
-- Descripción de productos (landing, corporate, etc.).
-- Casos y ejemplos reales.
-- Información de contacto.
+Sitio oficial de MUGA.dev (Astro), con captación de leads en Supabase,
+automatización por correo y panel interno de métricas protegido.
 
 ## Stack
-- Astro
-- CSS moderno
-- HTML semántico
-- Integraciones mínimas según necesidad del proyecto.
+- Astro 5
+- Tailwind CSS 4
+- Node.js 22
+- Vercel (deploy y cron)
+- Supabase (persistencia de leads)
+
+## Requisitos
+- Node.js 22.x
+- npm
 
 ## Desarrollo local
 ```bash
 npm install
-npm run dev
+npm run dev:node22
+```
+
+## Build local
+```bash
+npm run build:node22
+```
+
+## Variables de entorno
+Base mínima:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SUPABASE_LEADS_TABLE` (opcional, por defecto `leads`)
+
+Para automatización por correo:
+
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `ALERT_FROM_EMAIL`
+- `ALERT_TO_EMAIL`
+- `AUTO_REPLY_ENABLED` (opcional)
+
+Para resumen diario por cron:
+
+- `LEADS_CRON_TOKEN`
+
+Para proteger el panel `/metricas`:
+
+- `METRICAS_PANEL_PASSWORD`
+- `METRICAS_SESSION_SALT`
+
+Referencia completa: `.env.example`.
+
+## Endpoints internos
+- `POST /api/contacto`: guarda lead y dispara notificaciones.
+- `GET /api/leads/resumen-diario`: resumen diario (requiere token en `Authorization`).
+- `GET /api/leads/export.csv`: exporta CSV filtrado (requiere sesión de `/metricas`).

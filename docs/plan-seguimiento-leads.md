@@ -7,6 +7,10 @@
 - [x] Redirección a página post-envío.
 - [x] Notificación interna por correo.
 - [x] Autorespuesta al cliente.
+- [x] Resumen diario automático por cron.
+- [x] Dashboard interno `/metricas` con filtros y visualizaciones.
+- [x] Acceso protegido al panel de métricas.
+- [x] Exportación CSV filtrada desde métricas.
 
 ## Backlog priorizado
 
@@ -17,19 +21,22 @@
 - [x] Registrar `last_contact_at` para control operativo.
 - [x] Implementar anti-spam básico (honeypot + rate limit por IP/email).
 - [x] Crear alertas de error SMTP (cuando no se pueda enviar correo).
+- [ ] Alertas automáticas de SLA vencido (`new` >24h y >48h).
 
 ### Prioridad media
 
-- [ ] Crear vista interna de leads (`/admin/leads`) con filtros por fecha, estado y presupuesto. (Pausado por ahora)
-- [ ] Mostrar historial por contacto (mismo email). (Pausado por ahora)
 - [x] Agregar resumen diario interno de leads (correo automático).
 - [x] Personalizar secuencia de correos según tipo de lead (`start`, `business`, `premium`).
+- [x] Dashboard de embudo, estado y fuentes en `/metricas`.
+- [x] Proteger acceso de `/metricas` con login y sesión.
+- [x] Exportar CSV de leads filtrados desde el panel.
+- [ ] Tracking UTM completo en métricas (`utm_source`, `utm_medium`, `utm_campaign`).
 
 ### Prioridad baja
 
-- [ ] Dashboard simple de embudo (origen, tipo de lead, tasa de contacto).
 - [ ] Plantillas de correo adicionales por etapa comercial.
 - [ ] Limpieza periódica y normalización de datos históricos.
+- [ ] KPI de negocio semanales (tiempo a primer contacto, conversión por fuente).
 
 ## Plan sugerido por fases
 
@@ -42,18 +49,27 @@
 
 ### Semana 2 (escala y visibilidad)
 
-- [ ] Vista interna de leads. (Pausado por ahora)
 - [x] Resumen diario automático.
-- [ ] Métricas de embudo iniciales. (Pausado por ahora)
+- [x] Métricas de embudo y filtros en `/metricas`.
+- [x] Protección de acceso al panel.
+- [x] Exportación CSV filtrada.
+
+### Semana 3 (optimización operativa)
+
+- [ ] SLA automático con alertas escalonadas.
+- [ ] Métricas con UTM por canal/campaña.
+- [ ] Reporte semanal con comparativa vs semana anterior.
 
 ## Checklist de validación
 
-- [ ] Lead nuevo se guarda correctamente.
-- [ ] Lead premium llega con etiqueta correcta.
-- [ ] Correo interno llega en todos los casos.
-- [ ] Autorespuesta llega al cliente.
-- [ ] No hay duplicados inesperados.
-- [ ] No hay errores 5xx en `/api/contacto`.
+- [x] Lead nuevo se guarda correctamente.
+- [x] Lead premium llega con etiqueta correcta.
+- [x] Correo interno llega en todos los casos.
+- [x] Autorespuesta llega al cliente.
+- [x] No hay duplicados inesperados.
+- [x] No hay errores 5xx en `/api/contacto`.
+- [x] `/metricas` requiere login para mostrar datos.
+- [x] `/api/leads/export.csv` bloquea acceso sin sesión.
 
 ## Decisiones pendientes
 

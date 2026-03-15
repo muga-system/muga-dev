@@ -18,6 +18,8 @@ Usa estas variables (ver `.env.example`):
 - `ALERT_TO_EMAIL` (opcional, destino interno para todos los leads)
 - `AUTO_REPLY_ENABLED` (opcional, `true` por defecto)
 - `LEADS_CRON_TOKEN` (token para ejecutar resumen diario)
+- `METRICAS_PANEL_PASSWORD` (clave de acceso para `/metricas`)
+- `METRICAS_SESSION_SALT` (semilla privada para validar sesión del panel)
 
 El formulario no escribe directo a Supabase desde el navegador.
 Envia a `src/pages/api/contacto.js` y ese endpoint inserta con `service_role`.
@@ -141,3 +143,21 @@ curl -sS "https://muga.dev/api/leads/resumen-diario?hours=24" \
 Programacion en Vercel:
 
 - `vercel.json` ejecuta este endpoint todos los dias a las 20:00 de Argentina (`0 23 * * *` UTC).
+
+## Panel de metricas protegido
+
+Ruta interna: `/metricas`
+
+- requiere login con la clave definida en `METRICAS_PANEL_PASSWORD`
+- crea sesión con cookie `httpOnly` y duración acotada
+- permite cierre de sesión con botón "Cerrar sesion"
+
+Si falta `METRICAS_PANEL_PASSWORD`, el panel no abre datos y muestra error de configuración.
+
+## Exportación CSV
+
+Endpoint: `GET /api/leads/export.csv`
+
+- respeta filtros por query params (`dias`, `estado`, `fuente`)
+- exporta columnas operativas (`created_at`, `name`, `email`, `phone`, `project`, `status`, `lead_stage`, `budget`, `source`)
+- devuelve `401 unauthorized` si no hay sesión válida del panel de métricas
