@@ -16,6 +16,20 @@ const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 const leadsTable = import.meta.env.SUPABASE_LEADS_TABLE || "leads";
 
+const parsePositiveInt = (value: string | null, fallback: number) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.floor(parsed);
+};
+
+const estadoEtiquetas: Record<string, string> = {
+  new: "Nuevo",
+  contacted: "Contactado",
+  qualified: "Calificado",
+  won: "Cerrado",
+  lost: "Perdido",
+};
+
 const getLeadTier = (lead: { lead_stage?: string; budget?: string }) => {
   const stage = String(lead?.lead_stage || "").toLowerCase();
   const budget = String(lead?.budget || "").toLowerCase();
@@ -24,11 +38,23 @@ const getLeadTier = (lead: { lead_stage?: string; budget?: string }) => {
   return "nuevo";
 };
 
+const formatDay = (date: Date) =>
+  date.toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+
+const diasOpciones = [1, 7, 30, 90];
+
+const selectedDays = parsePositiveInt(Astro.url.searchParams.get("dias"), 30);
+const selectedStatus = (Astro.url.searchParams.get("estado") || "all").toLowerCase();
+const selectedSource = (Astro.url.searchParams.get("fuente") || "all").toLowerCase();
+
 let loadError = "";
 
 const metrics = {
   total: 0,
-  last24h: 0,
+  enPeriodo: 0,
   byStatus: {
     new: 0,
     contacted: 0,
@@ -50,11 +76,17 @@ const funnel = {
   winRate: 0,
 };
 
+const tendencia: Array<{ dia: string; total: number }> = [];
+const fuentesDisponibles: string[] = [];
+
 if (!supabaseUrl || !supabaseServiceRoleKey) {
   loadError = "Faltan variables de servidor para cargar metricas.";
 } else {
+  const cutoffIso = new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString();
+
   const query = new URL(`${supabaseUrl}/rest/v1/${leadsTable}`);
   query.searchParams.set("select", "id,created_at,status,lead_stage,budget,source");
+  query.searchParams.set("created_at", `gte.${cutoffIso}`);
   query.searchParams.set("order", "created_at.desc");
   query.searchParams.set("limit", "5000");
 
@@ -76,14 +108,34 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
       source?: string;
     }>;
 
-    const now = Date.now();
-    const dayMs = 24 * 60 * 60 * 1000;
-    const sourceCounter = new Map<string, number>();
+    const allSourceCounter = new Map<string, number>();
 
-    metrics.total = rows.length;
+    metrics.enPeriodo = rows.length;
 
     rows.forEach((lead) => {
+      const source = String(lead.source || "desconocido").toLowerCase();
+      allSourceCounter.set(source, (allSourceCounter.get(source) || 0) + 1);
+    });
+
+    fuentesDisponibles.push(...[...allSourceCounter.keys()].sort());
+
+    const filteredRows = rows.filter((lead) => {
       const status = String(lead.status || "new").toLowerCase();
+      const source = String(lead.source || "desconocido").toLowerCase();
+
+      if (selectedStatus !== "all" && status !== selectedStatus) return false;
+      if (selectedSource !== "all" && source !== selectedSource) return false;
+      return true;
+    });
+
+    metrics.total = filteredRows.length;
+    const filteredSourceCounter = new Map<string, number>();
+    const filteredDaily = new Map<string, number>();
+
+    filteredRows.forEach((lead) => {
+      const status = String(lead.status || "new").toLowerCase();
+      const source = String(lead.source || "desconocido").toLowerCase();
+
       if (status in metrics.byStatus) {
         metrics.byStatus[status as keyof typeof metrics.byStatus] += 1;
       }
@@ -91,19 +143,19 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
       const tier = getLeadTier(lead);
       metrics.byTier[tier as keyof typeof metrics.byTier] += 1;
 
-      const source = (lead.source || "desconocido").toLowerCase();
-      sourceCounter.set(source, (sourceCounter.get(source) || 0) + 1);
+      filteredSourceCounter.set(source, (filteredSourceCounter.get(source) || 0) + 1);
 
-      const createdAt = new Date(String(lead.created_at || "")).getTime();
-      if (!Number.isNaN(createdAt) && now - createdAt <= dayMs) {
-        metrics.last24h += 1;
+      const createdDate = new Date(String(lead.created_at || ""));
+      if (!Number.isNaN(createdDate.getTime())) {
+        const key = createdDate.toISOString().slice(0, 10);
+        filteredDaily.set(key, (filteredDaily.get(key) || 0) + 1);
       }
     });
 
-    metrics.sources = [...sourceCounter.entries()]
+    metrics.sources = [...filteredSourceCounter.entries()]
       .map(([source, count]) => ({ source, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 6);
+      .slice(0, 8);
 
     const contactedOrMore =
       metrics.byStatus.contacted +
@@ -121,8 +173,37 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
     funnel.winRate = metrics.total
       ? Number(((metrics.byStatus.won / metrics.total) * 100).toFixed(1))
       : 0;
+
+    const maxBars = Math.min(selectedDays, 14);
+    const dayMs = 24 * 60 * 60 * 1000;
+    for (let i = maxBars - 1; i >= 0; i--) {
+      const day = new Date(Date.now() - i * dayMs);
+      const isoKey = day.toISOString().slice(0, 10);
+      tendencia.push({
+        dia: formatDay(day),
+        total: filteredDaily.get(isoKey) || 0,
+      });
+    }
   }
 }
+
+const estadoItems = [
+  { key: "new", label: "Nuevo", value: metrics.byStatus.new },
+  { key: "contacted", label: "Contactado", value: metrics.byStatus.contacted },
+  { key: "qualified", label: "Calificado", value: metrics.byStatus.qualified },
+  { key: "won", label: "Cerrado", value: metrics.byStatus.won },
+  { key: "lost", label: "Perdido", value: metrics.byStatus.lost },
+];
+
+const prioridadItems = [
+  { key: "alto", label: "Alta", value: metrics.byTier.alto },
+  { key: "calificado", label: "Media", value: metrics.byTier.calificado },
+  { key: "nuevo", label: "Normal", value: metrics.byTier.nuevo },
+];
+
+const maxEstado = Math.max(1, ...estadoItems.map((item) => item.value));
+const maxPrioridad = Math.max(1, ...prioridadItems.map((item) => item.value));
+const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
 ---
 
 <Layout title="Metricas | MUGA" description="Panel simple de metricas de leads.">
@@ -138,8 +219,44 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
       <div class="space-y-2">
         <span class="muga-badge muga-badge--sm">Interno</span>
         <h1 class="section-title">Metricas de leads</h1>
-        <p class="section-lead">Resumen simple para leer volumen, prioridad y conversion del embudo comercial.</p>
+        <p class="section-lead">Panel rapido para monitorear volumen, prioridad y conversion con filtros simples.</p>
       </div>
+
+      <form method="GET" class="grid gap-4 border border-white/10 bg-muga-dark-800/35 p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label class="space-y-2">
+          <span class="text-xs uppercase tracking-wider text-graylight">Periodo</span>
+          <select name="dias" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            {diasOpciones.map((dias) => (
+              <option value={dias} selected={selectedDays === dias}>{dias} dias</option>
+            ))}
+          </select>
+        </label>
+
+        <label class="space-y-2">
+          <span class="text-xs uppercase tracking-wider text-graylight">Estado</span>
+          <select name="estado" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <option value="all" selected={selectedStatus === "all"}>Todos</option>
+            {Object.entries(estadoEtiquetas).map(([value, label]) => (
+              <option value={value} selected={selectedStatus === value}>{label}</option>
+            ))}
+          </select>
+        </label>
+
+        <label class="space-y-2">
+          <span class="text-xs uppercase tracking-wider text-graylight">Fuente</span>
+          <select name="fuente" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+            <option value="all" selected={selectedSource === "all"}>Todas</option>
+            {fuentesDisponibles.map((source) => (
+              <option value={source} selected={selectedSource === source}>{source}</option>
+            ))}
+          </select>
+        </label>
+
+        <div class="flex items-end gap-2">
+          <button type="submit" class="inline-flex w-full items-center justify-center border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90">Aplicar filtros</button>
+          <a href="/metricas" class="inline-flex w-full items-center justify-center border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40">Limpiar</a>
+        </div>
+      </form>
 
       {loadError ? (
         <div class="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{loadError}</div>
@@ -147,23 +264,9 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
         <>
           <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <article class="border border-white/10 bg-muga-dark-800/35 p-4">
-              <p class="text-xs uppercase tracking-wider text-graylight">Leads totales</p>
+              <p class="text-xs uppercase tracking-wider text-graylight">Leads filtrados</p>
               <p class="mt-2 text-3xl font-semibold text-white">{metrics.total}</p>
-              <p class="mt-1 text-xs text-graylight">Ultimas 24h: {metrics.last24h}</p>
-            </article>
-            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
-              <p class="text-xs uppercase tracking-wider text-graylight">Estados</p>
-              <p class="mt-2 text-sm leading-7 text-white">New: {metrics.byStatus.new}</p>
-              <p class="text-sm leading-7 text-white">Contacted: {metrics.byStatus.contacted}</p>
-              <p class="text-sm leading-7 text-white">Qualified: {metrics.byStatus.qualified}</p>
-              <p class="text-sm leading-7 text-white">Won: {metrics.byStatus.won}</p>
-              <p class="text-sm leading-7 text-white">Lost: {metrics.byStatus.lost}</p>
-            </article>
-            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
-              <p class="text-xs uppercase tracking-wider text-graylight">Prioridad</p>
-              <p class="mt-2 text-sm leading-7 text-white">Alta: {metrics.byTier.alto}</p>
-              <p class="text-sm leading-7 text-white">Calificado: {metrics.byTier.calificado}</p>
-              <p class="text-sm leading-7 text-white">Normal: {metrics.byTier.nuevo}</p>
+              <p class="mt-1 text-xs text-graylight">Total periodo: {metrics.enPeriodo}</p>
             </article>
             <article class="border border-white/10 bg-muga-dark-800/35 p-4">
               <p class="text-xs uppercase tracking-wider text-graylight">Embudo</p>
@@ -171,11 +274,72 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
               <p class="text-sm leading-7 text-white">Cualificacion: {funnel.qualificationRate}%</p>
               <p class="text-sm leading-7 text-white">Cierre: {funnel.winRate}%</p>
             </article>
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Prioridad alta</p>
+              <p class="mt-2 text-3xl font-semibold text-white">{metrics.byTier.alto}</p>
+              <p class="mt-1 text-xs text-graylight">Media: {metrics.byTier.calificado} · Normal: {metrics.byTier.nuevo}</p>
+            </article>
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Estado nuevo</p>
+              <p class="mt-2 text-3xl font-semibold text-white">{metrics.byStatus.new}</p>
+              <p class="mt-1 text-xs text-graylight">Sin contacto inicial</p>
+            </article>
           </div>
 
-          <div class="border border-white/10 bg-muga-dark-800/35 p-5">
+          <div class="grid gap-4 lg:grid-cols-2">
+            <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+              <h2 class="text-lg font-semibold text-white">Distribucion por estado</h2>
+              <div class="mt-4 space-y-3">
+                {estadoItems.map((item) => (
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-sm">
+                      <p class="text-graylight">{item.label}</p>
+                      <p class="font-semibold text-white">{item.value}</p>
+                    </div>
+                    <div class="h-2 w-full bg-white/10">
+                      <div class="h-2 bg-accent" style={`width:${(item.value / maxEstado) * 100}%`}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+              <h2 class="text-lg font-semibold text-white">Distribucion por prioridad</h2>
+              <div class="mt-4 space-y-3">
+                {prioridadItems.map((item) => (
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-sm">
+                      <p class="text-graylight">{item.label}</p>
+                      <p class="font-semibold text-white">{item.value}</p>
+                    </div>
+                    <div class="h-2 w-full bg-white/10">
+                      <div class="h-2 bg-white" style={`width:${(item.value / maxPrioridad) * 100}%`}></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </div>
+
+          <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+            <h2 class="text-lg font-semibold text-white">Tendencia diaria (ultimos dias)</h2>
+            <div class="mt-4 grid grid-cols-7 gap-2 sm:grid-cols-10 lg:grid-cols-14">
+              {tendencia.map((item) => (
+                <div class="flex flex-col items-center gap-2">
+                  <div class="flex h-32 w-full items-end bg-white/5 p-1">
+                    <div class="w-full bg-accent/85" style={`height:${(item.total / maxTendencia) * 100}%`}></div>
+                  </div>
+                  <p class="text-[10px] text-graylight">{item.dia}</p>
+                  <p class="text-xs font-semibold text-white">{item.total}</p>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article class="border border-white/10 bg-muga-dark-800/35 p-5">
             <h2 class="text-lg font-semibold text-white">Fuentes principales</h2>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {metrics.sources.length ? (
                 metrics.sources.map((item) => (
                   <div class="border border-white/10 bg-obscure/40 px-4 py-3">
@@ -184,10 +348,10 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
                   </div>
                 ))
               ) : (
-                <p class="text-sm text-graylight">Sin datos de fuente por ahora.</p>
+                <p class="text-sm text-graylight">Sin datos de fuente para los filtros actuales.</p>
               )}
             </div>
-          </div>
+          </article>
         </>
       )}
     </div>
