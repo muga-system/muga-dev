@@ -52,6 +52,10 @@ export const POST = async ({ request, cookies }) => {
   const sessionSalt = process.env.METRICAS_SESSION_SALT || import.meta.env.METRICAS_SESSION_SALT || "muga-metricas-v1";
 
   const { payload, isJson } = await parsePayload(request);
+  const wantsJson =
+    isJson ||
+    (request.headers.get("accept") || "").includes("application/json") ||
+    (request.headers.get("x-requested-with") || "").toLowerCase() === "fetch";
   const returnTo = sanitizeReturnTo(payload.return_to);
 
   const cookieValue = cookies.get(METRICAS_SESSION_COOKIE)?.value || "";
@@ -62,7 +66,7 @@ export const POST = async ({ request, cookies }) => {
   });
 
   if (!isAuthorized) {
-    if (isJson) {
+    if (wantsJson) {
       return new Response(JSON.stringify({ error: "unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -72,7 +76,7 @@ export const POST = async ({ request, cookies }) => {
   }
 
   if (!supabaseUrl || !supabaseServiceRoleKey) {
-    if (isJson) {
+    if (wantsJson) {
       return new Response(JSON.stringify({ error: "missing_server_config" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
@@ -85,7 +89,7 @@ export const POST = async ({ request, cookies }) => {
   const nextStatus = String(payload.status || "").toLowerCase();
 
   if (!leadId || !allowedStatuses.has(nextStatus)) {
-    if (isJson) {
+    if (wantsJson) {
       return new Response(JSON.stringify({ error: "invalid_payload" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -126,7 +130,7 @@ export const POST = async ({ request, cookies }) => {
 
   if (!response.ok) {
     const detail = await response.text();
-    if (isJson) {
+    if (wantsJson) {
       return new Response(JSON.stringify({ error: "supabase_update_failed", detail }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
@@ -135,7 +139,7 @@ export const POST = async ({ request, cookies }) => {
     return redirectResponse(request.url, returnTo, "update_failed");
   }
 
-  if (isJson) {
+  if (wantsJson) {
     return new Response(JSON.stringify({ ok: true, lead_id: leadId, status: nextStatus }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

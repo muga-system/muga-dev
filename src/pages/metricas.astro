@@ -7,12 +7,6 @@ import {
   BadgeCheck,
   CircleCheck,
   CircleX,
-  Clock3,
-  Download,
-  Filter,
-  Inbox,
-  Shield,
-  TriangleAlert,
   UserCheck,
 } from "@lucide/astro";
 import {
@@ -612,7 +606,7 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
 
       {!isAuthorized ? (
         <article class="mx-auto w-full max-w-lg border border-white/10 bg-muga-dark-800/35 p-6">
-          <h2 class="inline-flex items-center gap-2 text-lg font-semibold text-white"><Shield size={18} stroke-width={1.8} />Acceso protegido</h2>
+          <h2 class="text-lg font-semibold text-white">Acceso protegido</h2>
           <p class="mt-2 text-sm text-graylight">Ingresa la clave interna para abrir el panel de metricas.</p>
           <form method="POST" class="mt-5 space-y-3">
             <input type="hidden" name="action" value="login" />
@@ -627,10 +621,7 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
               />
             </label>
             {authError ? <p class="text-sm text-red-300">{authError}</p> : null}
-              <button type="submit" class="inline-flex w-full items-center justify-center gap-2 border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90">
-                <Shield size={15} stroke-width={1.8} />
-                Entrar al panel
-              </button>
+              <button type="submit" class="inline-flex w-full items-center justify-center border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90">Entrar al panel</button>
           </form>
         </article>
       ) : loadError ? (
@@ -701,8 +692,8 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
             </label>
 
             <div class="flex flex-wrap items-end gap-2 lg:justify-end">
-              <button type="submit" class="inline-flex w-full items-center justify-center gap-2 border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90"><Filter size={15} stroke-width={1.8} />Aplicar filtros</button>
-              <a href={exportCsvHref} class="inline-flex w-full items-center justify-center gap-2 border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40"><Download size={15} stroke-width={1.8} />Exportar CSV</a>
+              <button type="submit" class="inline-flex w-full items-center justify-center border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90">Aplicar filtros</button>
+              <a href={exportCsvHref} class="inline-flex w-full items-center justify-center border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40">Exportar CSV</a>
               <a href="/metricas" class="inline-flex w-full items-center justify-center border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40">Limpiar</a>
             </div>
           </form>
@@ -819,7 +810,7 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
           </article>
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-            <h2 class="inline-flex items-center gap-2 text-lg font-semibold text-white"><Inbox size={18} stroke-width={1.8} />Bandeja hoy · leads nuevos</h2>
+            <h2 class="text-lg font-semibold text-white">Bandeja hoy · leads nuevos</h2>
             <p class="mt-2 text-sm text-graylight">Ordenada por antiguedad para priorizar seguimiento operativo.</p>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <div class="border border-white/10 bg-obscure/40 px-4 py-3">
@@ -827,11 +818,11 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                 <p class="mt-1 text-2xl font-semibold text-white">{bandejaResumen.total}</p>
               </div>
               <div class="border border-red-500/30 bg-red-500/10 px-4 py-3">
-                <p class="inline-flex items-center gap-1 text-xs uppercase tracking-wider text-red-300"><TriangleAlert size={14} stroke-width={1.8} />Criticos >48h</p>
+                <p class="text-xs uppercase tracking-wider text-red-300">Criticos >48h</p>
                 <p class="mt-1 text-2xl font-semibold text-red-200">{bandejaResumen.critico}</p>
               </div>
               <div class="border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-                <p class="inline-flex items-center gap-1 text-xs uppercase tracking-wider text-amber-300"><Clock3 size={14} stroke-width={1.8} />Warning >24h</p>
+                <p class="text-xs uppercase tracking-wider text-amber-300">Warning >24h</p>
                 <p class="mt-1 text-2xl font-semibold text-amber-200">{bandejaResumen.warning}</p>
               </div>
               <div class="border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
@@ -870,15 +861,14 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                         <td class="px-3 py-2">
                           <div class="flex flex-wrap gap-2">
                             {quickActionsByStatus.new.map((action) => (
-                              <form method="POST" action="/api/leads/estado" onsubmit={action.value === "lost" ? "return confirm('Vas a marcar este lead como perdido. Continuar?')" : undefined}>
+                              <form method="POST" action="/api/leads/estado" class="js-status-form" data-next-status={action.value}>
                                 <input type="hidden" name="lead_id" value={lead.id} />
                                 <input type="hidden" name="status" value={action.value} />
                                 <input type="hidden" name="return_to" value={returnToParam} />
-                                <button type="submit" class={`inline-flex items-center gap-1 border px-2 py-1 text-xs font-semibold ${action.className}`}>
-                                  {action.value === "contacted" ? <UserCheck size={13} stroke-width={1.9} /> : null}
-                                  {action.value === "qualified" ? <BadgeCheck size={13} stroke-width={1.9} /> : null}
-                                  {action.value === "lost" ? <CircleX size={13} stroke-width={1.9} /> : null}
-                                  {action.label}
+                                <button type="submit" title={action.label} aria-label={action.label} class="inline-flex items-center justify-center border border-accent/40 bg-accent/10 px-2 py-1 text-accent hover:bg-accent/20">
+                                  {action.value === "contacted" ? <UserCheck size={14} stroke-width={2} /> : null}
+                                  {action.value === "qualified" ? <BadgeCheck size={14} stroke-width={2} /> : null}
+                                  {action.value === "lost" ? <CircleX size={14} stroke-width={2} /> : null}
                                 </button>
                               </form>
                             ))}
@@ -927,19 +917,19 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                   </thead>
                   <tbody>
                     {leadsRecientes.map((lead) => (
-                      <tr class="border-b border-white/10 last:border-0">
+                      <tr class="border-b border-white/10 last:border-0" data-lead-row-id={String(lead.id)}>
                         <td class="px-3 py-2 text-graylight">{lead.createdAt}</td>
                         <td class="px-3 py-2">
                           <p class="font-semibold text-white">{lead.name}</p>
                           <p class="text-xs text-graylight">{lead.email}</p>
                         </td>
                         <td class="px-3 py-2 text-graylight">{lead.project}</td>
-                        <td class="px-3 py-2 text-graylight">{estadoEtiquetas[lead.status] || lead.status}</td>
+                        <td class="px-3 py-2 text-graylight" data-lead-status-id={String(lead.id)}>{estadoEtiquetas[lead.status] || lead.status}</td>
                         <td class="px-3 py-2">
-                          <form method="POST" action="/api/leads/estado" class="flex items-center gap-2">
+                          <form method="POST" action="/api/leads/estado" class="js-status-form flex items-center gap-2">
                             <input type="hidden" name="lead_id" value={lead.id} />
                             <input type="hidden" name="return_to" value={returnToParam} />
-                            <select name="status" class="border border-white/15 bg-obscure px-2 py-1 text-xs text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                            <select name="status" data-lead-select-id={String(lead.id)} class="border border-white/15 bg-obscure px-2 py-1 text-xs text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                               {Object.entries(estadoEtiquetas).map(([value, label]) => (
                                 <option value={value} selected={lead.status === value}>{label}</option>
                               ))}
@@ -950,16 +940,15 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                         <td class="px-3 py-2">
                           <div class="flex flex-wrap gap-2">
                             {(quickActionsByStatus[lead.status] || []).map((action) => (
-                              <form method="POST" action="/api/leads/estado" onsubmit={action.value === "lost" ? "return confirm('Vas a marcar este lead como perdido. Continuar?')" : undefined}>
+                              <form method="POST" action="/api/leads/estado" class="js-status-form" data-next-status={action.value}>
                                 <input type="hidden" name="lead_id" value={lead.id} />
                                 <input type="hidden" name="status" value={action.value} />
                                 <input type="hidden" name="return_to" value={returnToParam} />
-                                <button type="submit" class={`inline-flex items-center gap-1 border px-2 py-1 text-xs font-semibold ${action.className}`}>
-                                  {action.value === "contacted" ? <UserCheck size={13} stroke-width={1.9} /> : null}
-                                  {action.value === "qualified" ? <BadgeCheck size={13} stroke-width={1.9} /> : null}
-                                  {action.value === "won" ? <CircleCheck size={13} stroke-width={1.9} /> : null}
-                                  {action.value === "lost" ? <CircleX size={13} stroke-width={1.9} /> : null}
-                                  {action.label}
+                                <button type="submit" title={action.label} aria-label={action.label} class="inline-flex items-center justify-center border border-accent/40 bg-accent/10 px-2 py-1 text-accent hover:bg-accent/20">
+                                  {action.value === "contacted" ? <UserCheck size={14} stroke-width={2} /> : null}
+                                  {action.value === "qualified" ? <BadgeCheck size={14} stroke-width={2} /> : null}
+                                  {action.value === "won" ? <CircleCheck size={14} stroke-width={2} /> : null}
+                                  {action.value === "lost" ? <CircleX size={14} stroke-width={2} /> : null}
                                 </button>
                               </form>
                             ))}
@@ -1038,4 +1027,81 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
       )}
     </div>
   </section>
+
+  <script>
+    const forms = Array.from(document.querySelectorAll(".js-status-form"));
+    if (forms.length) {
+      const statusLabels: Record<string, string> = {
+        new: "Nuevo",
+        contacted: "Contactado",
+        qualified: "Calificado",
+        won: "Cerrado",
+        lost: "Perdido",
+      };
+
+      forms.forEach((form) => {
+        form.addEventListener("submit", async (event) => {
+          if (!(form instanceof HTMLFormElement)) return;
+
+          const formData = new FormData(form);
+          const nextStatus = form.dataset.nextStatus || String(formData.get("status") || "");
+          if (nextStatus === "lost") {
+            const confirmed = window.confirm("Vas a marcar este lead como perdido. Continuar?");
+            if (!confirmed) {
+              event.preventDefault();
+              return;
+            }
+          }
+
+          event.preventDefault();
+
+          const leadId = String(formData.get("lead_id") || "");
+          const submitButton = form.querySelector('button[type="submit"]');
+          if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
+
+          try {
+            const response = await fetch(form.action, {
+              method: "POST",
+              body: formData,
+              headers: {
+                Accept: "application/json",
+                "X-Requested-With": "fetch",
+              },
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || !payload?.ok) {
+              alert("No se pudo actualizar el estado.");
+              return;
+            }
+
+            const status = String(payload.status || "");
+            if (!status || !leadId) return;
+            const statusLabel =
+              status in statusLabels
+                ? statusLabels[status as keyof typeof statusLabels]
+                : status;
+
+            document.querySelectorAll(`[data-lead-status-id="${leadId}"]`).forEach((node) => {
+              if (node instanceof HTMLElement) node.textContent = statusLabel;
+            });
+
+            document.querySelectorAll(`[data-lead-select-id="${leadId}"]`).forEach((node) => {
+              if (node instanceof HTMLSelectElement) node.value = status;
+            });
+
+            if (status !== "new") {
+              document.querySelectorAll(`[data-lead-row-id="${leadId}"]`).forEach((row) => {
+                if (row instanceof HTMLElement) row.remove();
+              });
+            }
+          } catch {
+            alert("No se pudo actualizar el estado.");
+          } finally {
+            if (submitButton instanceof HTMLButtonElement) submitButton.disabled = false;
+          }
+        });
+      });
+    }
+  </script>
 </Layout>
