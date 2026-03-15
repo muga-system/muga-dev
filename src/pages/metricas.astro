@@ -158,26 +158,62 @@ if (!isAuthorized) {
 } else {
   const cutoffIso = new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString();
 
-  const query = new URL(`${supabaseUrl}/rest/v1/${leadsTable}`);
-  query.searchParams.set(
-    "select",
+  const selectCandidates = [
     "id,created_at,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at",
-  );
-  query.searchParams.set("created_at", `gte.${cutoffIso}`);
-  query.searchParams.set("order", "created_at.desc");
-  query.searchParams.set("limit", "5000");
+    "id,created_at,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign",
+    "id,created_at,status,lead_stage,budget,source",
+  ];
 
-  const response = await fetch(query.toString(), {
-    headers: {
-      apikey: supabaseServiceRoleKey,
-      Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    },
-  });
+  let rows: Array<{
+    created_at?: string;
+    status?: string;
+    lead_stage?: string;
+    budget?: string;
+    source?: string;
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    first_contact_at?: string;
+  }> | null = null;
+  let lastStatus = 500;
 
-  if (!response.ok) {
-    loadError = `No se pudieron cargar metricas (${response.status}).`;
+  for (const select of selectCandidates) {
+    const query = new URL(`${supabaseUrl}/rest/v1/${leadsTable}`);
+    query.searchParams.set("select", select);
+    query.searchParams.set("created_at", `gte.${cutoffIso}`);
+    query.searchParams.set("order", "created_at.desc");
+    query.searchParams.set("limit", "5000");
+
+    const response = await fetch(query.toString(), {
+      headers: {
+        apikey: supabaseServiceRoleKey,
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      },
+    });
+
+    lastStatus = response.status;
+    if (response.ok) {
+      rows = (await response.json()) as Array<{
+        created_at?: string;
+        status?: string;
+        lead_stage?: string;
+        budget?: string;
+        source?: string;
+        utm_source?: string;
+        utm_medium?: string;
+        utm_campaign?: string;
+        first_contact_at?: string;
+      }>;
+      break;
+    }
+
+    if (response.status !== 400) break;
+  }
+
+  if (!rows) {
+    loadError = `No se pudieron cargar metricas (${lastStatus}).`;
   } else {
-    const rows = (await response.json()) as Array<{
+    const safeRows = rows as Array<{
       created_at?: string;
       status?: string;
       lead_stage?: string;
@@ -193,9 +229,9 @@ if (!isAuthorized) {
     const allUtmSourceCounter = new Map<string, number>();
     const allUtmCampaignCounter = new Map<string, number>();
 
-    metrics.enPeriodo = rows.length;
+    metrics.enPeriodo = safeRows.length;
 
-    rows.forEach((lead) => {
+    safeRows.forEach((lead) => {
       const source = String(lead.source || "desconocido").toLowerCase();
       const utmSource = String(lead.utm_source || "sin_utm").trim().toLowerCase();
       const utmCampaign = String(lead.utm_campaign || "sin_campana").trim().toLowerCase();
@@ -208,7 +244,7 @@ if (!isAuthorized) {
     utmSourcesDisponibles.push(...[...allUtmSourceCounter.keys()].sort());
     utmCampaignsDisponibles.push(...[...allUtmCampaignCounter.keys()].sort());
 
-    const filteredRows = rows.filter((lead) => {
+    const filteredRows = safeRows.filter((lead) => {
       const status = String(lead.status || "new").toLowerCase();
       const source = String(lead.source || "desconocido").toLowerCase();
       const utmSource = String(lead.utm_source || "sin_utm").trim().toLowerCase();

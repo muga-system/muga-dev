@@ -91,27 +91,41 @@ export const GET = async ({ url, cookies }) => {
   const utmCampaign = normalizeFilter(url.searchParams.get("utm_campaign"));
   const cutoffIso = new Date(Date.now() - dias * 24 * 60 * 60 * 1000).toISOString();
 
-  const query = new URL(`${supabaseUrl}/rest/v1/${leadsTable}`);
-  query.searchParams.set(
-    "select",
+  const selectCandidates = [
     "created_at,first_contact_at,last_contact_at,name,email,phone,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign",
-  );
-  query.searchParams.set("created_at", `gte.${cutoffIso}`);
-  query.searchParams.set("order", "created_at.desc");
-  query.searchParams.set("limit", "5000");
+    "created_at,name,email,phone,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign",
+    "created_at,name,email,phone,project,status,lead_stage,budget,source",
+  ];
 
-  const response = await fetch(query.toString(), {
-    headers: {
-      apikey: supabaseServiceRoleKey,
-      Authorization: `Bearer ${supabaseServiceRoleKey}`,
-    },
-  });
+  let rows = null;
+  let lastStatus = 500;
 
-  if (!response.ok) {
-    return new Response("supabase_query_failed", { status: 502 });
+  for (const select of selectCandidates) {
+    const query = new URL(`${supabaseUrl}/rest/v1/${leadsTable}`);
+    query.searchParams.set("select", select);
+    query.searchParams.set("created_at", `gte.${cutoffIso}`);
+    query.searchParams.set("order", "created_at.desc");
+    query.searchParams.set("limit", "5000");
+
+    const response = await fetch(query.toString(), {
+      headers: {
+        apikey: supabaseServiceRoleKey,
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      },
+    });
+
+    lastStatus = response.status;
+    if (response.ok) {
+      rows = await response.json();
+      break;
+    }
+
+    if (response.status !== 400) break;
   }
 
-  const rows = await response.json();
+  if (!rows) {
+    return new Response("supabase_query_failed", { status: lastStatus === 400 ? 502 : lastStatus });
+  }
   const filteredRows = (Array.isArray(rows) ? rows : []).filter((row) => {
     const rowStatus = normalizeFilter(row.status || "new");
     const rowSource = normalizeFilter(row.source || "desconocido");
