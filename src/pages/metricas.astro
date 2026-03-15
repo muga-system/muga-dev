@@ -1228,92 +1228,80 @@ const mapLeadsGeoJson = {
 
       const { default: maplibregl } = await import("maplibre-gl");
 
-      const getThemedStyle = async (styleUrl: string) => {
-        const response = await fetch(styleUrl);
-        if (!response.ok) throw new Error("style_fetch_failed");
-        const style = await response.json();
-        const layers: any[] = Array.isArray(style.layers) ? style.layers : [];
-
-        layers.forEach((layer: any) => {
-          const id = String(layer.id || "").toLowerCase();
-
-          if (layer.type === "background") {
-            layer.paint = { ...(layer.paint || {}), "background-color": "#191717" };
-            return;
-          }
-
-          if (
-            layer.type === "symbol" ||
-            id.includes("label") ||
-            id.includes("road") ||
-            id.includes("poi") ||
-            id.includes("rail") ||
-            id.includes("airport") ||
-            id.includes("transit") ||
-            id.includes("path") ||
-            id.includes("highway")
-          ) {
-            layer.layout = { ...(layer.layout || {}), visibility: "none" };
-            return;
-          }
-
-          if (layer.type === "fill") {
-            if (id.includes("water") || id.includes("ocean") || id.includes("sea")) {
-              layer.paint = { ...(layer.paint || {}), "fill-color": "#191717", "fill-opacity": 1 };
-              return;
-            }
-
-            if (
-              id.includes("land") ||
-              id.includes("earth") ||
-              id.includes("park") ||
-              id.includes("landcover") ||
-              id.includes("landuse")
-            ) {
-              layer.paint = { ...(layer.paint || {}), "fill-color": "#2D2E2E", "fill-opacity": 1 };
-              return;
-            }
-
-            layer.paint = { ...(layer.paint || {}), "fill-opacity": 0 };
-            return;
-          }
-
-          if (layer.type === "line") {
-            if (id.includes("boundary") || id.includes("admin") || id.includes("country") || id.includes("coast")) {
-              layer.paint = {
-                ...(layer.paint || {}),
-                "line-color": "#3A3A3A",
-                "line-width": 1,
-                "line-opacity": 1,
-              };
-              return;
-            }
-
-            layer.layout = { ...(layer.layout || {}), visibility: "none" };
-          }
-        });
-
-        return { ...style, layers };
-      };
-
-      let style: any;
-      try {
-        style = await getThemedStyle("https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json");
-      } catch {
-        style = await getThemedStyle("https://demotiles.maplibre.org/style.json");
-      }
-
       const map = new maplibregl.Map({
         container,
-        style,
+        style: "https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json",
         center: [0, 20],
         zoom: 1.4,
         attributionControl: false,
       });
 
+      let ready = false;
+      let fallbackTried = false;
+
       const bindLoadEvents = () => {
-        map.on("load", () => {
+        map.once("load", () => {
+          const layers = map.getStyle()?.layers || [];
+          layers.forEach((layer: any) => {
+            const id = String(layer.id || "").toLowerCase();
+
+            if (layer.type === "background") {
+              map.setPaintProperty(layer.id, "background-color", "#191717");
+              return;
+            }
+
+            if (
+              layer.type === "symbol" ||
+              id.includes("label") ||
+              id.includes("road") ||
+              id.includes("poi") ||
+              id.includes("rail") ||
+              id.includes("airport") ||
+              id.includes("transit") ||
+              id.includes("path") ||
+              id.includes("highway")
+            ) {
+              map.setLayoutProperty(layer.id, "visibility", "none");
+              return;
+            }
+
+            if (layer.type === "fill") {
+              if (id.includes("water") || id.includes("ocean") || id.includes("sea")) {
+                map.setPaintProperty(layer.id, "fill-color", "#191717");
+                map.setPaintProperty(layer.id, "fill-opacity", 1);
+                return;
+              }
+
+              if (
+                id.includes("land") ||
+                id.includes("earth") ||
+                id.includes("park") ||
+                id.includes("landcover") ||
+                id.includes("landuse")
+              ) {
+                map.setPaintProperty(layer.id, "fill-color", "#2D2E2E");
+                map.setPaintProperty(layer.id, "fill-opacity", 1);
+                return;
+              }
+
+              map.setPaintProperty(layer.id, "fill-opacity", 0);
+              return;
+            }
+
+            if (layer.type === "line") {
+              if (id.includes("boundary") || id.includes("admin") || id.includes("country") || id.includes("coast")) {
+                map.setPaintProperty(layer.id, "line-color", "#3A3A3A");
+                map.setPaintProperty(layer.id, "line-width", 1);
+                map.setPaintProperty(layer.id, "line-opacity", 1);
+                return;
+              }
+
+              map.setLayoutProperty(layer.id, "visibility", "none");
+            }
+          });
+
           if (loading) loading.classList.add("hidden");
+          ready = true;
 
           if (!map.getSource("leads-source")) {
             map.addSource("leads-source", {
@@ -1370,6 +1358,18 @@ const mapLeadsGeoJson = {
       };
 
       bindLoadEvents();
+
+      map.on("error", () => {
+        if (ready) return;
+        if (fallbackTried) {
+          if (loading) loading.textContent = "No se pudo cargar mapa";
+          return;
+        }
+
+        fallbackTried = true;
+        map.setStyle("https://demotiles.maplibre.org/style.json" as any);
+        bindLoadEvents();
+      });
     };
 
     initWorldLeadsMap();
