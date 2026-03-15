@@ -275,12 +275,12 @@ if (!isAuthorized) {
     metrics.attribution.utmSources = [...filteredUtmSourceCounter.entries()]
       .map(([source, count]) => ({ source, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 8);
+      .slice(0, 24);
 
     metrics.attribution.utmCampaigns = [...filteredUtmCampaignCounter.entries()]
       .map(([campaign, count]) => ({ campaign, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 8);
+      .slice(0, 40);
 
     metrics.contactTiming.measuredLeads = firstContactMeasured;
     metrics.contactTiming.avgHoursToFirstContact = firstContactMeasured
@@ -337,6 +337,10 @@ const prioridadItems = [
 const maxEstado = Math.max(1, ...estadoItems.map((item) => item.value));
 const maxPrioridad = Math.max(1, ...prioridadItems.map((item) => item.value));
 const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
+const topUtmSourceItems = metrics.attribution.utmSources.slice(0, 6);
+const overflowUtmSourceItems = metrics.attribution.utmSources.slice(6);
+const topUtmCampaignItems = metrics.attribution.utmCampaigns.slice(0, 6);
+const overflowUtmCampaignItems = metrics.attribution.utmCampaigns.slice(6);
 ---
 
 <Layout title="Metricas | MUGA" description="Panel simple de metricas de leads.">
@@ -562,8 +566,8 @@ const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
               <h2 class="text-lg font-semibold text-white">Atribucion UTM · source</h2>
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                {metrics.attribution.utmSources.length ? (
-                  metrics.attribution.utmSources.map((item) => (
+                {topUtmSourceItems.length ? (
+                  topUtmSourceItems.map((item) => (
                     <div class="border border-white/10 bg-obscure/40 px-4 py-3">
                       <p class="text-xs uppercase tracking-wider text-graylight">{item.source}</p>
                       <p class="mt-1 text-2xl font-semibold text-white">{item.count}</p>
@@ -573,13 +577,26 @@ const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
                   <p class="text-sm text-graylight">Sin datos UTM source para los filtros actuales.</p>
                 )}
               </div>
+              {overflowUtmSourceItems.length ? (
+                <details class="mt-4 border border-white/10 bg-obscure/20 p-3">
+                  <summary class="cursor-pointer text-sm font-semibold text-white">Ver mas ({overflowUtmSourceItems.length})</summary>
+                  <div class="mt-3 space-y-2">
+                    {overflowUtmSourceItems.map((item) => (
+                      <div class="flex items-center justify-between border-b border-white/10 pb-2 text-sm last:border-0 last:pb-0">
+                        <p class="text-graylight">{item.source}</p>
+                        <p class="font-semibold text-white">{item.count}</p>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ) : null}
             </article>
 
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
               <h2 class="text-lg font-semibold text-white">Atribucion UTM · campaign</h2>
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                {metrics.attribution.utmCampaigns.length ? (
-                  metrics.attribution.utmCampaigns.map((item) => (
+                {topUtmCampaignItems.length ? (
+                  topUtmCampaignItems.map((item) => (
                     <div class="border border-white/10 bg-obscure/40 px-4 py-3">
                       <p class="text-xs uppercase tracking-wider text-graylight">{item.campaign}</p>
                       <p class="mt-1 text-2xl font-semibold text-white">{item.count}</p>
@@ -589,6 +606,19 @@ const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
                   <p class="text-sm text-graylight">Sin datos UTM campaign para los filtros actuales.</p>
                 )}
               </div>
+              {overflowUtmCampaignItems.length ? (
+                <details class="mt-4 border border-white/10 bg-obscure/20 p-3">
+                  <summary class="cursor-pointer text-sm font-semibold text-white">Ver mas ({overflowUtmCampaignItems.length})</summary>
+                  <div class="mt-3 space-y-2">
+                    {overflowUtmCampaignItems.map((item) => (
+                      <div class="flex items-center justify-between border-b border-white/10 pb-2 text-sm last:border-0 last:pb-0">
+                        <p class="text-graylight">{item.campaign}</p>
+                        <p class="font-semibold text-white">{item.count}</p>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ) : null}
             </article>
           </div>
         </>
