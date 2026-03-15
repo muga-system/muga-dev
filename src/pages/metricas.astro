@@ -89,15 +89,25 @@ const formatDay = (date: Date) =>
     month: "2-digit",
   });
 
+const formatHours = (value: number) => {
+  if (!Number.isFinite(value) || value <= 0) return "0 h";
+  if (value < 1) return `${Math.round(value * 60)} min`;
+  return `${value.toFixed(1)} h`;
+};
+
 const diasOpciones = [1, 7, 30, 90];
 
 const selectedDays = parsePositiveInt(Astro.url.searchParams.get("dias"), 30);
 const selectedStatus = (Astro.url.searchParams.get("estado") || "all").toLowerCase();
 const selectedSource = (Astro.url.searchParams.get("fuente") || "all").toLowerCase();
+const selectedUtmSource = (Astro.url.searchParams.get("utm_source") || "all").toLowerCase();
+const selectedUtmCampaign = (Astro.url.searchParams.get("utm_campaign") || "all").toLowerCase();
 const exportCsvParams = new URLSearchParams({
   dias: String(selectedDays),
   estado: selectedStatus,
   fuente: selectedSource,
+  utm_source: selectedUtmSource,
+  utm_campaign: selectedUtmCampaign,
 });
 const exportCsvHref = `/api/leads/export.csv?${exportCsvParams.toString()}`;
 
@@ -119,6 +129,15 @@ const metrics = {
     nuevo: 0,
   },
   sources: [] as Array<{ source: string; count: number }>,
+  attribution: {
+    utmSources: [] as Array<{ source: string; count: number }>,
+    utmCampaigns: [] as Array<{ campaign: string; count: number }>,
+  },
+  contactTiming: {
+    avgHoursToFirstContact: 0,
+    contactedWithin24h: 0,
+    measuredLeads: 0,
+  },
 };
 
 const funnel = {
@@ -129,6 +148,8 @@ const funnel = {
 
 const tendencia: Array<{ dia: string; total: number }> = [];
 const fuentesDisponibles: string[] = [];
+const utmSourcesDisponibles: string[] = [];
+const utmCampaignsDisponibles: string[] = [];
 
 if (!isAuthorized) {
   loadError = "";
@@ -138,7 +159,10 @@ if (!isAuthorized) {
   const cutoffIso = new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString();
 
   const query = new URL(`${supabaseUrl}/rest/v1/${leadsTable}`);
-  query.searchParams.set("select", "id,created_at,status,lead_stage,budget,source");
+  query.searchParams.set(
+    "select",
+    "id,created_at,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at",
+  );
   query.searchParams.set("created_at", `gte.${cutoffIso}`);
   query.searchParams.set("order", "created_at.desc");
   query.searchParams.set("limit", "5000");
@@ -159,35 +183,58 @@ if (!isAuthorized) {
       lead_stage?: string;
       budget?: string;
       source?: string;
+      utm_source?: string;
+      utm_medium?: string;
+      utm_campaign?: string;
+      first_contact_at?: string;
     }>;
 
     const allSourceCounter = new Map<string, number>();
+    const allUtmSourceCounter = new Map<string, number>();
+    const allUtmCampaignCounter = new Map<string, number>();
 
     metrics.enPeriodo = rows.length;
 
     rows.forEach((lead) => {
       const source = String(lead.source || "desconocido").toLowerCase();
+      const utmSource = String(lead.utm_source || "sin_utm").trim().toLowerCase();
+      const utmCampaign = String(lead.utm_campaign || "sin_campana").trim().toLowerCase();
       allSourceCounter.set(source, (allSourceCounter.get(source) || 0) + 1);
+      allUtmSourceCounter.set(utmSource, (allUtmSourceCounter.get(utmSource) || 0) + 1);
+      allUtmCampaignCounter.set(utmCampaign, (allUtmCampaignCounter.get(utmCampaign) || 0) + 1);
     });
 
     fuentesDisponibles.push(...[...allSourceCounter.keys()].sort());
+    utmSourcesDisponibles.push(...[...allUtmSourceCounter.keys()].sort());
+    utmCampaignsDisponibles.push(...[...allUtmCampaignCounter.keys()].sort());
 
     const filteredRows = rows.filter((lead) => {
       const status = String(lead.status || "new").toLowerCase();
       const source = String(lead.source || "desconocido").toLowerCase();
+      const utmSource = String(lead.utm_source || "sin_utm").trim().toLowerCase();
+      const utmCampaign = String(lead.utm_campaign || "sin_campana").trim().toLowerCase();
 
       if (selectedStatus !== "all" && status !== selectedStatus) return false;
       if (selectedSource !== "all" && source !== selectedSource) return false;
+      if (selectedUtmSource !== "all" && utmSource !== selectedUtmSource) return false;
+      if (selectedUtmCampaign !== "all" && utmCampaign !== selectedUtmCampaign) return false;
       return true;
     });
 
     metrics.total = filteredRows.length;
     const filteredSourceCounter = new Map<string, number>();
     const filteredDaily = new Map<string, number>();
+    const filteredUtmSourceCounter = new Map<string, number>();
+    const filteredUtmCampaignCounter = new Map<string, number>();
+    let firstContactHoursTotal = 0;
+    let firstContactMeasured = 0;
+    let firstContactWithin24h = 0;
 
     filteredRows.forEach((lead) => {
       const status = String(lead.status || "new").toLowerCase();
       const source = String(lead.source || "desconocido").toLowerCase();
+      const utmSource = String(lead.utm_source || "sin_utm").trim().toLowerCase();
+      const utmCampaign = String(lead.utm_campaign || "sin_campana").trim().toLowerCase();
 
       if (status in metrics.byStatus) {
         metrics.byStatus[status as keyof typeof metrics.byStatus] += 1;
@@ -197,11 +244,26 @@ if (!isAuthorized) {
       metrics.byTier[tier as keyof typeof metrics.byTier] += 1;
 
       filteredSourceCounter.set(source, (filteredSourceCounter.get(source) || 0) + 1);
+      filteredUtmSourceCounter.set(utmSource, (filteredUtmSourceCounter.get(utmSource) || 0) + 1);
+      filteredUtmCampaignCounter.set(utmCampaign, (filteredUtmCampaignCounter.get(utmCampaign) || 0) + 1);
 
       const createdDate = new Date(String(lead.created_at || ""));
       if (!Number.isNaN(createdDate.getTime())) {
         const key = createdDate.toISOString().slice(0, 10);
         filteredDaily.set(key, (filteredDaily.get(key) || 0) + 1);
+      }
+
+      const firstContactRaw = String(lead.first_contact_at || "");
+      if (firstContactRaw) {
+        const firstContactDate = new Date(firstContactRaw);
+        if (!Number.isNaN(firstContactDate.getTime()) && !Number.isNaN(createdDate.getTime())) {
+          const diffHours = (firstContactDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60);
+          if (diffHours >= 0) {
+            firstContactMeasured += 1;
+            firstContactHoursTotal += diffHours;
+            if (diffHours <= 24) firstContactWithin24h += 1;
+          }
+        }
       }
     });
 
@@ -209,6 +271,24 @@ if (!isAuthorized) {
       .map(([source, count]) => ({ source, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
+
+    metrics.attribution.utmSources = [...filteredUtmSourceCounter.entries()]
+      .map(([source, count]) => ({ source, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+
+    metrics.attribution.utmCampaigns = [...filteredUtmCampaignCounter.entries()]
+      .map(([campaign, count]) => ({ campaign, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 8);
+
+    metrics.contactTiming.measuredLeads = firstContactMeasured;
+    metrics.contactTiming.avgHoursToFirstContact = firstContactMeasured
+      ? Number((firstContactHoursTotal / firstContactMeasured).toFixed(2))
+      : 0;
+    metrics.contactTiming.contactedWithin24h = firstContactMeasured
+      ? Number(((firstContactWithin24h / firstContactMeasured) * 100).toFixed(1))
+      : 0;
 
     const contactedOrMore =
       metrics.byStatus.contacted +
@@ -310,7 +390,7 @@ const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
             </form>
           </div>
 
-          <form method="GET" class="grid gap-4 border border-white/10 bg-muga-dark-800/35 p-4 sm:grid-cols-2 lg:grid-cols-4">
+          <form method="GET" class="grid gap-4 border border-white/10 bg-muga-dark-800/35 p-4 sm:grid-cols-2 lg:grid-cols-6">
             <label class="space-y-2">
               <span class="text-xs uppercase tracking-wider text-graylight">Periodo</span>
               <select name="dias" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
@@ -336,6 +416,26 @@ const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
                 <option value="all" selected={selectedSource === "all"}>Todas</option>
                 {fuentesDisponibles.map((source) => (
                   <option value={source} selected={selectedSource === source}>{source}</option>
+                ))}
+              </select>
+            </label>
+
+            <label class="space-y-2">
+              <span class="text-xs uppercase tracking-wider text-graylight">UTM source</span>
+              <select name="utm_source" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                <option value="all" selected={selectedUtmSource === "all"}>Todas</option>
+                {utmSourcesDisponibles.map((utmSource) => (
+                  <option value={utmSource} selected={selectedUtmSource === utmSource}>{utmSource}</option>
+                ))}
+              </select>
+            </label>
+
+            <label class="space-y-2">
+              <span class="text-xs uppercase tracking-wider text-graylight">UTM campaign</span>
+              <select name="utm_campaign" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                <option value="all" selected={selectedUtmCampaign === "all"}>Todas</option>
+                {utmCampaignsDisponibles.map((utmCampaign) => (
+                  <option value={utmCampaign} selected={selectedUtmCampaign === utmCampaign}>{utmCampaign}</option>
                 ))}
               </select>
             </label>
@@ -368,6 +468,26 @@ const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
               <p class="text-xs uppercase tracking-wider text-graylight">Estado nuevo</p>
               <p class="mt-2 text-3xl font-semibold text-white">{metrics.byStatus.new}</p>
               <p class="mt-1 text-xs text-graylight">Sin contacto inicial</p>
+            </article>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Tiempo a primer contacto</p>
+              <p class="mt-2 text-3xl font-semibold text-white">{formatHours(metrics.contactTiming.avgHoursToFirstContact)}</p>
+              <p class="mt-1 text-xs text-graylight">Promedio en {metrics.contactTiming.measuredLeads} leads medidos</p>
+            </article>
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Contactados en 24h</p>
+              <p class="mt-2 text-3xl font-semibold text-white">{metrics.contactTiming.contactedWithin24h}%</p>
+              <p class="mt-1 text-xs text-graylight">Sobre leads con primer contacto registrado</p>
+            </article>
+            <article class="border border-white/10 bg-muga-dark-800/35 p-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Top UTM source</p>
+              <p class="mt-2 text-2xl font-semibold text-white">
+                {metrics.attribution.utmSources[0]?.source || "sin_utm"}
+              </p>
+              <p class="mt-1 text-xs text-graylight">{metrics.attribution.utmSources[0]?.count || 0} leads</p>
             </article>
           </div>
 
@@ -437,6 +557,40 @@ const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
               )}
             </div>
           </article>
+
+          <div class="grid gap-4 lg:grid-cols-2">
+            <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+              <h2 class="text-lg font-semibold text-white">Atribucion UTM · source</h2>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                {metrics.attribution.utmSources.length ? (
+                  metrics.attribution.utmSources.map((item) => (
+                    <div class="border border-white/10 bg-obscure/40 px-4 py-3">
+                      <p class="text-xs uppercase tracking-wider text-graylight">{item.source}</p>
+                      <p class="mt-1 text-2xl font-semibold text-white">{item.count}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p class="text-sm text-graylight">Sin datos UTM source para los filtros actuales.</p>
+                )}
+              </div>
+            </article>
+
+            <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+              <h2 class="text-lg font-semibold text-white">Atribucion UTM · campaign</h2>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                {metrics.attribution.utmCampaigns.length ? (
+                  metrics.attribution.utmCampaigns.map((item) => (
+                    <div class="border border-white/10 bg-obscure/40 px-4 py-3">
+                      <p class="text-xs uppercase tracking-wider text-graylight">{item.campaign}</p>
+                      <p class="mt-1 text-2xl font-semibold text-white">{item.count}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p class="text-sm text-graylight">Sin datos UTM campaign para los filtros actuales.</p>
+                )}
+              </div>
+            </article>
+          </div>
         </>
       )}
     </div>

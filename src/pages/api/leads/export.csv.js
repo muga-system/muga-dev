@@ -17,13 +17,30 @@ const escapeCsv = (value) => {
 };
 
 const toCsv = (rows) => {
-  const headers = ["created_at", "name", "email", "phone", "project", "status", "lead_stage", "budget", "source"];
+  const headers = [
+    "created_at",
+    "first_contact_at",
+    "last_contact_at",
+    "name",
+    "email",
+    "phone",
+    "project",
+    "status",
+    "lead_stage",
+    "budget",
+    "source",
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+  ];
   const lines = [headers.join(",")];
 
   rows.forEach((row) => {
     lines.push(
       [
         row.created_at,
+        row.first_contact_at,
+        row.last_contact_at,
         row.name,
         row.email,
         row.phone,
@@ -32,6 +49,9 @@ const toCsv = (rows) => {
         row.lead_stage,
         row.budget,
         row.source,
+        row.utm_source,
+        row.utm_medium,
+        row.utm_campaign,
       ]
         .map(escapeCsv)
         .join(","),
@@ -67,10 +87,15 @@ export const GET = async ({ url, cookies }) => {
   const dias = parsePositiveInt(url.searchParams.get("dias"), 30);
   const estado = normalizeFilter(url.searchParams.get("estado"));
   const fuente = normalizeFilter(url.searchParams.get("fuente"));
+  const utmSource = normalizeFilter(url.searchParams.get("utm_source"));
+  const utmCampaign = normalizeFilter(url.searchParams.get("utm_campaign"));
   const cutoffIso = new Date(Date.now() - dias * 24 * 60 * 60 * 1000).toISOString();
 
   const query = new URL(`${supabaseUrl}/rest/v1/${leadsTable}`);
-  query.searchParams.set("select", "created_at,name,email,phone,project,status,lead_stage,budget,source");
+  query.searchParams.set(
+    "select",
+    "created_at,first_contact_at,last_contact_at,name,email,phone,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign",
+  );
   query.searchParams.set("created_at", `gte.${cutoffIso}`);
   query.searchParams.set("order", "created_at.desc");
   query.searchParams.set("limit", "5000");
@@ -90,9 +115,13 @@ export const GET = async ({ url, cookies }) => {
   const filteredRows = (Array.isArray(rows) ? rows : []).filter((row) => {
     const rowStatus = normalizeFilter(row.status || "new");
     const rowSource = normalizeFilter(row.source || "desconocido");
+    const rowUtmSource = normalizeFilter(row.utm_source || "sin_utm");
+    const rowUtmCampaign = normalizeFilter(row.utm_campaign || "sin_campana");
 
     if (estado !== "all" && rowStatus !== estado) return false;
     if (fuente !== "all" && rowSource !== fuente) return false;
+    if (utmSource !== "all" && rowUtmSource !== utmSource) return false;
+    if (utmCampaign !== "all" && rowUtmCampaign !== utmCampaign) return false;
     return true;
   });
 
