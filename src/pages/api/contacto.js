@@ -37,6 +37,13 @@ const isRateLimited = (key) => {
 
 const normalizeLowerText = (value) => String(value || "").trim().toLowerCase();
 
+const extractPrimaryLocale = (acceptLanguageValue) => {
+  const raw = String(acceptLanguageValue || "").trim();
+  if (!raw) return "";
+  const first = raw.split(",")[0]?.trim() || "";
+  return first.split(";")[0]?.trim() || "";
+};
+
 const parseHostname = (urlValue) => {
   try {
     return new URL(String(urlValue || "")).hostname.toLowerCase();
@@ -368,6 +375,17 @@ export const POST = async ({ request }) => {
 
   cleanedPayload.utm_source = inferUtmSource(cleanedPayload);
   cleanedPayload.utm_medium = inferUtmMedium(cleanedPayload);
+
+  if (!cleanedPayload.locale) {
+    const localeFromHeaders = extractPrimaryLocale(request.headers.get("accept-language"));
+    cleanedPayload.locale = localeFromHeaders || null;
+  }
+
+  if (!cleanedPayload.timezone) {
+    const timezoneFromHeaders = String(request.headers.get("x-vercel-ip-timezone") || "").trim();
+    cleanedPayload.timezone = timezoneFromHeaders || null;
+  }
+
   cleanedPayload.ip_country = geo.country || null;
   cleanedPayload.ip_region = geo.region || null;
   cleanedPayload.ip_city = geo.city || null;
