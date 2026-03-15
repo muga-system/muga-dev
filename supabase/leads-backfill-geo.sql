@@ -1,5 +1,15 @@
 -- Backfill estimado de pais para historicos cuando ip_country esta vacio.
 -- Prioridad: locale -> timezone -> desconocido
+-- Este script es tolerante: crea columnas geo si aun no existen.
+
+alter table public.leads
+add column if not exists ip_country text;
+
+alter table public.leads
+add column if not exists ip_region text;
+
+alter table public.leads
+add column if not exists ip_city text;
 
 begin;
 
