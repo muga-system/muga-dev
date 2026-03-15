@@ -102,6 +102,15 @@ const formatHours = (value: number) => {
   return `${value.toFixed(1)} h`;
 };
 
+const humanizeAttribution = (value?: string) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return "Sin dato";
+  if (normalized === "sin_utm") return "Sin UTM";
+  if (normalized === "sin_campana") return "Sin campaña";
+  if (normalized === "none") return "Directo";
+  return normalized.replace(/[_-]+/g, " ");
+};
+
 const parseHourFromDate = (date: Date, timezone?: string) => {
   if (Number.isNaN(date.getTime())) return 0;
   if (!timezone) return date.getUTCHours();
@@ -882,9 +891,9 @@ const mapLeadsGeoJson = {
               <p class="mt-1 text-xs text-graylight">Sobre leads con primer contacto registrado</p>
             </article>
             <article class="border border-white/10 bg-muga-dark-800/35 p-4">
-              <p class="text-xs uppercase tracking-wider text-graylight">Top UTM source</p>
+              <p class="text-xs uppercase tracking-wider text-graylight">Canal UTM principal</p>
               <p class="mt-2 text-2xl font-semibold text-white">
-                {metrics.attribution.utmSources[0]?.source || "sin_utm"}
+                {humanizeAttribution(metrics.attribution.utmSources[0]?.source || "sin_utm")}
               </p>
               <p class="mt-1 text-xs text-graylight">{metrics.attribution.utmSources[0]?.count || 0} leads</p>
             </article>
@@ -1134,6 +1143,7 @@ const mapLeadsGeoJson = {
               <div class="relative mt-4 overflow-hidden border border-white/10 bg-obscure/30">
                 <div id="world-leads-map" class="h-[260px] w-full" data-leads-geojson={JSON.stringify(mapLeadsGeoJson)}></div>
                 <div id="world-leads-map-tooltip" class="pointer-events-none absolute z-20 hidden border border-[#3A3A3A] bg-[#191717] px-2 py-1 text-xs text-white"></div>
+                <div id="world-leads-map-loading" class="absolute inset-0 z-10 flex items-center justify-center bg-[#191717] text-xs uppercase tracking-[0.18em] text-graylight">Cargando mapa</div>
               </div>
               <div class="mt-3 space-y-2">
                 {knownCountryItems.length ? (
@@ -1152,12 +1162,12 @@ const mapLeadsGeoJson = {
 
           <div class="grid gap-4 lg:grid-cols-2">
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-              <h2 class="text-lg font-semibold text-white">Atribucion UTM · source</h2>
+              <h2 class="text-lg font-semibold text-white">Canales UTM</h2>
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 {topUtmSourceItems.length ? (
                   topUtmSourceItems.map((item) => (
                     <div class="border border-white/10 bg-obscure/40 px-4 py-3">
-                      <p class="text-xs uppercase tracking-wider text-graylight">{item.source}</p>
+                      <p class="text-xs uppercase tracking-wider text-graylight">{humanizeAttribution(item.source)}</p>
                       <p class="mt-1 text-2xl font-semibold text-white">{item.count}</p>
                     </div>
                   ))
@@ -1171,7 +1181,7 @@ const mapLeadsGeoJson = {
                   <div class="mt-3 space-y-2">
                     {overflowUtmSourceItems.map((item) => (
                       <div class="flex items-center justify-between border-b border-white/10 pb-2 text-sm last:border-0 last:pb-0">
-                        <p class="text-graylight">{item.source}</p>
+                        <p class="text-graylight">{humanizeAttribution(item.source)}</p>
                         <p class="font-semibold text-white">{item.count}</p>
                       </div>
                     ))}
@@ -1181,12 +1191,12 @@ const mapLeadsGeoJson = {
             </article>
 
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-              <h2 class="text-lg font-semibold text-white">Atribucion UTM · campaign</h2>
+              <h2 class="text-lg font-semibold text-white">Campañas UTM</h2>
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 {topUtmCampaignItems.length ? (
                   topUtmCampaignItems.map((item) => (
                     <div class="border border-white/10 bg-obscure/40 px-4 py-3">
-                      <p class="text-xs uppercase tracking-wider text-graylight">{item.campaign}</p>
+                      <p class="text-xs uppercase tracking-wider text-graylight">{humanizeAttribution(item.campaign)}</p>
                       <p class="mt-1 text-2xl font-semibold text-white">{item.count}</p>
                     </div>
                   ))
@@ -1200,7 +1210,7 @@ const mapLeadsGeoJson = {
                   <div class="mt-3 space-y-2">
                     {overflowUtmCampaignItems.map((item) => (
                       <div class="flex items-center justify-between border-b border-white/10 pb-2 text-sm last:border-0 last:pb-0">
-                        <p class="text-graylight">{item.campaign}</p>
+                        <p class="text-graylight">{humanizeAttribution(item.campaign)}</p>
                         <p class="font-semibold text-white">{item.count}</p>
                       </div>
                     ))}
@@ -1221,6 +1231,7 @@ const mapLeadsGeoJson = {
       container.dataset.bound = "true";
 
       const tooltip = document.getElementById("world-leads-map-tooltip");
+      const loading = document.getElementById("world-leads-map-loading");
       const rawData = container.dataset.leadsGeojson || '{"type":"FeatureCollection","features":[]}';
       let leadsGeojson;
 
@@ -1232,80 +1243,116 @@ const mapLeadsGeoJson = {
 
       const { default: maplibregl } = await import("maplibre-gl");
 
-      const createMap = (styleUrl: string) => new maplibregl.Map({
-        container,
-        style: styleUrl,
-        center: [0, 20],
-        zoom: 1.4,
-        attributionControl: false,
-      });
+      const themedStyleFrom = async (styleUrl) => {
+        const response = await fetch(styleUrl);
+        if (!response.ok) throw new Error("style_fetch_failed");
+        const style = await response.json();
+        const layers = Array.isArray(style.layers) ? style.layers : [];
 
-      let map = createMap("https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json");
-
-      const applyMapTheme = (instance: any) => {
-        const layers = instance.getStyle()?.layers || [];
-        layers.forEach((layer: any) => {
+        layers.forEach((layer) => {
           const id = String(layer.id || "").toLowerCase();
 
           if (layer.type === "background") {
-            instance.setPaintProperty(layer.id, "background-color", "#191717");
+            layer.paint = {
+              ...(layer.paint || {}),
+              "background-color": "#191717",
+            };
             return;
           }
 
-          if (layer.type === "symbol" || id.includes("label") || id.includes("road") || id.includes("poi") || id.includes("rail") || id.includes("airport") || id.includes("transit")) {
-            instance.setLayoutProperty(layer.id, "visibility", "none");
+          if (layer.type === "symbol" || id.includes("label") || id.includes("road") || id.includes("poi") || id.includes("rail") || id.includes("airport") || id.includes("transit") || id.includes("path") || id.includes("highway")) {
+            layer.layout = {
+              ...(layer.layout || {}),
+              visibility: "none",
+            };
             return;
           }
 
           if (layer.type === "fill") {
             if (id.includes("water") || id.includes("ocean") || id.includes("sea")) {
-              instance.setPaintProperty(layer.id, "fill-color", "#191717");
+              layer.paint = {
+                ...(layer.paint || {}),
+                "fill-color": "#191717",
+                "fill-opacity": 1,
+              };
               return;
             }
 
             if (id.includes("land") || id.includes("earth") || id.includes("park") || id.includes("landcover") || id.includes("landuse")) {
-              instance.setPaintProperty(layer.id, "fill-color", "#2D2E2E");
-              instance.setPaintProperty(layer.id, "fill-opacity", 1);
+              layer.paint = {
+                ...(layer.paint || {}),
+                "fill-color": "#2D2E2E",
+                "fill-opacity": 1,
+              };
               return;
             }
 
-            instance.setPaintProperty(layer.id, "fill-opacity", 0);
+            layer.paint = {
+              ...(layer.paint || {}),
+              "fill-opacity": 0,
+            };
           }
 
           if (layer.type === "line") {
             if (id.includes("boundary") || id.includes("admin") || id.includes("country") || id.includes("coast")) {
-              instance.setPaintProperty(layer.id, "line-color", "#3A3A3A");
-              instance.setPaintProperty(layer.id, "line-width", 1);
-              instance.setPaintProperty(layer.id, "line-opacity", 1);
+              layer.paint = {
+                ...(layer.paint || {}),
+                "line-color": "#3A3A3A",
+                "line-width": 1,
+                "line-opacity": 1,
+              };
               return;
             }
 
             if (id.includes("road") || id.includes("highway") || id.includes("street") || id.includes("path")) {
-              instance.setLayoutProperty(layer.id, "visibility", "none");
+              layer.layout = {
+                ...(layer.layout || {}),
+                visibility: "none",
+              };
             }
           }
         });
+
+        style.layers = layers;
+        return style;
       };
 
-      let hasLoaded = false;
+      let themedStyle;
+      try {
+        themedStyle = await themedStyleFrom("https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json");
+      } catch {
+        themedStyle = await themedStyleFrom("https://demotiles.maplibre.org/style.json");
+      }
 
-      map.on("error", () => {
-        if (hasLoaded) return;
-        if (String(map.getStyle()?.sprite || "").includes("demotiles")) return;
-        map.remove();
-        map = createMap("https://demotiles.maplibre.org/style.json");
-        bindLoadEvents();
+      const map = new maplibregl.Map({
+        container,
+        style: themedStyle,
+        center: [0, 20],
+        zoom: 1.4,
+        attributionControl: false,
       });
 
       const bindLoadEvents = () => {
         map.on("load", () => {
-          hasLoaded = true;
-          applyMapTheme(map);
+          if (loading) loading.classList.add("hidden");
 
           if (!map.getSource("leads-source")) {
             map.addSource("leads-source", {
               type: "geojson",
               data: leadsGeojson,
+            });
+          }
+
+          if (!map.getLayer("leads-zones")) {
+            map.addLayer({
+              id: "leads-zones",
+              type: "circle",
+              source: "leads-source",
+              paint: {
+                "circle-radius": 18,
+                "circle-color": "#FF5353",
+                "circle-opacity": 0.18,
+              },
             });
           }
 
