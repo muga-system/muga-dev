@@ -9,6 +9,7 @@ import {
   CircleX,
   UserCheck,
 } from "@lucide/astro";
+import "maplibre-gl/dist/maplibre-gl.css";
 import {
   METRICAS_SESSION_COOKIE,
   createMetricasSessionToken,
@@ -170,26 +171,26 @@ const inferLeadCountry = (lead: { ip_country?: string; locale?: string; timezone
   );
 };
 
-const COUNTRY_COORDS: Record<string, { x: number; y: number; label: string }> = {
-  AR: { x: 150, y: 160, label: "Argentina" },
-  BR: { x: 170, y: 130, label: "Brasil" },
-  CL: { x: 130, y: 145, label: "Chile" },
-  UY: { x: 155, y: 148, label: "Uruguay" },
-  PY: { x: 154, y: 137, label: "Paraguay" },
-  BO: { x: 145, y: 136, label: "Bolivia" },
-  US: { x: 95, y: 78, label: "Estados Unidos" },
-  CA: { x: 90, y: 58, label: "Canada" },
-  MX: { x: 78, y: 98, label: "Mexico" },
-  ES: { x: 285, y: 78, label: "Espana" },
-  PT: { x: 279, y: 82, label: "Portugal" },
-  FR: { x: 292, y: 73, label: "Francia" },
-  DE: { x: 299, y: 67, label: "Alemania" },
-  IT: { x: 306, y: 81, label: "Italia" },
-  GB: { x: 286, y: 61, label: "Reino Unido" },
-  CO: { x: 128, y: 112, label: "Colombia" },
-  PE: { x: 122, y: 132, label: "Peru" },
-  AU: { x: 330, y: 154, label: "Australia" },
-  ZZ: { x: 330, y: 188, label: "Sin dato" },
+const COUNTRY_COORDS: Record<string, { lon: number; lat: number; label: string }> = {
+  AR: { lon: -64, lat: -34, label: "Argentina" },
+  BR: { lon: -52, lat: -10, label: "Brasil" },
+  CL: { lon: -71, lat: -33, label: "Chile" },
+  UY: { lon: -56, lat: -32, label: "Uruguay" },
+  PY: { lon: -58, lat: -23, label: "Paraguay" },
+  BO: { lon: -64, lat: -17, label: "Bolivia" },
+  US: { lon: -98, lat: 39, label: "Estados Unidos" },
+  CA: { lon: -106, lat: 56, label: "Canada" },
+  MX: { lon: -102, lat: 23, label: "Mexico" },
+  ES: { lon: -3, lat: 40, label: "Espana" },
+  PT: { lon: -8, lat: 39, label: "Portugal" },
+  FR: { lon: 2, lat: 47, label: "Francia" },
+  DE: { lon: 10, lat: 51, label: "Alemania" },
+  IT: { lon: 12, lat: 42, label: "Italia" },
+  GB: { lon: -2, lat: 54, label: "Reino Unido" },
+  CO: { lon: -74, lat: 4, label: "Colombia" },
+  PE: { lon: -75, lat: -9, label: "Peru" },
+  AU: { lon: 134, lat: -25, label: "Australia" },
+  ZZ: { lon: 160, lat: -50, label: "Sin dato" },
 };
 
 const diasOpciones = [1, 7, 30, 90];
@@ -242,7 +243,7 @@ const metrics = {
     measuredLeads: 0,
   },
   activityByHour: Array.from({ length: 24 }, (_, hour) => ({ hour, total: 0 })),
-  countries: [] as Array<{ code: string; label: string; count: number; x: number; y: number }>,
+  countries: [] as Array<{ code: string; label: string; count: number; lon: number; lat: number }>,
 };
 
 const funnel = {
@@ -574,8 +575,8 @@ if (!isAuthorized) {
           code,
           count,
           label: coord.label,
-          x: coord.x,
-          y: coord.y,
+          lon: coord.lon,
+          lat: coord.lat,
         };
       })
       .sort((a, b) => b.count - a.count)
@@ -714,6 +715,23 @@ const statusUpdateMessages: Record<string, { text: string; className: string }> 
   },
 };
 const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
+
+const mapLeadsGeoJson = {
+  type: "FeatureCollection",
+  features: metrics.countries
+    .filter((item) => Number.isFinite(item.lon) && Number.isFinite(item.lat))
+    .map((item) => ({
+      type: "Feature",
+      properties: {
+        email: `${item.count} leads`,
+        country: item.code,
+      },
+      geometry: {
+        type: "Point",
+        coordinates: [item.lon, item.lat],
+      },
+    })),
+};
 ---
 
 <Layout title="Metricas | MUGA" description="Panel simple de metricas de leads.">
@@ -1111,28 +1129,9 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
               <h2 class="text-lg font-semibold text-white">Origen por pais (estimado)</h2>
               <p class="mt-2 text-sm text-graylight">Se estima por IP de Vercel y fallback por locale/timezone.</p>
-              <div class="mt-4 border border-white/10 bg-obscure/30 p-3">
-                <svg viewBox="0 0 360 200" class="h-auto w-full" role="img" aria-label="Mapa simple de origen por pais">
-                  <defs>
-                    <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="rgba(255,255,255,0.06)"></stop>
-                      <stop offset="100%" stop-color="rgba(255,255,255,0.02)"></stop>
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="360" height="200" fill="url(#ocean)"></rect>
-                  <path d="M24 75 C37 60, 56 54, 78 51 C93 49, 103 55, 108 65 C112 74, 108 83, 95 91 C85 98, 75 102, 66 111 C54 123, 41 124, 31 116 C21 108, 18 94, 24 75 Z" fill="rgba(255,255,255,0.08)"></path>
-                  <path d="M82 108 C94 101, 109 102, 120 109 C129 115, 133 124, 129 132 C124 141, 116 149, 108 161 C102 170, 93 176, 82 172 C74 169, 70 159, 74 147 C77 139, 75 130, 75 121 C75 114, 78 110, 82 108 Z" fill="rgba(255,255,255,0.08)"></path>
-                  <path d="M175 70 C191 61, 215 61, 233 67 C251 73, 264 80, 279 87 C292 94, 303 92, 312 98 C321 105, 324 118, 315 123 C303 130, 284 130, 269 127 C252 123, 242 129, 229 129 C214 129, 204 121, 190 118 C179 115, 168 107, 167 97 C166 87, 168 77, 175 70 Z" fill="rgba(255,255,255,0.08)"></path>
-                  <path d="M316 147 C325 143, 338 144, 344 151 C350 159, 347 170, 339 176 C329 183, 317 182, 308 174 C302 169, 301 158, 307 152 C310 149, 313 148, 316 147 Z" fill="rgba(255,255,255,0.08)"></path>
-                  <path d="M303 136 C308 132, 315 133, 319 137 C323 142, 322 148, 317 151 C311 155, 304 154, 300 149 C297 144, 298 139, 303 136 Z" fill="rgba(255,255,255,0.08)"></path>
-                  {metrics.countries.map((item) => (
-                    <g>
-                      <circle cx={item.x} cy={item.y} r={Math.max(3, Math.min(10, 2 + item.count))} fill="rgba(255,83,83,0.85)"></circle>
-                      <circle cx={item.x} cy={item.y} r={Math.max(5, Math.min(15, 4 + item.count))} fill="none" stroke="rgba(255,83,83,0.35)" stroke-width="1"></circle>
-                      <text x={item.x + 6} y={item.y - 6} fill="rgba(255,255,255,0.9)" font-size="9">{item.code}</text>
-                    </g>
-                  ))}
-                </svg>
+              <div class="mt-4 overflow-hidden border border-white/10 bg-obscure/30">
+                <div id="world-leads-map" class="h-[260px] w-full" data-leads-geojson={JSON.stringify(mapLeadsGeoJson)}></div>
+                <div id="world-leads-map-tooltip" class="pointer-events-none absolute z-20 hidden border border-[#3A3A3A] bg-[#191717] px-2 py-1 text-xs text-white"></div>
               </div>
               <div class="mt-3 space-y-2">
                 {metrics.countries.length ? (
@@ -1214,6 +1213,99 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
   </section>
 
   <script>
+    const initWorldLeadsMap = async () => {
+      const container = document.getElementById("world-leads-map");
+      if (!container || container.dataset.bound === "true") return;
+      container.dataset.bound = "true";
+
+      const tooltip = document.getElementById("world-leads-map-tooltip");
+      const rawData = container.dataset.leadsGeojson || '{"type":"FeatureCollection","features":[]}';
+      let leadsGeojson;
+
+      try {
+        leadsGeojson = JSON.parse(rawData);
+      } catch {
+        leadsGeojson = { type: "FeatureCollection", features: [] };
+      }
+
+      const { default: maplibregl } = await import("maplibre-gl");
+
+      const map = new maplibregl.Map({
+        container,
+        style: "https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json",
+        center: [0, 20],
+        zoom: 1.4,
+        projection: { type: "mercator" },
+        attributionControl: false,
+      });
+
+      map.on("load", () => {
+        const layers = map.getStyle()?.layers || [];
+        layers.forEach((layer) => {
+          const id = String(layer.id || "").toLowerCase();
+
+          if (layer.type === "background") {
+            map.setPaintProperty(layer.id, "background-color", "#191717");
+            return;
+          }
+
+          if (layer.type === "symbol" || id.includes("label") || id.includes("road") || id.includes("poi")) {
+            map.setLayoutProperty(layer.id, "visibility", "none");
+            return;
+          }
+
+          if (layer.type === "fill") {
+            if (id.includes("water") || id.includes("ocean") || id.includes("sea")) {
+              map.setPaintProperty(layer.id, "fill-color", "#191717");
+              return;
+            }
+            map.setPaintProperty(layer.id, "fill-color", "#2D2E2E");
+          }
+
+          if (layer.type === "line" && (id.includes("boundary") || id.includes("admin") || id.includes("country"))) {
+            map.setPaintProperty(layer.id, "line-color", "#3A3A3A");
+          }
+        });
+
+        map.addSource("leads-source", {
+          type: "geojson",
+          data: leadsGeojson,
+        });
+
+        map.addLayer({
+          id: "leads-circles",
+          type: "circle",
+          source: "leads-source",
+          paint: {
+            "circle-radius": 6,
+            "circle-color": "#FF5353",
+            "circle-opacity": 0.9,
+          },
+        });
+
+        map.on("mousemove", "leads-circles", (event) => {
+          const feature = event.features?.[0];
+          if (!feature || !tooltip) return;
+
+          const email = String(feature.properties?.email || "sin email");
+          const country = String(feature.properties?.country || "-");
+
+          tooltip.innerHTML = `<div style=\"font-weight:600\">${email}</div><div style=\"opacity:0.85\">${country}</div>`;
+          tooltip.style.left = `${event.point.x + 12}px`;
+          tooltip.style.top = `${event.point.y + 12}px`;
+          tooltip.classList.remove("hidden");
+          map.getCanvas().style.cursor = "pointer";
+        });
+
+        map.on("mouseleave", "leads-circles", () => {
+          if (tooltip) tooltip.classList.add("hidden");
+          map.getCanvas().style.cursor = "";
+        });
+      });
+    };
+
+    initWorldLeadsMap();
+
     const forms = Array.from(document.querySelectorAll(".js-status-form"));
     if (forms.length) {
       const statusLabels: Record<string, string> = {
