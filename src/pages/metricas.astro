@@ -112,7 +112,9 @@ const exportCsvParams = new URLSearchParams({
   utm_campaign: selectedUtmCampaign,
 });
 const exportCsvHref = `/api/leads/export.csv?${exportCsvParams.toString()}`;
-const returnToParam = `/metricas?${new URLSearchParams(Astro.url.searchParams).toString()}`;
+const cleanReturnParams = new URLSearchParams(Astro.url.searchParams);
+cleanReturnParams.delete("status_update");
+const returnToParam = `/metricas?${cleanReturnParams.toString()}`;
 
 let loadError = "";
 
@@ -785,6 +787,7 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                       <th class="px-3 py-2">Lead</th>
                       <th class="px-3 py-2">Proyecto</th>
                       <th class="px-3 py-2">Alta</th>
+                      <th class="px-3 py-2">Accion</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -802,6 +805,16 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                         </td>
                         <td class="px-3 py-2 text-graylight">{lead.project}</td>
                         <td class="px-3 py-2 text-graylight">{lead.createdAt}</td>
+                        <td class="px-3 py-2">
+                          <form method="POST" action="/api/leads/estado">
+                            <input type="hidden" name="lead_id" value={lead.id} />
+                            <input type="hidden" name="status" value="contacted" />
+                            <input type="hidden" name="return_to" value={returnToParam} />
+                            <button type="submit" class="border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20">
+                              Marcar contactado
+                            </button>
+                          </form>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
