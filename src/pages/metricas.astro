@@ -102,6 +102,7 @@ const selectedStatus = (Astro.url.searchParams.get("estado") || "all").toLowerCa
 const selectedSource = (Astro.url.searchParams.get("fuente") || "all").toLowerCase();
 const selectedUtmSource = (Astro.url.searchParams.get("utm_source") || "all").toLowerCase();
 const selectedUtmCampaign = (Astro.url.searchParams.get("utm_campaign") || "all").toLowerCase();
+const statusUpdateResult = (Astro.url.searchParams.get("status_update") || "").toLowerCase();
 const exportCsvParams = new URLSearchParams({
   dias: String(selectedDays),
   estado: selectedStatus,
@@ -110,6 +111,7 @@ const exportCsvParams = new URLSearchParams({
   utm_campaign: selectedUtmCampaign,
 });
 const exportCsvHref = `/api/leads/export.csv?${exportCsvParams.toString()}`;
+const returnToParam = `/metricas?${new URLSearchParams(Astro.url.searchParams).toString()}`;
 
 let loadError = "";
 
@@ -150,6 +152,14 @@ const tendencia: Array<{ dia: string; total: number }> = [];
 const fuentesDisponibles: string[] = [];
 const utmSourcesDisponibles: string[] = [];
 const utmCampaignsDisponibles: string[] = [];
+const leadsRecientes: Array<{
+  id: number;
+  createdAt: string;
+  name: string;
+  email: string;
+  status: string;
+  project: string;
+}> = [];
 
 if (!isAuthorized) {
   loadError = "";
@@ -159,13 +169,17 @@ if (!isAuthorized) {
   const cutoffIso = new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString();
 
   const selectCandidates = [
-    "id,created_at,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at",
-    "id,created_at,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign",
-    "id,created_at,status,lead_stage,budget,source",
+    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign,first_contact_at",
+    "id,created_at,name,email,project,status,lead_stage,budget,source,utm_source,utm_medium,utm_campaign",
+    "id,created_at,name,email,project,status,lead_stage,budget,source",
   ];
 
   let rows: Array<{
     created_at?: string;
+    id?: number;
+    name?: string;
+    email?: string;
+    project?: string;
     status?: string;
     lead_stage?: string;
     budget?: string;
@@ -195,6 +209,10 @@ if (!isAuthorized) {
     if (response.ok) {
       rows = (await response.json()) as Array<{
         created_at?: string;
+        id?: number;
+        name?: string;
+        email?: string;
+        project?: string;
         status?: string;
         lead_stage?: string;
         budget?: string;
@@ -215,6 +233,10 @@ if (!isAuthorized) {
   } else {
     const safeRows = rows as Array<{
       created_at?: string;
+      id?: number;
+      name?: string;
+      email?: string;
+      project?: string;
       status?: string;
       lead_stage?: string;
       budget?: string;
@@ -303,6 +325,25 @@ if (!isAuthorized) {
       }
     });
 
+    filteredRows.slice(0, 12).forEach((lead) => {
+      const createdDate = new Date(String(lead.created_at || ""));
+      const createdAt = Number.isNaN(createdDate.getTime())
+        ? "-"
+        : createdDate.toLocaleString("es-AR", {
+            dateStyle: "short",
+            timeStyle: "short",
+          });
+
+      leadsRecientes.push({
+        id: Number(lead.id || 0),
+        createdAt,
+        name: String(lead.name || "Sin nombre"),
+        email: String(lead.email || "sin-email"),
+        status: String(lead.status || "new").toLowerCase(),
+        project: String(lead.project || "-"),
+      });
+    });
+
     metrics.sources = [...filteredSourceCounter.entries()]
       .map(([source, count]) => ({ source, count }))
       .sort((a, b) => b.count - a.count)
@@ -377,6 +418,29 @@ const topUtmSourceItems = metrics.attribution.utmSources.slice(0, 6);
 const overflowUtmSourceItems = metrics.attribution.utmSources.slice(6);
 const topUtmCampaignItems = metrics.attribution.utmCampaigns.slice(0, 6);
 const overflowUtmCampaignItems = metrics.attribution.utmCampaigns.slice(6);
+const statusUpdateMessages: Record<string, { text: string; className: string }> = {
+  ok: {
+    text: "Estado actualizado correctamente.",
+    className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+  },
+  invalid_payload: {
+    text: "No se pudo actualizar: datos invalidos.",
+    className: "border-red-500/30 bg-red-500/10 text-red-300",
+  },
+  update_failed: {
+    text: "No se pudo actualizar el estado en Supabase.",
+    className: "border-red-500/30 bg-red-500/10 text-red-300",
+  },
+  unauthorized: {
+    text: "Sesion expirada. Volve a iniciar sesion.",
+    className: "border-red-500/30 bg-red-500/10 text-red-300",
+  },
+  config_error: {
+    text: "Falta configuracion de servidor para actualizar estado.",
+    className: "border-red-500/30 bg-red-500/10 text-red-300",
+  },
+};
+const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
 ---
 
 <Layout title="Metricas | MUGA" description="Panel simple de metricas de leads.">
@@ -421,6 +485,10 @@ const overflowUtmCampaignItems = metrics.attribution.utmCampaigns.slice(6);
         <div class="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{loadError}</div>
       ) : (
         <>
+          {statusUpdateFeedback ? (
+            <div class={`border px-4 py-3 text-sm ${statusUpdateFeedback.className}`}>{statusUpdateFeedback.text}</div>
+          ) : null}
+
           <div class="flex justify-end">
             <form method="POST">
               <input type="hidden" name="action" value="logout" />
@@ -596,6 +664,53 @@ const overflowUtmCampaignItems = metrics.attribution.utmCampaigns.slice(6);
                 <p class="text-sm text-graylight">Sin datos de fuente para los filtros actuales.</p>
               )}
             </div>
+          </article>
+
+          <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+            <h2 class="text-lg font-semibold text-white">Actualizacion rapida de estado</h2>
+            <p class="mt-2 text-sm text-graylight">Ultimos leads segun filtros activos. Cambia estado y guarda sin salir del panel.</p>
+            {leadsRecientes.length ? (
+              <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                  <thead>
+                    <tr class="border-b border-white/10 text-left text-xs uppercase tracking-wider text-graylight">
+                      <th class="px-3 py-2">Fecha</th>
+                      <th class="px-3 py-2">Lead</th>
+                      <th class="px-3 py-2">Proyecto</th>
+                      <th class="px-3 py-2">Estado</th>
+                      <th class="px-3 py-2">Accion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leadsRecientes.map((lead) => (
+                      <tr class="border-b border-white/10 last:border-0">
+                        <td class="px-3 py-2 text-graylight">{lead.createdAt}</td>
+                        <td class="px-3 py-2">
+                          <p class="font-semibold text-white">{lead.name}</p>
+                          <p class="text-xs text-graylight">{lead.email}</p>
+                        </td>
+                        <td class="px-3 py-2 text-graylight">{lead.project}</td>
+                        <td class="px-3 py-2 text-graylight">{estadoEtiquetas[lead.status] || lead.status}</td>
+                        <td class="px-3 py-2">
+                          <form method="POST" action="/api/leads/estado" class="flex items-center gap-2">
+                            <input type="hidden" name="lead_id" value={lead.id} />
+                            <input type="hidden" name="return_to" value={returnToParam} />
+                            <select name="status" class="border border-white/15 bg-obscure px-2 py-1 text-xs text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                              {Object.entries(estadoEtiquetas).map(([value, label]) => (
+                                <option value={value} selected={lead.status === value}>{label}</option>
+                              ))}
+                            </select>
+                            <button type="submit" class="border border-white/20 px-2 py-1 text-xs font-semibold text-white hover:border-white/40">Guardar</button>
+                          </form>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p class="mt-4 text-sm text-graylight">Sin leads para actualizar con los filtros actuales.</p>
+            )}
           </article>
 
           <div class="grid gap-4 lg:grid-cols-2">

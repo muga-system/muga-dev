@@ -191,6 +191,20 @@ Ruta interna: `/metricas`
 
 Si falta `METRICAS_PANEL_PASSWORD`, el panel no abre datos y muestra error de configuración.
 
+## Actualizacion rapida de estado
+
+Endpoint interno: `POST /api/leads/estado`
+
+- uso principal desde `/metricas` para pasar un lead de `new` a `contacted/qualified/won/lost`
+- protegido con la misma sesión del panel (`muga_metricas_session`)
+- actualiza `status` y, cuando corresponde, intenta registrar `first_contact_at` y `last_contact_at`
+
+Campos esperados (form-data o JSON):
+
+- `lead_id` (numero)
+- `status` (`new`, `contacted`, `qualified`, `won`, `lost`)
+- `return_to` (opcional, default `/metricas`)
+
 ## Exportación CSV
 
 Endpoint: `GET /api/leads/export.csv`
