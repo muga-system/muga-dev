@@ -19,12 +19,15 @@
     "@tailwindcss/vite": "^4.1.12",
     "@vercel/speed-insights": "^2.0.0",
     "astro": "^5.14.1",
-    "maplibre-gl": "^5.9.0",
     "nodemailer": "^8.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-simple-maps": "^3.0.0",
     "tailwindcss": "^4.1.12"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
+    "@astrojs/react": "^4.4.0",
     "@astrojs/vercel": "^8.2.8",
     "typescript": "^5.9.3"
   }

@@ -9,7 +9,7 @@ import {
   CircleX,
   UserCheck,
 } from "@lucide/astro";
-import "maplibre-gl/dist/maplibre-gl.css";
+import WorldLeadsMap from "../components/analytics/WorldLeadsMap.react";
 import {
   METRICAS_SESSION_COOKIE,
   createMetricasSessionToken,
@@ -729,23 +729,16 @@ const statusUpdateMessages: Record<string, { text: string; className: string }> 
 const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
 
 const knownCountryItems = metrics.countries.filter((item) => item.code !== "ZZ");
-
-const mapLeadsGeoJson = {
-  type: "FeatureCollection",
-  features: metrics.countriesMap
-    .filter((item) => Number.isFinite(item.lon) && Number.isFinite(item.lat))
-    .map((item) => ({
-      type: "Feature",
-      properties: {
-        email: `${item.count} leads`,
-        country: item.code,
-      },
-      geometry: {
-        type: "Point",
-        coordinates: [item.lon, item.lat],
-      },
-    })),
-};
+const mapCountryCounts = metrics.countriesMap.reduce((acc, item) => {
+  acc[item.code] = item.count;
+  return acc;
+}, {} as Record<string, number>);
+const mapLeadPoints = metrics.countriesMap.map((item) => ({
+  lon: item.lon,
+  lat: item.lat,
+  email: `${item.count} leads`,
+  country: item.code,
+}));
 ---
 
 <Layout title="Metricas | MUGA" description="Panel simple de metricas de leads.">
@@ -1126,9 +1119,9 @@ const mapLeadsGeoJson = {
               <h2 class="text-lg font-semibold text-white">Origen por pais (estimado)</h2>
               <p class="mt-2 text-sm text-graylight">Se estima por IP de Vercel y fallback por locale/timezone.</p>
               <div class="relative mt-4 overflow-hidden border border-white/10 bg-obscure/30">
-                <div id="world-leads-map" class="h-[260px] w-full" data-leads-geojson={JSON.stringify(mapLeadsGeoJson)}></div>
-                <div id="world-leads-map-tooltip" class="pointer-events-none absolute z-20 hidden border border-[#3A3A3A] bg-[#191717] px-2 py-1 text-xs text-white"></div>
-                <div id="world-leads-map-loading" class="absolute inset-0 z-10 flex items-center justify-center bg-[#191717] text-xs uppercase tracking-[0.18em] text-graylight">Cargando mapa</div>
+                <WorldLeadsMap countryCounts={mapCountryCounts} leadPoints={mapLeadPoints} client:visible>
+                  <div slot="fallback" class="flex h-[260px] w-full items-center justify-center bg-[#191717] text-xs uppercase tracking-[0.18em] text-graylight">Cargando mapa</div>
+                </WorldLeadsMap>
               </div>
               <div class="mt-3 space-y-2">
                 {knownCountryItems.length ? (
@@ -1210,170 +1203,6 @@ const mapLeadsGeoJson = {
   </section>
 
   <script>
-    const initWorldLeadsMap = async () => {
-      const container = document.getElementById("world-leads-map");
-      if (!container || container.dataset.bound === "true") return;
-      container.dataset.bound = "true";
-
-      const tooltip = document.getElementById("world-leads-map-tooltip");
-      const loading = document.getElementById("world-leads-map-loading");
-      const rawData = container.dataset.leadsGeojson || '{"type":"FeatureCollection","features":[]}';
-      let leadsGeojson;
-
-      try {
-        leadsGeojson = JSON.parse(rawData);
-      } catch {
-        leadsGeojson = { type: "FeatureCollection", features: [] };
-      }
-
-      const { default: maplibregl } = await import("maplibre-gl");
-
-      const map = new maplibregl.Map({
-        container,
-        style: "https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json",
-        center: [0, 20],
-        zoom: 1.4,
-        attributionControl: false,
-      });
-
-      let ready = false;
-      let fallbackTried = false;
-
-      const bindLoadEvents = () => {
-        map.once("load", () => {
-          const layers = map.getStyle()?.layers || [];
-          layers.forEach((layer: any) => {
-            const id = String(layer.id || "").toLowerCase();
-
-            if (layer.type === "background") {
-              map.setPaintProperty(layer.id, "background-color", "#191717");
-              return;
-            }
-
-            if (
-              layer.type === "symbol" ||
-              id.includes("label") ||
-              id.includes("road") ||
-              id.includes("poi") ||
-              id.includes("rail") ||
-              id.includes("airport") ||
-              id.includes("transit") ||
-              id.includes("path") ||
-              id.includes("highway")
-            ) {
-              map.setLayoutProperty(layer.id, "visibility", "none");
-              return;
-            }
-
-            if (layer.type === "fill") {
-              if (id.includes("water") || id.includes("ocean") || id.includes("sea")) {
-                map.setPaintProperty(layer.id, "fill-color", "#191717");
-                map.setPaintProperty(layer.id, "fill-opacity", 1);
-                return;
-              }
-
-              if (
-                id.includes("land") ||
-                id.includes("earth") ||
-                id.includes("park") ||
-                id.includes("landcover") ||
-                id.includes("landuse")
-              ) {
-                map.setPaintProperty(layer.id, "fill-color", "#2D2E2E");
-                map.setPaintProperty(layer.id, "fill-opacity", 1);
-                return;
-              }
-
-              map.setPaintProperty(layer.id, "fill-opacity", 0);
-              return;
-            }
-
-            if (layer.type === "line") {
-              if (id.includes("boundary") || id.includes("admin") || id.includes("country") || id.includes("coast")) {
-                map.setPaintProperty(layer.id, "line-color", "#3A3A3A");
-                map.setPaintProperty(layer.id, "line-width", 1);
-                map.setPaintProperty(layer.id, "line-opacity", 1);
-                return;
-              }
-
-              map.setLayoutProperty(layer.id, "visibility", "none");
-            }
-          });
-
-          if (loading) loading.classList.add("hidden");
-          ready = true;
-
-          if (!map.getSource("leads-source")) {
-            map.addSource("leads-source", {
-              type: "geojson",
-              data: leadsGeojson,
-            });
-          }
-
-          if (!map.getLayer("leads-zones")) {
-            map.addLayer({
-              id: "leads-zones",
-              type: "circle",
-              source: "leads-source",
-              paint: {
-                "circle-radius": 18,
-                "circle-color": "#FF5353",
-                "circle-opacity": 0.18,
-              },
-            });
-          }
-
-          if (!map.getLayer("leads-circles")) {
-            map.addLayer({
-              id: "leads-circles",
-              type: "circle",
-              source: "leads-source",
-              paint: {
-                "circle-radius": 6,
-                "circle-color": "#FF5353",
-                "circle-opacity": 0.9,
-              },
-            });
-          }
-
-          map.on("mousemove", "leads-circles", (event) => {
-          const feature = event.features?.[0];
-          if (!feature || !tooltip) return;
-
-          const email = String(feature.properties?.email || "sin email");
-          const country = String(feature.properties?.country || "-");
-
-          tooltip.innerHTML = `<div style=\"font-weight:600\">${email}</div><div style=\"opacity:0.85\">${country}</div>`;
-          tooltip.style.left = `${event.point.x + 12}px`;
-          tooltip.style.top = `${event.point.y + 12}px`;
-          tooltip.classList.remove("hidden");
-          map.getCanvas().style.cursor = "pointer";
-        });
-
-          map.on("mouseleave", "leads-circles", () => {
-            if (tooltip) tooltip.classList.add("hidden");
-            map.getCanvas().style.cursor = "";
-          });
-        });
-      };
-
-      bindLoadEvents();
-
-      map.on("error", () => {
-        if (ready) return;
-        if (fallbackTried) {
-          if (loading) loading.textContent = "No se pudo cargar mapa";
-          return;
-        }
-
-        fallbackTried = true;
-        map.setStyle("https://demotiles.maplibre.org/style.json" as any);
-        bindLoadEvents();
-      });
-    };
-
-    initWorldLeadsMap();
-
     const forms = Array.from(document.querySelectorAll(".js-status-form"));
     if (forms.length) {
       const statusLabels: Record<string, string> = {
