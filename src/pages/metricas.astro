@@ -114,7 +114,8 @@ const exportCsvParams = new URLSearchParams({
 const exportCsvHref = `/api/leads/export.csv?${exportCsvParams.toString()}`;
 const cleanReturnParams = new URLSearchParams(Astro.url.searchParams);
 cleanReturnParams.delete("status_update");
-const returnToParam = `/metricas?${cleanReturnParams.toString()}`;
+const returnToSearch = cleanReturnParams.toString();
+const returnToParam = returnToSearch ? `/metricas?${returnToSearch}` : "/metricas";
 
 let loadError = "";
 
@@ -508,6 +509,54 @@ const urgencyClass = {
   warning: "border-amber-500/30 bg-amber-500/10 text-amber-300",
   critico: "border-red-500/30 bg-red-500/10 text-red-300",
 };
+const quickActionsByStatus: Record<string, Array<{ value: string; label: string; className: string }>> = {
+  new: [
+    {
+      value: "contacted",
+      label: "Contactado",
+      className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20",
+    },
+    {
+      value: "qualified",
+      label: "Calificado",
+      className: "border-blue-500/40 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20",
+    },
+    {
+      value: "lost",
+      label: "Perdido",
+      className: "border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20",
+    },
+  ],
+  contacted: [
+    {
+      value: "qualified",
+      label: "Calificado",
+      className: "border-blue-500/40 bg-blue-500/10 text-blue-200 hover:bg-blue-500/20",
+    },
+    {
+      value: "won",
+      label: "Cerrado",
+      className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20",
+    },
+    {
+      value: "lost",
+      label: "Perdido",
+      className: "border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20",
+    },
+  ],
+  qualified: [
+    {
+      value: "won",
+      label: "Cerrado",
+      className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20",
+    },
+    {
+      value: "lost",
+      label: "Perdido",
+      className: "border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20",
+    },
+  ],
+};
 const statusUpdateMessages: Record<string, { text: string; className: string }> = {
   ok: {
     text: "Estado actualizado correctamente.",
@@ -806,14 +855,18 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                         <td class="px-3 py-2 text-graylight">{lead.project}</td>
                         <td class="px-3 py-2 text-graylight">{lead.createdAt}</td>
                         <td class="px-3 py-2">
-                          <form method="POST" action="/api/leads/estado">
-                            <input type="hidden" name="lead_id" value={lead.id} />
-                            <input type="hidden" name="status" value="contacted" />
-                            <input type="hidden" name="return_to" value={returnToParam} />
-                            <button type="submit" class="border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-200 hover:bg-emerald-500/20">
-                              Marcar contactado
-                            </button>
-                          </form>
+                          <div class="flex flex-wrap gap-2">
+                            {quickActionsByStatus.new.map((action) => (
+                              <form method="POST" action="/api/leads/estado">
+                                <input type="hidden" name="lead_id" value={lead.id} />
+                                <input type="hidden" name="status" value={action.value} />
+                                <input type="hidden" name="return_to" value={returnToParam} />
+                                <button type="submit" class={`border px-2 py-1 text-xs font-semibold ${action.className}`}>
+                                  {action.label}
+                                </button>
+                              </form>
+                            ))}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -853,6 +906,7 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                       <th class="px-3 py-2">Proyecto</th>
                       <th class="px-3 py-2">Estado</th>
                       <th class="px-3 py-2">Accion</th>
+                      <th class="px-3 py-2">Rapido</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -876,6 +930,20 @@ const statusUpdateFeedback = statusUpdateMessages[statusUpdateResult];
                             </select>
                             <button type="submit" class="border border-white/20 px-2 py-1 text-xs font-semibold text-white hover:border-white/40">Guardar</button>
                           </form>
+                        </td>
+                        <td class="px-3 py-2">
+                          <div class="flex flex-wrap gap-2">
+                            {(quickActionsByStatus[lead.status] || []).map((action) => (
+                              <form method="POST" action="/api/leads/estado">
+                                <input type="hidden" name="lead_id" value={lead.id} />
+                                <input type="hidden" name="status" value={action.value} />
+                                <input type="hidden" name="return_to" value={returnToParam} />
+                                <button type="submit" class={`border px-2 py-1 text-xs font-semibold ${action.className}`}>
+                                  {action.label}
+                                </button>
+                              </form>
+                            ))}
+                          </div>
                         </td>
                       </tr>
                     ))}
