@@ -3,6 +3,11 @@ import Layout from "../layouts/layout.astro";
 import Navigation from "../components/ui/Navigation/Navigation.astro";
 import Breadcrumb from "../components/ui/Breadcrumb/Breadcrumb.astro";
 import type { BreadcrumbItem } from "../types";
+import {
+  METRICAS_SESSION_COOKIE,
+  createMetricasSessionToken,
+  isMetricasSessionValid,
+} from "../lib/metricas-auth.js";
 
 const breadcrumbItems: BreadcrumbItem[] = [
   {
@@ -15,6 +20,46 @@ const breadcrumbItems: BreadcrumbItem[] = [
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 const leadsTable = import.meta.env.SUPABASE_LEADS_TABLE || "leads";
+const panelPassword = process.env.METRICAS_PANEL_PASSWORD || import.meta.env.METRICAS_PANEL_PASSWORD;
+const sessionSalt = process.env.METRICAS_SESSION_SALT || import.meta.env.METRICAS_SESSION_SALT || "muga-metricas-v1";
+
+const method = Astro.request.method.toUpperCase();
+let authError = panelPassword ? "" : "Falta configurar METRICAS_PANEL_PASSWORD en el servidor.";
+
+if (method === "POST") {
+  const formData = await Astro.request.formData();
+  const action = String(formData.get("action") || "login");
+
+  if (action === "logout") {
+    Astro.cookies.delete(METRICAS_SESSION_COOKIE, { path: "/" });
+    return Astro.redirect("/metricas");
+  }
+
+  const submittedPassword = String(formData.get("password") || "");
+
+  if (!panelPassword) {
+    authError = "Falta configurar METRICAS_PANEL_PASSWORD en el servidor.";
+  } else if (submittedPassword && submittedPassword === panelPassword) {
+    const sessionToken = createMetricasSessionToken(panelPassword, sessionSalt);
+    Astro.cookies.set(METRICAS_SESSION_COOKIE, sessionToken, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "strict",
+      secure: Astro.url.protocol === "https:",
+      maxAge: 60 * 60 * 12,
+    });
+    return Astro.redirect("/metricas");
+  } else {
+    authError = "Clave invalida.";
+  }
+}
+
+const sessionCookieValue = Astro.cookies.get(METRICAS_SESSION_COOKIE)?.value || "";
+const isAuthorized = isMetricasSessionValid({
+  cookieValue: sessionCookieValue,
+  panelPassword,
+  sessionSalt,
+});
 
 const parsePositiveInt = (value: string | null, fallback: number) => {
   const parsed = Number(value);
@@ -49,6 +94,12 @@ const diasOpciones = [1, 7, 30, 90];
 const selectedDays = parsePositiveInt(Astro.url.searchParams.get("dias"), 30);
 const selectedStatus = (Astro.url.searchParams.get("estado") || "all").toLowerCase();
 const selectedSource = (Astro.url.searchParams.get("fuente") || "all").toLowerCase();
+const exportCsvParams = new URLSearchParams({
+  dias: String(selectedDays),
+  estado: selectedStatus,
+  fuente: selectedSource,
+});
+const exportCsvHref = `/api/leads/export.csv?${exportCsvParams.toString()}`;
 
 let loadError = "";
 
@@ -79,7 +130,9 @@ const funnel = {
 const tendencia: Array<{ dia: string; total: number }> = [];
 const fuentesDisponibles: string[] = [];
 
-if (!supabaseUrl || !supabaseServiceRoleKey) {
+if (!isAuthorized) {
+  loadError = "";
+} else if (!supabaseUrl || !supabaseServiceRoleKey) {
   loadError = "Faltan variables de servidor para cargar metricas.";
 } else {
   const cutoffIso = new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString();
@@ -222,46 +275,78 @@ const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
         <p class="section-lead">Panel rapido para monitorear volumen, prioridad y conversion con filtros simples.</p>
       </div>
 
-      <form method="GET" class="grid gap-4 border border-white/10 bg-muga-dark-800/35 p-4 sm:grid-cols-2 lg:grid-cols-4">
-        <label class="space-y-2">
-          <span class="text-xs uppercase tracking-wider text-graylight">Periodo</span>
-          <select name="dias" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            {diasOpciones.map((dias) => (
-              <option value={dias} selected={selectedDays === dias}>{dias} dias</option>
-            ))}
-          </select>
-        </label>
-
-        <label class="space-y-2">
-          <span class="text-xs uppercase tracking-wider text-graylight">Estado</span>
-          <select name="estado" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            <option value="all" selected={selectedStatus === "all"}>Todos</option>
-            {Object.entries(estadoEtiquetas).map(([value, label]) => (
-              <option value={value} selected={selectedStatus === value}>{label}</option>
-            ))}
-          </select>
-        </label>
-
-        <label class="space-y-2">
-          <span class="text-xs uppercase tracking-wider text-graylight">Fuente</span>
-          <select name="fuente" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-            <option value="all" selected={selectedSource === "all"}>Todas</option>
-            {fuentesDisponibles.map((source) => (
-              <option value={source} selected={selectedSource === source}>{source}</option>
-            ))}
-          </select>
-        </label>
-
-        <div class="flex items-end gap-2">
-          <button type="submit" class="inline-flex w-full items-center justify-center border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90">Aplicar filtros</button>
-          <a href="/metricas" class="inline-flex w-full items-center justify-center border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40">Limpiar</a>
-        </div>
-      </form>
-
-      {loadError ? (
+      {!isAuthorized ? (
+        <article class="mx-auto w-full max-w-lg border border-white/10 bg-muga-dark-800/35 p-6">
+          <h2 class="text-lg font-semibold text-white">Acceso protegido</h2>
+          <p class="mt-2 text-sm text-graylight">Ingresa la clave interna para abrir el panel de metricas.</p>
+          <form method="POST" class="mt-5 space-y-3">
+            <input type="hidden" name="action" value="login" />
+            <label class="space-y-2">
+              <span class="text-xs uppercase tracking-wider text-graylight">Clave</span>
+              <input
+                type="password"
+                name="password"
+                autocomplete="current-password"
+                required
+                class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              />
+            </label>
+            {authError ? <p class="text-sm text-red-300">{authError}</p> : null}
+            <button type="submit" class="inline-flex w-full items-center justify-center border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90">
+              Entrar al panel
+            </button>
+          </form>
+        </article>
+      ) : loadError ? (
         <div class="border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{loadError}</div>
       ) : (
         <>
+          <div class="flex justify-end">
+            <form method="POST">
+              <input type="hidden" name="action" value="logout" />
+              <button type="submit" class="inline-flex items-center justify-center border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40">
+                Cerrar sesion
+              </button>
+            </form>
+          </div>
+
+          <form method="GET" class="grid gap-4 border border-white/10 bg-muga-dark-800/35 p-4 sm:grid-cols-2 lg:grid-cols-4">
+            <label class="space-y-2">
+              <span class="text-xs uppercase tracking-wider text-graylight">Periodo</span>
+              <select name="dias" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                {diasOpciones.map((dias) => (
+                  <option value={dias} selected={selectedDays === dias}>{dias} dias</option>
+                ))}
+              </select>
+            </label>
+
+            <label class="space-y-2">
+              <span class="text-xs uppercase tracking-wider text-graylight">Estado</span>
+              <select name="estado" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                <option value="all" selected={selectedStatus === "all"}>Todos</option>
+                {Object.entries(estadoEtiquetas).map(([value, label]) => (
+                  <option value={value} selected={selectedStatus === value}>{label}</option>
+                ))}
+              </select>
+            </label>
+
+            <label class="space-y-2">
+              <span class="text-xs uppercase tracking-wider text-graylight">Fuente</span>
+              <select name="fuente" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                <option value="all" selected={selectedSource === "all"}>Todas</option>
+                {fuentesDisponibles.map((source) => (
+                  <option value={source} selected={selectedSource === source}>{source}</option>
+                ))}
+              </select>
+            </label>
+
+            <div class="flex flex-wrap items-end gap-2 lg:justify-end">
+              <button type="submit" class="inline-flex w-full items-center justify-center border border-accent/70 bg-accent px-4 py-2 text-sm font-semibold text-obscure hover:bg-accent/90">Aplicar filtros</button>
+              <a href={exportCsvHref} class="inline-flex w-full items-center justify-center border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40">Exportar CSV</a>
+              <a href="/metricas" class="inline-flex w-full items-center justify-center border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40">Limpiar</a>
+            </div>
+          </form>
+
           <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <article class="border border-white/10 bg-muga-dark-800/35 p-4">
               <p class="text-xs uppercase tracking-wider text-graylight">Leads filtrados</p>
