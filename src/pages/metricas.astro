@@ -31,8 +31,8 @@ const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 const leadsTable = import.meta.env.SUPABASE_LEADS_TABLE || "leads";
 const webEventsTable = import.meta.env.SUPABASE_WEB_EVENTS_TABLE || "web_events";
-const panelPassword = process.env.METRICAS_PANEL_PASSWORD || import.meta.env.METRICAS_PANEL_PASSWORD;
-const sessionSalt = process.env.METRICAS_SESSION_SALT || import.meta.env.METRICAS_SESSION_SALT || "muga-metricas-v1";
+const panelPassword = import.meta.env.METRICAS_PANEL_PASSWORD;
+const sessionSalt = import.meta.env.METRICAS_SESSION_SALT || "muga-metricas-v1";
 
 const method = Astro.request.method.toUpperCase();
 let authError = panelPassword ? "" : "Falta configurar METRICAS_PANEL_PASSWORD en el servidor.";
