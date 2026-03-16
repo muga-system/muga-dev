@@ -11,6 +11,15 @@ type MugaAnalyticsWindow = Window &
 const mugaAnalyticsWindow = window as MugaAnalyticsWindow;
 const SESSION_STORAGE_KEY = "muga_analytics_session_id";
 const COLLECT_ENDPOINT = "/api/analytics/collect";
+const ANALYTICS_CONSENT_KEY = "muga_analytics_consent";
+
+const hasAnalyticsConsent = () => {
+  try {
+    return window.localStorage.getItem(ANALYTICS_CONSENT_KEY) === "granted";
+  } catch {
+    return false;
+  }
+};
 
 const randomToken = () => {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID();
@@ -85,6 +94,8 @@ const emitTrackingEvent = (
   eventName: string,
   payload: Record<string, unknown> = {},
 ) => {
+  if (!hasAnalyticsConsent()) return;
+
   const detail = buildEventDetail(eventName, payload);
 
   if (Array.isArray(mugaAnalyticsWindow.dataLayer)) {
@@ -108,6 +119,7 @@ const getFunnelStep = (path: string) => {
 };
 
 const trackPageView = () => {
+  if (!hasAnalyticsConsent()) return;
   if (mugaAnalyticsWindow.__mugaLastTrackedPath === window.location.pathname) return;
 
   const funnelStep = getFunnelStep(window.location.pathname);
@@ -179,7 +191,14 @@ const handleFormState = (event: Event) => {
 };
 
 const initAnalytics = () => {
+  if (!hasAnalyticsConsent()) return;
   trackPageView();
+};
+
+const handleConsentGranted = () => {
+  mugaAnalyticsWindow.__mugaSessionStarted = false;
+  mugaAnalyticsWindow.__mugaLastTrackedPath = "";
+  initAnalytics();
 };
 
 if (!mugaAnalyticsWindow.__mugaAnalyticsBound) {
@@ -188,6 +207,7 @@ if (!mugaAnalyticsWindow.__mugaAnalyticsBound) {
   document.addEventListener("muga:form-state", handleFormState as EventListener);
   document.addEventListener("DOMContentLoaded", initAnalytics);
   document.addEventListener("astro:page-load", initAnalytics);
+  window.addEventListener("muga:analytics-consent-granted", handleConsentGranted);
   mugaAnalyticsWindow.__mugaAnalyticsBound = true;
 }
 
