@@ -6,6 +6,7 @@ import type { BreadcrumbItem } from "../types";
 import {
   AlertTriangle,
   BadgeCheck,
+  CircleHelp,
   CircleCheck,
   CircleX,
   Clock3,
@@ -1355,7 +1356,19 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
           </div>
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-            <h2 class="text-lg font-semibold text-white">Tendencia diaria (ultimos dias)</h2>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-semibold text-white">Tendencia diaria (ultimos dias)</h2>
+              <button
+                type="button"
+                class="group relative inline-flex h-6 w-6 items-center justify-center border border-white/20 text-graylight hover:border-white/40 hover:text-white"
+                aria-label="Que significa tendencia diaria"
+              >
+                <CircleHelp size={14} stroke-width={2} />
+                <span class="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-72 -translate-x-1/2 border border-white/15 bg-obscure px-3 py-2 text-left text-xs leading-5 text-graylight shadow-xl group-hover:block group-focus-visible:block">
+                  Muestra cuantos leads filtrados entraron por dia en el periodo seleccionado. Sirve para ver picos, caidas y si el volumen viene creciendo o frenandose.
+                </span>
+              </button>
+            </div>
             <div class="mt-4 grid grid-cols-7 gap-2 sm:grid-cols-10 lg:grid-cols-14">
               {tendencia.map((item) => (
                 <div class="flex flex-col items-center gap-2">
