@@ -5,18 +5,77 @@ type MugaAnalyticsWindow = Window &
     dataLayer?: MugaDataLayerEntry[];
     __mugaAnalyticsBound?: boolean;
     __mugaLastTrackedPath?: string;
+    __mugaSessionStarted?: boolean;
   };
 
 const mugaAnalyticsWindow = window as MugaAnalyticsWindow;
+const SESSION_STORAGE_KEY = "muga_analytics_session_id";
+const COLLECT_ENDPOINT = "/api/analytics/collect";
+
+const randomToken = () => {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return `muga-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const getSessionId = () => {
+  try {
+    const existing = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (existing) return existing;
+    const next = randomToken();
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY, next);
+    return next;
+  } catch {
+    return randomToken();
+  }
+};
+
+const getUtmFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    utm_source: params.get("utm_source") || "",
+    utm_medium: params.get("utm_medium") || "",
+    utm_campaign: params.get("utm_campaign") || "",
+  };
+};
+
+const sendToCollector = (detail: MugaDataLayerEntry) => {
+  try {
+    const payload = JSON.stringify(detail);
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: "application/json" });
+      navigator.sendBeacon(COLLECT_ENDPOINT, blob);
+      return;
+    }
+
+    fetch(COLLECT_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {
+      // Never break UX due to analytics transport errors.
+    });
+  } catch {
+    // Ignore client-side serialization/transport errors.
+  }
+};
 
 const buildEventDetail = (
   eventName: string,
   payload: Record<string, unknown> = {},
 ): MugaDataLayerEntry => {
+  const url = new URL(window.location.href);
+  const utm = getUtmFromUrl();
+
   return {
     event: eventName,
+    session_id: getSessionId(),
     page_path: window.location.pathname,
-    page_url: window.location.href,
+    page_url: url.toString(),
+    referrer: document.referrer || "",
+    ...utm,
     timestamp: new Date().toISOString(),
     ...payload,
   };
@@ -31,6 +90,8 @@ const emitTrackingEvent = (
   if (Array.isArray(mugaAnalyticsWindow.dataLayer)) {
     mugaAnalyticsWindow.dataLayer.push(detail);
   }
+
+  sendToCollector(detail);
 
   document.dispatchEvent(
     new CustomEvent("muga:track", {
@@ -50,6 +111,11 @@ const trackPageView = () => {
   if (mugaAnalyticsWindow.__mugaLastTrackedPath === window.location.pathname) return;
 
   const funnelStep = getFunnelStep(window.location.pathname);
+
+  if (!mugaAnalyticsWindow.__mugaSessionStarted) {
+    emitTrackingEvent("session_start");
+    mugaAnalyticsWindow.__mugaSessionStarted = true;
+  }
 
   emitTrackingEvent("page_view");
 

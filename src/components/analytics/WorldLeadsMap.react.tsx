@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from "react-simple-maps";
 import { geoCentroid } from "d3-geo";
 
-type WorldLeadsMapProps = {
+export interface Props {
   countryCounts: Record<string, number>;
   argentinaProvinceCounts?: Record<string, number>;
   className?: string;
-};
+}
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 const ARGENTINA_GEO_URL =
@@ -116,7 +116,7 @@ export default function WorldLeadsMap({
   countryCounts,
   argentinaProvinceCounts = {},
   className,
-}: WorldLeadsMapProps) {
+}: Props) {
   const [tooltip, setTooltip] = useState<{
     x: number;
     y: number;

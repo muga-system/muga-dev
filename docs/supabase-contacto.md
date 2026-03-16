@@ -9,6 +9,7 @@ Usa estas variables (ver `.env.example`):
 - `SUPABASE_LEADS_TABLE` (default: `leads`)
 - `SUPABASE_SMTP_FAILURES_TABLE` (default: `smtp_failures`)
 - `SUPABASE_EMAIL_EVENTS_TABLE` (default: `lead_email_events`)
+- `SUPABASE_WEB_EVENTS_TABLE` (default: `web_events`, opcional para analitica web)
 - `AUTOMATION_ALERT_WEBHOOK_URL` (opcional, para alertas high-intent)
 - `SMTP_HOST` (opcional, alertas por email)
 - `SMTP_PORT` (opcional, alertas por email)
@@ -144,6 +145,28 @@ Para persistir pais/region/ciudad por IP, ejecutar:
 Para capturar provincia declarada en formulario (opcional):
 
 - `supabase/leads-province.sql`
+
+## Analitica web (tipo Vercel) dentro de `/metricas`
+
+Se agrega captura de eventos web para obtener:
+
+- page views
+- sesiones
+- bounce aproximado
+- top paginas, referers y paises
+- conversion estimada de visita a lead
+
+Migracion SQL:
+
+- `supabase/web-analytics.sql`
+
+Endpoint interno de captura:
+
+- `POST /api/analytics/collect`
+
+Retencion recomendada:
+
+- 90 dias (incluye funcion `cleanup_web_events_90d()` en el SQL)
 
 Para historicos (estimado por `locale/timezone`):
 

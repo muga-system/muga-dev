@@ -27,6 +27,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 const supabaseUrl = import.meta.env.SUPABASE_URL;
 const supabaseServiceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 const leadsTable = import.meta.env.SUPABASE_LEADS_TABLE || "leads";
+const webEventsTable = import.meta.env.SUPABASE_WEB_EVENTS_TABLE || "web_events";
 const panelPassword = process.env.METRICAS_PANEL_PASSWORD || import.meta.env.METRICAS_PANEL_PASSWORD;
 const sessionSalt = process.env.METRICAS_SESSION_SALT || import.meta.env.METRICAS_SESSION_SALT || "muga-metricas-v1";
 
@@ -346,6 +347,18 @@ const metrics = {
   provinces: [] as Array<{ province: string; count: number }>,
   provincesMap: [] as Array<{ province: string; count: number }>,
 };
+
+const webMetrics = {
+  pageViews: 0,
+  sessions: 0,
+  bounceRate: 0,
+  leadConversionRate: 0,
+  daily: [] as Array<{ dia: string; total: number }>,
+  topPages: [] as Array<{ page: string; count: number }>,
+  topReferrers: [] as Array<{ referrer: string; count: number }>,
+  topCountries: [] as Array<{ country: string; count: number }>,
+};
+let webMetricsError = "";
 
 const funnel = {
   contactRate: 0,
@@ -738,6 +751,133 @@ if (!isAuthorized) {
   }
 }
 
+if (isAuthorized && !loadError && supabaseUrl && supabaseServiceRoleKey) {
+  const webCutoffIso = new Date(Date.now() - selectedDays * 24 * 60 * 60 * 1000).toISOString();
+  type WebRow = {
+    created_at?: string;
+    event_name?: string;
+    page_path?: string;
+    session_id?: string;
+    referrer_host?: string;
+    country?: string;
+    utm_source?: string;
+    utm_campaign?: string;
+  };
+  const webSelectCandidates = [
+    "created_at,event_name,page_path,session_id,referrer_host,country,utm_source,utm_campaign",
+    "created_at,event_name,page_path,session_id,referrer_host,country",
+  ];
+
+  let webRows: WebRow[] | null = null;
+
+  for (const select of webSelectCandidates) {
+    const query = new URL(`${supabaseUrl}/rest/v1/${webEventsTable}`);
+    query.searchParams.set("select", select);
+    query.searchParams.set("created_at", `gte.${webCutoffIso}`);
+    query.searchParams.set("order", "created_at.desc");
+    query.searchParams.set("limit", "12000");
+
+    const response = await fetch(query.toString(), {
+      headers: {
+        apikey: supabaseServiceRoleKey,
+        Authorization: `Bearer ${supabaseServiceRoleKey}`,
+      },
+    });
+
+    if (response.ok) {
+      webRows = (await response.json()) as WebRow[];
+      break;
+    }
+
+    if (response.status === 404) {
+      webMetricsError = "Tabla web_events no encontrada. Ejecuta supabase/web-analytics.sql";
+      break;
+    }
+
+    if (response.status !== 400) {
+      webMetricsError = `No se pudieron cargar metricas web (${response.status}).`;
+      break;
+    }
+  }
+
+  const webRowsSafe: WebRow[] = Array.isArray(webRows) ? webRows : [];
+  if (webRowsSafe.length) {
+    const filteredWebRows = webRowsSafe.filter((row: WebRow) => {
+      const utmSource = String(row.utm_source || "sin_utm").trim().toLowerCase();
+      const utmCampaign = String(row.utm_campaign || "sin_campana").trim().toLowerCase();
+      if (selectedUtmSource !== "all" && utmSource !== selectedUtmSource) return false;
+      if (selectedUtmCampaign !== "all" && utmCampaign !== selectedUtmCampaign) return false;
+      return true;
+    });
+
+    const pageViewRows = filteredWebRows.filter(
+      (row: WebRow) => String(row.event_name || "").toLowerCase() === "page_view",
+    );
+    webMetrics.pageViews = pageViewRows.length;
+
+    const sessionCounter = new Map<string, number>();
+    const pageCounter = new Map<string, number>();
+    const referrerCounter = new Map<string, number>();
+    const countryCounter = new Map<string, number>();
+    const dailyCounter = new Map<string, number>();
+
+    pageViewRows.forEach((row: WebRow) => {
+      const sessionId = String(row.session_id || "").trim();
+      const pagePath = String(row.page_path || "/").trim() || "/";
+      const referrer = String(row.referrer_host || "directo").trim().toLowerCase() || "directo";
+      const country = normalizeCountryCode(row.country) || "ZZ";
+      const createdDate = new Date(String(row.created_at || ""));
+
+      if (sessionId) {
+        sessionCounter.set(sessionId, (sessionCounter.get(sessionId) || 0) + 1);
+      }
+      pageCounter.set(pagePath, (pageCounter.get(pagePath) || 0) + 1);
+      referrerCounter.set(referrer, (referrerCounter.get(referrer) || 0) + 1);
+      countryCounter.set(country, (countryCounter.get(country) || 0) + 1);
+
+      if (!Number.isNaN(createdDate.getTime())) {
+        const key = createdDate.toISOString().slice(0, 10);
+        dailyCounter.set(key, (dailyCounter.get(key) || 0) + 1);
+      }
+    });
+
+    webMetrics.sessions = sessionCounter.size;
+    const singlePageSessions = [...sessionCounter.values()].filter((count) => count <= 1).length;
+    webMetrics.bounceRate = webMetrics.sessions
+      ? Number(((singlePageSessions / webMetrics.sessions) * 100).toFixed(1))
+      : 0;
+    webMetrics.leadConversionRate = webMetrics.pageViews
+      ? Number(((metrics.total / webMetrics.pageViews) * 100).toFixed(2))
+      : 0;
+
+    webMetrics.topPages = [...pageCounter.entries()]
+      .map(([page, count]) => ({ page, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    webMetrics.topReferrers = [...referrerCounter.entries()]
+      .map(([referrer, count]) => ({ referrer, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    webMetrics.topCountries = [...countryCounter.entries()]
+      .map(([country, count]) => ({ country, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+
+    const maxBars = Math.min(selectedDays, 14);
+    const dayMs = 24 * 60 * 60 * 1000;
+    for (let i = maxBars - 1; i >= 0; i--) {
+      const day = new Date(Date.now() - i * dayMs);
+      const isoKey = day.toISOString().slice(0, 10);
+      webMetrics.daily.push({
+        dia: formatDay(day),
+        total: dailyCounter.get(isoKey) || 0,
+      });
+    }
+  }
+}
+
 const estadoItems = [
   { key: "new", label: "Nuevo", value: metrics.byStatus.new },
   { key: "contacted", label: "Contactado", value: metrics.byStatus.contacted },
@@ -755,6 +895,7 @@ const prioridadItems = [
 const maxEstado = Math.max(1, ...estadoItems.map((item) => item.value));
 const maxPrioridad = Math.max(1, ...prioridadItems.map((item) => item.value));
 const maxTendencia = Math.max(1, ...tendencia.map((item) => item.total));
+const maxWebTendencia = Math.max(1, ...webMetrics.daily.map((item) => item.total));
 const maxActividadHora = Math.max(1, ...metrics.activityByHour.map((item) => item.total));
 const topUtmSourceItems = metrics.attribution.utmSources.slice(0, 6);
 const overflowUtmSourceItems = metrics.attribution.utmSources.slice(6);
@@ -1007,6 +1148,100 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
               <p class="mt-1 text-xs text-graylight">{metrics.attribution.utmSources[0]?.count || 0} leads</p>
             </article>
           </div>
+
+          <article class="border border-white/10 bg-muga-dark-800/35 p-5">
+            <div class="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <h2 class="text-lg font-semibold text-white">Trafico web (estilo Vercel)</h2>
+                <p class="mt-2 text-sm text-graylight">Eventos capturados desde la web con retencion de 90 dias.</p>
+              </div>
+              {webMetricsError ? <p class="text-xs text-amber-300">{webMetricsError}</p> : null}
+            </div>
+
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div class="border border-white/10 bg-obscure/40 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-graylight">Page views</p>
+                <p class="mt-1 text-2xl font-semibold text-white">{webMetrics.pageViews}</p>
+              </div>
+              <div class="border border-white/10 bg-obscure/40 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-graylight">Sesiones</p>
+                <p class="mt-1 text-2xl font-semibold text-white">{webMetrics.sessions}</p>
+              </div>
+              <div class="border border-white/10 bg-obscure/40 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-graylight">Bounce aprox.</p>
+                <p class="mt-1 text-2xl font-semibold text-white">{webMetrics.bounceRate}%</p>
+              </div>
+              <div class="border border-white/10 bg-obscure/40 px-4 py-3">
+                <p class="text-xs uppercase tracking-wider text-graylight">Conv. a lead</p>
+                <p class="mt-1 text-2xl font-semibold text-white">{webMetrics.leadConversionRate}%</p>
+              </div>
+            </div>
+
+            <div class="mt-4 grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+              <div class="xl:col-span-2">
+                <p class="text-xs uppercase tracking-wider text-graylight">Tendencia de visitas</p>
+                <div class="mt-2 grid grid-cols-7 gap-2 sm:grid-cols-10 lg:grid-cols-14">
+                  {webMetrics.daily.map((item) => (
+                    <div class="flex flex-col items-center gap-2">
+                      <div class="flex h-28 w-full items-end bg-white/5 p-1">
+                        <div class="w-full bg-accent/85" style={`height:${(item.total / maxWebTendencia) * 100}%`}></div>
+                      </div>
+                      <p class="text-[10px] text-graylight">{item.dia}</p>
+                      <p class="text-xs font-semibold text-white">{item.total}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p class="text-xs uppercase tracking-wider text-graylight">Top paginas</p>
+                <div class="mt-2 space-y-2">
+                  {webMetrics.topPages.length ? (
+                    webMetrics.topPages.map((item) => (
+                      <div class="flex items-center justify-between text-sm">
+                        <p class="max-w-[80%] truncate text-graylight">{item.page}</p>
+                        <p class="font-semibold text-white">{item.count}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p class="text-sm text-graylight">Sin datos.</p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <p class="text-xs uppercase tracking-wider text-graylight">Top referers</p>
+                <div class="mt-2 space-y-2">
+                  {webMetrics.topReferrers.length ? (
+                    webMetrics.topReferrers.map((item) => (
+                      <div class="flex items-center justify-between text-sm">
+                        <p class="max-w-[80%] truncate text-graylight">{item.referrer}</p>
+                        <p class="font-semibold text-white">{item.count}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p class="text-sm text-graylight">Sin datos.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <p class="text-xs uppercase tracking-wider text-graylight">Paises (page views)</p>
+              <div class="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {webMetrics.topCountries.length ? (
+                  webMetrics.topCountries.map((item) => (
+                    <div class="flex items-center justify-between border border-white/10 bg-obscure/40 px-3 py-2 text-sm">
+                      <p class="text-graylight">{COUNTRY_COORDS[item.country]?.label || item.country}</p>
+                      <p class="font-semibold text-white">{item.count}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p class="text-sm text-graylight">Sin datos de pais por ahora.</p>
+                )}
+              </div>
+            </div>
+          </article>
 
           <div class="grid gap-4 lg:grid-cols-2">
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
