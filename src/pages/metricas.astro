@@ -4,9 +4,11 @@ import Navigation from "../components/ui/Navigation/Navigation.astro";
 import Breadcrumb from "../components/ui/Breadcrumb/Breadcrumb.astro";
 import type { BreadcrumbItem } from "../types";
 import {
+  AlertTriangle,
   BadgeCheck,
   CircleCheck,
   CircleX,
+  Clock3,
   UserCheck,
 } from "@lucide/astro";
 import WorldLeadsMap from "../components/analytics/WorldLeadsMap.react";
@@ -110,6 +112,13 @@ const humanizeAttribution = (value?: string) => {
   if (normalized === "sin_campana") return "Sin campaña";
   if (normalized === "none") return "Directo";
   return normalized.replace(/[_-]+/g, " ");
+};
+
+const humanizeReferrerHost = (value?: string) => {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized || normalized === "directo") return "Directo";
+  if (normalized.includes("muga.dev")) return "Interno";
+  return normalized;
 };
 
 const parseHourFromDate = (date: Date, timezone?: string) => {
@@ -911,6 +920,11 @@ const urgencyClass = {
   warning: "border-amber-500/30 bg-amber-500/10 text-amber-300",
   critico: "border-red-500/30 bg-red-500/10 text-red-300",
 };
+const urgencyIconClass = {
+  normal: "text-emerald-300",
+  warning: "text-amber-300",
+  critico: "text-red-300",
+};
 const quickActionsByStatus: Record<string, Array<{ value: string; label: string; className: string }>> = {
   new: [
     {
@@ -1059,7 +1073,7 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
 
           <dialog
             data-metricas-help-modal
-            class="w-full max-w-xl border border-white/20 bg-obscure p-0 text-white backdrop:bg-black/70"
+            class="m-auto w-full max-w-xl border border-white/20 bg-obscure/85 p-0 text-white shadow-2xl shadow-black/50 backdrop:bg-black/35 backdrop:backdrop-blur-sm"
           >
             <div class="border-b border-white/10 px-5 py-4">
               <div class="flex items-center justify-between gap-3">
@@ -1090,7 +1104,7 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
                 <span class="font-semibold text-white">Top referers:</span>
                 dominios desde donde llegaron visitas.
                 <span class="font-semibold text-white">directo</span> significa sin referer detectable.
-                <span class="font-semibold text-white">muga.dev</span> es navegacion interna entre paginas del sitio.
+                <span class="font-semibold text-white">Interno</span> representa navegacion entre paginas del sitio.
               </p>
               <p>
                 <span class="font-semibold text-white">Nota:</span>
@@ -1266,7 +1280,7 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
                   {webMetrics.topReferrers.length ? (
                     webMetrics.topReferrers.map((item) => (
                       <div class="flex items-center justify-between text-sm">
-                        <p class="max-w-[80%] truncate text-graylight">{item.referrer}</p>
+                        <p class="max-w-[80%] truncate text-graylight">{humanizeReferrerHost(item.referrer)}</p>
                         <p class="font-semibold text-white">{item.count}</p>
                       </div>
                     ))
@@ -1400,8 +1414,14 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
                       <tr class="border-b border-white/10 last:border-0">
                         <td class="px-3 py-2 font-semibold text-white">{formatHours(lead.ageHours)}</td>
                         <td class="px-3 py-2">
-                          <span class={`inline-flex border px-2 py-1 text-xs font-semibold ${urgencyClass[lead.urgency]}`}>
-                            {urgencyLabels[lead.urgency]}
+                          <span
+                            class={`inline-flex h-8 w-8 items-center justify-center border ${urgencyClass[lead.urgency]}`}
+                            title={urgencyLabels[lead.urgency]}
+                            aria-label={urgencyLabels[lead.urgency]}
+                          >
+                            {lead.urgency === "normal" ? <Clock3 size={16} stroke-width={2} class={urgencyIconClass[lead.urgency]} /> : null}
+                            {lead.urgency === "warning" ? <AlertTriangle size={16} stroke-width={2} class={urgencyIconClass[lead.urgency]} /> : null}
+                            {lead.urgency === "critico" ? <CircleX size={16} stroke-width={2} class={urgencyIconClass[lead.urgency]} /> : null}
                           </span>
                         </td>
                         <td class="px-3 py-2">
