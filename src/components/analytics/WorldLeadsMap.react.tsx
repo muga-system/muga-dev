@@ -9,6 +9,8 @@ type WorldLeadsMapProps = {
 };
 
 const GEO_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const ARGENTINA_GEO_URL =
+  "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/ARG/ADM1/geoBoundaries-ARG-ADM1_simplified.geojson";
 
 const COUNTRY_NAME_BY_CODE: Record<string, string> = {
   AR: "Argentina",
@@ -63,6 +65,20 @@ const ARGENTINA_PROVINCE_COORDS: Record<string, [number, number]> = {
   Tucuman: [-65.3, -26.8],
 };
 
+const normalizeKey = (value: string) =>
+  value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+const ARGENTINA_PROVINCE_NAME_OVERRIDES: Record<string, string> = {
+  caba: "Ciudad Autonoma de Buenos Aires",
+  "ciudad autonoma de buenos aires": "Ciudad Autonoma de Buenos Aires",
+};
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 const formatCount = (value: number) => value.toLocaleString("es-AR");
@@ -83,8 +99,8 @@ const DEFAULT_WORLD_POSITION = {
 };
 
 const DEFAULT_ARGENTINA_POSITION = {
-  coordinates: [-64, -35] as [number, number],
-  zoom: 4.1,
+  coordinates: [-64.2, -38.9] as [number, number],
+  zoom: 1.85,
 };
 
 const colorForCountry = (count: number, max: number) => {
@@ -148,6 +164,20 @@ export default function WorldLeadsMap({
     return Array.from(new Set([1, mid, max])).sort((a, b) => a - b);
   }, [mapMode, maxCountryCount, maxProvinceCount]);
 
+  const normalizedArgentinaProvinceCounts = useMemo(() => {
+    const normalized: Record<string, number> = {};
+
+    Object.entries(argentinaProvinceCounts).forEach(([rawName, count]) => {
+      const key = normalizeKey(rawName);
+      if (!key || count <= 0) return;
+      const canonical = ARGENTINA_PROVINCE_NAME_OVERRIDES[key] || rawName;
+      const normalizedCanonical = normalizeKey(canonical);
+      normalized[normalizedCanonical] = (normalized[normalizedCanonical] || 0) + count;
+    });
+
+    return normalized;
+  }, [argentinaProvinceCounts]);
+
   const countryNameToCode = useMemo(() => {
     const map = new Map<string, string>();
     Object.entries(COUNTRY_NAME_BY_CODE).forEach(([code, name]) => {
@@ -160,7 +190,10 @@ export default function WorldLeadsMap({
   }, []);
 
   return (
-    <div className={className} style={{ position: "relative", width: "100%", height: "280px", background: "#191717" }}>
+    <div
+      className={className}
+      style={{ position: "relative", width: "100%", height: mapMode === "argentina" ? "360px" : "280px", background: "#191717" }}
+    >
       <div style={{ position: "absolute", right: 8, top: 8, zIndex: 20, display: "flex", gap: 6 }}>
         <button
           type="button"
@@ -243,18 +276,22 @@ export default function WorldLeadsMap({
 
       <ComposableMap
         projection="geoMercator"
-        projectionConfig={{ scale: 145, center: [0, 20] }}
+        projectionConfig={
+          mapMode === "argentina"
+            ? { scale: 900, center: [-64.2, -38.9] }
+            : { scale: 145, center: [0, 20] }
+        }
         style={{ width: "100%", height: "100%", background: "#191717" }}
       >
         <ZoomableGroup
           center={position.coordinates}
           zoom={position.zoom}
-          minZoom={1.2}
-          maxZoom={8}
+          minZoom={mapMode === "argentina" ? 1.2 : 1.2}
+          maxZoom={mapMode === "argentina" ? 10 : 8}
           onMoveEnd={({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) => {
             setPosition({
               coordinates: [clamp(coordinates[0], -180, 180), clamp(coordinates[1], -85, 85)],
-              zoom: clamp(zoom, 1.2, 8),
+              zoom: clamp(zoom, 1.2, mapMode === "argentina" ? 10 : 8),
             });
           }}
           translateExtent={[
@@ -262,17 +299,47 @@ export default function WorldLeadsMap({
             [1200, 700],
           ]}
         >
-          <Geographies geography={GEO_URL}>
+          <Geographies geography={mapMode === "argentina" ? ARGENTINA_GEO_URL : GEO_URL}>
             {({ geographies }: { geographies: any[] }) => {
               const centroids = new Map<string, [number, number]>();
 
               const geoElements = geographies.map((geo: any) => {
-                const countryName = String(
-                  geo.properties?.name || geo.properties?.NAME || geo.properties?.name_en || "",
-                );
+                if (mapMode === "argentina") {
+                  const provinceName = String(geo.properties?.shapeName || geo.properties?.name || "");
+                  const provinceKey = normalizeKey(provinceName);
+                  const count = normalizedArgentinaProvinceCounts[provinceKey] || 0;
+
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      style={{
+                        default: {
+                          fill: colorForCountry(count, maxProvinceCount),
+                          stroke: "#3F3F3F",
+                          strokeWidth: 0.9,
+                          outline: "none",
+                        },
+                        hover: {
+                          fill: colorForCountry(count, maxProvinceCount),
+                          stroke: "#6B6B6B",
+                          strokeWidth: 1.1,
+                          outline: "none",
+                        },
+                        pressed: {
+                          fill: colorForCountry(count, maxProvinceCount),
+                          stroke: "#6B6B6B",
+                          strokeWidth: 1.1,
+                          outline: "none",
+                        },
+                      }}
+                    />
+                  );
+                }
+
+                const countryName = String(geo.properties?.name || geo.properties?.NAME || geo.properties?.name_en || "");
                 const code = countryNameToCode.get(countryName.toLowerCase()) || "";
                 const count = code ? countryCounts[code] || 0 : 0;
-                const isArgentina = code === "AR";
 
                 if (code) {
                   const [lon, lat] = geoCentroid(geo) as [number, number];
@@ -281,36 +348,27 @@ export default function WorldLeadsMap({
                   }
                 }
 
-                const fill =
-                  mapMode === "world"
-                    ? colorForCountry(count, maxCountryCount)
-                    : isArgentina
-                      ? "#3F2A2A"
-                      : "#232323";
-
-                const strokeWidth = isArgentina && mapMode === "argentina" ? 1.4 : 0.8;
-
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     style={{
                       default: {
-                        fill,
+                        fill: colorForCountry(count, maxCountryCount),
                         stroke: "#3A3A3A",
-                        strokeWidth,
+                        strokeWidth: 0.8,
                         outline: "none",
                       },
                       hover: {
-                        fill,
+                        fill: colorForCountry(count, maxCountryCount),
                         stroke: "#3A3A3A",
-                        strokeWidth,
+                        strokeWidth: 0.8,
                         outline: "none",
                       },
                       pressed: {
-                        fill,
+                        fill: colorForCountry(count, maxCountryCount),
                         stroke: "#3A3A3A",
-                        strokeWidth,
+                        strokeWidth: 0.8,
                         outline: "none",
                       },
                     }}
