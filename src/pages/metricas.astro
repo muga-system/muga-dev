@@ -1134,7 +1134,7 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
             </div>
           </dialog>
 
-          <form method="GET" class="grid gap-4 border border-white/10 bg-muga-dark-800/35 p-4 sm:grid-cols-2 lg:grid-cols-6">
+          <form method="GET" data-clean-query-form class="grid gap-4 border border-white/10 bg-muga-dark-800/35 p-4 sm:grid-cols-2 lg:grid-cols-6">
             <label class="space-y-2">
               <span class="text-xs uppercase tracking-wider text-graylight">Periodo</span>
               <select name="dias" class="w-full border border-white/15 bg-obscure px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
@@ -1237,7 +1237,7 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
             <div class="flex flex-wrap items-start justify-between gap-3">
-              <h2 class="text-lg font-semibold text-white">Trafico web (estilo Vercel)</h2>
+              <h2 class="text-lg font-semibold text-white">Trafico web</h2>
               <div class="flex items-start gap-2">
                 {webMetricsError ? <p class="pt-1 text-xs text-amber-300">{webMetricsError}</p> : null}
                 <button type="button" class={sectionHelpButtonClass} aria-label="Que significa trafico web">
@@ -1528,7 +1528,7 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
               </button>
             </div>
             <p class="mt-2 text-sm text-graylight">Ultimos leads segun filtros activos. Cambia estado y guarda sin salir del panel.</p>
-            <form method="GET" class="mt-4 flex flex-wrap items-end gap-3">
+            <form method="GET" data-clean-query-form class="mt-4 flex flex-wrap items-end gap-3">
               <input type="hidden" name="dias" value={String(selectedDays)} />
               <input type="hidden" name="estado" value={selectedStatus} />
               <input type="hidden" name="fuente" value={selectedSource} />
@@ -1746,6 +1746,44 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
         }
       });
     }
+
+    const defaultQueryValues = {
+      dias: "30",
+      estado: "all",
+      fuente: "all",
+      utm_source: "all",
+      utm_campaign: "all",
+      quick_status: "new",
+    };
+
+    const cleanQueryForms = Array.from(document.querySelectorAll("form[data-clean-query-form]"));
+    cleanQueryForms.forEach((form) => {
+      if (!(form instanceof HTMLFormElement)) return;
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const params = new URLSearchParams();
+        const formData = new FormData(form);
+
+        formData.forEach((rawValue, key) => {
+          const value = String(rawValue || "").trim();
+          if (!value) return;
+
+          if (Object.prototype.hasOwnProperty.call(defaultQueryValues, key)) {
+            if (value === defaultQueryValues[key as keyof typeof defaultQueryValues]) return;
+          }
+
+          params.append(key, value);
+        });
+
+        const nextUrl = params.toString()
+          ? `${window.location.pathname}?${params.toString()}`
+          : window.location.pathname;
+
+        window.location.assign(nextUrl);
+      });
+    });
 
     const forms = Array.from(document.querySelectorAll(".js-status-form"));
     if (forms.length) {
