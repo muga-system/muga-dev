@@ -1321,7 +1321,15 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
               </div>
 
               <div>
-                <p class="text-xs uppercase tracking-wider text-graylight">Top referers</p>
+                <div class="flex items-start justify-between gap-2">
+                  <p class="text-xs uppercase tracking-wider text-graylight">Top referers</p>
+                  <button type="button" class={sectionHelpButtonClass} aria-label="Que significa top referers">
+                    <CircleHelp size={14} stroke-width={2} />
+                    <span class={sectionHelpTooltipClass}>
+                      Dominios de referencia desde donde llegaron visitas. Redes agrupa WhatsApp, Instagram, Facebook, X/Twitter y LinkedIn.
+                    </span>
+                  </button>
+                </div>
                 <div class="mt-2 space-y-2">
                   {webMetrics.topReferrers.length ? (
                     webMetrics.topReferrers.map((item) => (
