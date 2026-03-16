@@ -1096,9 +1096,19 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
                 Formula: <span class="font-semibold text-white">leads filtrados / page views * 100</span>.
               </p>
               <p>
+                <span class="font-semibold text-white">Si Conv. a lead supera 100%:</span>
+                suele indicar desalineacion temporal o de filtros entre leads y page views (por ejemplo tracking web recien iniciado, filtros UTM muy cerrados, o leads entrando por otras fuentes).
+                No implica literalmente mas de 1 lead por visita.
+              </p>
+              <p>
                 <span class="font-semibold text-white">Bounce aprox.:</span>
                 porcentaje de sesiones con solo una pagina vista.
                 Formula: <span class="font-semibold text-white">sesiones con 1 page view / sesiones totales * 100</span>.
+              </p>
+              <p>
+                <span class="font-semibold text-white">Lectura de bounce:</span>
+                un valor alto (ej. 75%) significa que la mayoria de sesiones no navega mas de una pagina.
+                Puede ser normal en ciertos canales, pero suele sugerir bajo recorrido interno.
               </p>
               <p>
                 <span class="font-semibold text-white">Top referers:</span>
