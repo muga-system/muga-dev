@@ -926,6 +926,10 @@ const urgencyIconClass = {
   warning: "text-amber-300",
   critico: "text-red-300",
 };
+const sectionHelpButtonClass =
+  "group relative inline-flex h-6 w-6 shrink-0 items-center justify-center border border-white/20 text-graylight hover:border-white/40 hover:text-white";
+const sectionHelpTooltipClass =
+  "pointer-events-none absolute right-0 top-full z-20 mt-2 hidden w-72 border border-white/15 bg-obscure px-3 py-2 text-left text-xs leading-5 text-graylight shadow-xl group-hover:block group-focus-visible:block";
 const quickActionsByStatus: Record<string, Array<{ value: string; label: string; className: string }>> = {
   new: [
     {
@@ -1028,7 +1032,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
 
       {!isAuthorized ? (
         <article class="mx-auto w-full max-w-lg border border-white/10 bg-muga-dark-800/35 p-6">
-          <h2 class="text-lg font-semibold text-white">Acceso protegido</h2>
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="text-lg font-semibold text-white">Acceso protegido</h2>
+            <button type="button" class={sectionHelpButtonClass} aria-label="Que significa acceso protegido">
+              <CircleHelp size={14} stroke-width={2} />
+              <span class={sectionHelpTooltipClass}>Este panel es interno y requiere clave para proteger datos comerciales y operativos.</span>
+            </button>
+          </div>
           <p class="mt-2 text-sm text-graylight">Ingresa la clave interna para abrir el panel de metricas.</p>
           <form method="POST" class="mt-5 space-y-3">
             <input type="hidden" name="action" value="login" />
@@ -1226,13 +1236,19 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
           </div>
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-            <div class="flex flex-wrap items-end justify-between gap-2">
-              <div>
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="flex items-start gap-2">
                 <h2 class="text-lg font-semibold text-white">Trafico web (estilo Vercel)</h2>
-                <p class="mt-2 text-sm text-graylight">Eventos capturados desde la web con retencion de 90 dias.</p>
+                <button type="button" class={sectionHelpButtonClass} aria-label="Que significa trafico web">
+                  <CircleHelp size={14} stroke-width={2} />
+                  <span class={sectionHelpTooltipClass}>
+                    Resume trafico de navegacion del sitio por visitas, sesiones, rebote aproximado, conversion a lead y fuentes principales.
+                  </span>
+                </button>
               </div>
               {webMetricsError ? <p class="text-xs text-amber-300">{webMetricsError}</p> : null}
             </div>
+            <p class="mt-2 text-sm text-graylight">Eventos capturados desde la web con retencion de 90 dias.</p>
 
             <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <div class="border border-white/10 bg-obscure/40 px-4 py-3">
@@ -1321,7 +1337,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
 
           <div class="grid gap-4 lg:grid-cols-2">
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-              <h2 class="text-lg font-semibold text-white">Distribucion por estado</h2>
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="text-lg font-semibold text-white">Distribucion por estado</h2>
+                <button type="button" class={sectionHelpButtonClass} aria-label="Que significa distribucion por estado">
+                  <CircleHelp size={14} stroke-width={2} />
+                  <span class={sectionHelpTooltipClass}>Muestra como se reparte el total filtrado entre Nuevo, Contactado, Calificado, Cerrado y Perdido.</span>
+                </button>
+              </div>
               <div class="mt-4 space-y-3">
                 {estadoItems.map((item) => (
                   <div class="space-y-1">
@@ -1338,7 +1360,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
             </article>
 
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-              <h2 class="text-lg font-semibold text-white">Distribucion por prioridad</h2>
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="text-lg font-semibold text-white">Distribucion por prioridad</h2>
+                <button type="button" class={sectionHelpButtonClass} aria-label="Que significa distribucion por prioridad">
+                  <CircleHelp size={14} stroke-width={2} />
+                  <span class={sectionHelpTooltipClass}>Segmenta los leads filtrados por prioridad comercial estimada: alta, media y normal.</span>
+                </button>
+              </div>
               <div class="mt-4 space-y-3">
                 {prioridadItems.map((item) => (
                   <div class="space-y-1">
@@ -1356,15 +1384,15 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
           </div>
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-            <div class="flex items-center gap-2">
+            <div class="flex items-start justify-between gap-3">
               <h2 class="text-lg font-semibold text-white">Tendencia diaria (ultimos dias)</h2>
               <button
                 type="button"
-                class="group relative inline-flex h-6 w-6 items-center justify-center border border-white/20 text-graylight hover:border-white/40 hover:text-white"
+                class={sectionHelpButtonClass}
                 aria-label="Que significa tendencia diaria"
               >
                 <CircleHelp size={14} stroke-width={2} />
-                <span class="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden w-72 -translate-x-1/2 border border-white/15 bg-obscure px-3 py-2 text-left text-xs leading-5 text-graylight shadow-xl group-hover:block group-focus-visible:block">
+                <span class={sectionHelpTooltipClass}>
                   Muestra cuantos leads filtrados entraron por dia en el periodo seleccionado. Sirve para ver picos, caidas y si el volumen viene creciendo o frenandose.
                 </span>
               </button>
@@ -1383,7 +1411,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
           </article>
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-            <h2 class="text-lg font-semibold text-white">Fuentes principales</h2>
+            <div class="flex items-start justify-between gap-3">
+              <h2 class="text-lg font-semibold text-white">Fuentes principales</h2>
+              <button type="button" class={sectionHelpButtonClass} aria-label="Que significa fuentes principales">
+                <CircleHelp size={14} stroke-width={2} />
+                <span class={sectionHelpTooltipClass}>Ranking de origen declarado del lead para los filtros activos (por ejemplo website u otras fuentes).</span>
+              </button>
+            </div>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {metrics.sources.length ? (
                 metrics.sources.map((item) => (
@@ -1399,7 +1433,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
           </article>
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-            <h2 class="text-lg font-semibold text-white">Bandeja hoy · leads nuevos</h2>
+            <div class="flex items-start justify-between gap-3">
+              <h2 class="text-lg font-semibold text-white">Bandeja hoy · leads nuevos</h2>
+              <button type="button" class={sectionHelpButtonClass} aria-label="Que significa bandeja de leads nuevos">
+                <CircleHelp size={14} stroke-width={2} />
+                <span class={sectionHelpTooltipClass}>Lista operativa de leads en estado nuevo ordenados por antiguedad para priorizar contacto y evitar fugas.</span>
+              </button>
+            </div>
             <p class="mt-2 text-sm text-graylight">Ordenada por antiguedad para priorizar seguimiento operativo.</p>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <div class="border border-white/10 bg-obscure/40 px-4 py-3">
@@ -1480,7 +1520,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
           </article>
 
           <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-            <h2 class="text-lg font-semibold text-white">Actualizacion rapida de estado</h2>
+            <div class="flex items-start justify-between gap-3">
+              <h2 class="text-lg font-semibold text-white">Actualizacion rapida de estado</h2>
+              <button type="button" class={sectionHelpButtonClass} aria-label="Que significa actualizacion rapida de estado">
+                <CircleHelp size={14} stroke-width={2} />
+                <span class={sectionHelpTooltipClass}>Permite mover estado de leads recientes sin recargar el panel completo para acelerar trabajo comercial.</span>
+              </button>
+            </div>
             <p class="mt-2 text-sm text-graylight">Ultimos leads segun filtros activos. Cambia estado y guarda sin salir del panel.</p>
             <form method="GET" class="mt-4 flex flex-wrap items-end gap-3">
               <input type="hidden" name="dias" value={String(selectedDays)} />
@@ -1543,7 +1589,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
 
           <div class="grid gap-4 lg:grid-cols-2">
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-              <h2 class="text-lg font-semibold text-white">Actividad por hora</h2>
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="text-lg font-semibold text-white">Actividad por hora</h2>
+                <button type="button" class={sectionHelpButtonClass} aria-label="Que significa actividad por hora">
+                  <CircleHelp size={14} stroke-width={2} />
+                  <span class={sectionHelpTooltipClass}>Distribuye envios por hora local estimada para detectar franjas con mayor ingreso de leads.</span>
+                </button>
+              </div>
               <p class="mt-2 text-sm text-graylight">Distribucion de envios segun hora local estimada del lead.</p>
               <div class="mt-4 grid grid-cols-12 gap-1">
                 {metrics.activityByHour.map((item) => (
@@ -1558,7 +1610,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
             </article>
 
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-              <h2 class="text-lg font-semibold text-white">Origen por pais (estimado)</h2>
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="text-lg font-semibold text-white">Origen por pais (estimado)</h2>
+                <button type="button" class={sectionHelpButtonClass} aria-label="Que significa origen por pais">
+                  <CircleHelp size={14} stroke-width={2} />
+                  <span class={sectionHelpTooltipClass}>Estimacion geografica por IP y fallback de locale/timezone para visualizar donde se concentra la demanda.</span>
+                </button>
+              </div>
               <p class="mt-2 text-sm text-graylight">Se estima por IP de Vercel y fallback por locale/timezone. Si hay datos AR, habilita vista por provincia.</p>
               <div class="relative mt-4 overflow-hidden border border-white/10 bg-obscure/30">
                 <WorldLeadsMap countryCounts={mapCountryCounts} argentinaProvinceCounts={mapProvinceCounts} client:visible />
@@ -1593,7 +1651,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
 
           <div class="grid gap-4 lg:grid-cols-2">
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-              <h2 class="text-lg font-semibold text-white">Canales UTM</h2>
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="text-lg font-semibold text-white">Canales UTM</h2>
+                <button type="button" class={sectionHelpButtonClass} aria-label="Que significa canales UTM">
+                  <CircleHelp size={14} stroke-width={2} />
+                  <span class={sectionHelpTooltipClass}>Ranking de utm_source para entender que canal trae mas leads en el periodo filtrado.</span>
+                </button>
+              </div>
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 {topUtmSourceItems.length ? (
                   topUtmSourceItems.map((item) => (
@@ -1622,7 +1686,13 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
             </article>
 
             <article class="border border-white/10 bg-muga-dark-800/35 p-5">
-              <h2 class="text-lg font-semibold text-white">Campañas UTM</h2>
+              <div class="flex items-start justify-between gap-3">
+                <h2 class="text-lg font-semibold text-white">Campañas UTM</h2>
+                <button type="button" class={sectionHelpButtonClass} aria-label="Que significa campanas UTM">
+                  <CircleHelp size={14} stroke-width={2} />
+                  <span class={sectionHelpTooltipClass}>Ranking de utm_campaign para comparar rendimiento entre campañas y contenidos.</span>
+                </button>
+              </div>
               <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 {topUtmCampaignItems.length ? (
                   topUtmCampaignItems.map((item) => (
