@@ -115,11 +115,34 @@ const humanizeAttribution = (value?: string) => {
   return normalized.replace(/[_-]+/g, " ");
 };
 
-const humanizeReferrerHost = (value?: string) => {
+const getReferrerBucket = (value?: string) => {
   const normalized = String(value || "").trim().toLowerCase();
-  if (!normalized || normalized === "directo") return "Directo";
-  if (normalized.includes("muga.dev")) return "Interno";
+  if (!normalized || normalized === "directo") return "directo";
+  if (normalized.includes("muga.dev")) return "interno";
+  if (normalized.includes("l.wl.co") || normalized.includes("wa.me") || normalized.includes("whatsapp")) {
+    return "whatsapp";
+  }
+  if (normalized.includes("l.instagram.com") || normalized.includes("instagram.com")) return "instagram";
+  if (normalized.includes("facebook.com") || normalized.includes("m.facebook.com")) return "facebook";
+  if (normalized.includes("t.co") || normalized.includes("x.com") || normalized.includes("twitter.com")) {
+    return "x-twitter";
+  }
+  if (normalized.includes("linkedin.com")) return "linkedin";
+  if (normalized.includes("google.")) return "google";
   return normalized;
+};
+
+const humanizeReferrerHost = (value?: string) => {
+  const bucket = getReferrerBucket(value);
+  if (bucket === "directo") return "Directo";
+  if (bucket === "interno") return "Interno";
+  if (bucket === "whatsapp") return "WhatsApp";
+  if (bucket === "instagram") return "Instagram";
+  if (bucket === "facebook") return "Facebook";
+  if (bucket === "x-twitter") return "X / Twitter";
+  if (bucket === "linkedin") return "LinkedIn";
+  if (bucket === "google") return "Google";
+  return bucket;
 };
 
 const parseHourFromDate = (date: Date, timezone?: string) => {
@@ -834,7 +857,7 @@ if (isAuthorized && !loadError && supabaseUrl && supabaseServiceRoleKey) {
     pageViewRows.forEach((row: WebRow) => {
       const sessionId = String(row.session_id || "").trim();
       const pagePath = String(row.page_path || "/").trim() || "/";
-      const referrer = String(row.referrer_host || "directo").trim().toLowerCase() || "directo";
+      const referrer = getReferrerBucket(row.referrer_host);
       const country = normalizeCountryCode(row.country) || "ZZ";
       const createdDate = new Date(String(row.created_at || ""));
 
