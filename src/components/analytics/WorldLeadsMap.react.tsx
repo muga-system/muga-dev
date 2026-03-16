@@ -65,6 +65,18 @@ const ARGENTINA_PROVINCE_COORDS: Record<string, [number, number]> = {
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+const formatCount = (value: number) => value.toLocaleString("es-AR");
+
+const buildProportionalRadius = (
+  count: number,
+  max: number,
+  range: { min: number; max: number },
+) => {
+  if (!Number.isFinite(count) || count <= 0 || max <= 0) return 0;
+  const normalized = Math.sqrt(count / max);
+  return range.min + normalized * (range.max - range.min);
+};
+
 const DEFAULT_WORLD_POSITION = {
   coordinates: [0, 20] as [number, number],
   zoom: 1.4,
@@ -124,10 +136,17 @@ export default function WorldLeadsMap({
   }, [argentinaProvinceCounts]);
 
   const zoneStyle = useMemo(() => {
-    if (zoneMode === "soft") return { radiusBoost: 3, opacity: 0.14 };
-    if (zoneMode === "strong") return { radiusBoost: 8, opacity: 0.3 };
-    return { radiusBoost: 5, opacity: 0.22 };
+    if (zoneMode === "soft") return { radius: { min: 5, max: 16 }, opacity: 0.2 };
+    if (zoneMode === "strong") return { radius: { min: 9, max: 30 }, opacity: 0.34 };
+    return { radius: { min: 7, max: 22 }, opacity: 0.27 };
   }, [zoneMode]);
+
+  const markerLegendValues = useMemo(() => {
+    const max = mapMode === "world" ? maxCountryCount : maxProvinceCount;
+    if (max <= 0) return [] as number[];
+    const mid = Math.max(1, Math.round(max / 2));
+    return Array.from(new Set([1, mid, max])).sort((a, b) => a - b);
+  }, [mapMode, maxCountryCount, maxProvinceCount]);
 
   const countryNameToCode = useMemo(() => {
     const map = new Map<string, string>();
@@ -304,27 +323,30 @@ export default function WorldLeadsMap({
                 .map(([code, count]) => {
                   const coords = centroids.get(code);
                   if (!coords) return null;
+                  const radius = buildProportionalRadius(count, maxCountryCount, zoneStyle.radius);
+                  const label = COUNTRY_NAME_BY_CODE[code] || code;
 
                   return (
                     <Marker key={code} coordinates={coords}>
                       <circle
-                        r={Math.max(7, Math.min(18, 6 + count / 2 + zoneStyle.radiusBoost))}
+                        r={radius}
                         fill="#FF5353"
                         fillOpacity={zoneStyle.opacity}
-                        stroke="none"
-                        pointerEvents="none"
+                        stroke="#FF8D8D"
+                        strokeWidth={0.8}
                       />
                       <circle
-                        r={4}
+                        r={2.4}
                         fill="#FF5353"
-                        fillOpacity={0.9}
-                        stroke="none"
+                        fillOpacity={0.96}
+                        stroke="#FFF0F0"
+                        strokeWidth={0.9}
                         onMouseMove={(event) => {
                           setTooltip({
                             x: event.clientX,
                             y: event.clientY,
-                            title: `${count} leads`,
-                            detail: code,
+                            title: `${formatCount(count)} leads`,
+                            detail: label,
                           });
                         }}
                         onMouseLeave={() => setTooltip(null)}
@@ -338,29 +360,28 @@ export default function WorldLeadsMap({
                 .map(([province, count]) => {
                   const coords = ARGENTINA_PROVINCE_COORDS[province];
                   if (!coords) return null;
-
-                  const provinceRatio = maxProvinceCount > 0 ? count / maxProvinceCount : 0;
-                  const radius = Math.max(6, Math.min(18, 7 + provinceRatio * 10 + zoneStyle.radiusBoost));
+                  const radius = buildProportionalRadius(count, maxProvinceCount, zoneStyle.radius);
 
                   return (
                     <Marker key={province} coordinates={coords}>
                       <circle
                         r={radius}
                         fill="#FF5353"
-                        fillOpacity={Math.min(0.35, zoneStyle.opacity + 0.05)}
-                        stroke="none"
-                        pointerEvents="none"
+                        fillOpacity={zoneStyle.opacity}
+                        stroke="#FF8D8D"
+                        strokeWidth={0.8}
                       />
                       <circle
-                        r={4}
+                        r={2.4}
                         fill="#FF5353"
-                        fillOpacity={0.95}
-                        stroke="none"
+                        fillOpacity={0.96}
+                        stroke="#FFF0F0"
+                        strokeWidth={0.9}
                         onMouseMove={(event) => {
                           setTooltip({
                             x: event.clientX,
                             y: event.clientY,
-                            title: `${count} leads`,
+                            title: `${formatCount(count)} leads`,
                             detail: province,
                           });
                         }}
@@ -399,6 +420,45 @@ export default function WorldLeadsMap({
         >
           <div style={{ fontWeight: 600 }}>{tooltip.title}</div>
           <div>{tooltip.detail}</div>
+        </div>
+      ) : null}
+
+      {markerLegendValues.length ? (
+        <div
+          style={{
+            position: "absolute",
+            right: 8,
+            bottom: 8,
+            zIndex: 20,
+            border: "1px solid #3A3A3A",
+            background: "rgba(25, 23, 23, 0.9)",
+            color: "#EAEAEA",
+            padding: "6px 8px",
+            fontSize: 10,
+            lineHeight: 1.35,
+            minWidth: 84,
+          }}
+        >
+          {markerLegendValues.map((value) => {
+            const max = mapMode === "world" ? maxCountryCount : maxProvinceCount;
+            const radius = buildProportionalRadius(value, max, zoneStyle.radius);
+            return (
+              <div key={value} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                <span
+                  style={{
+                    width: Math.max(6, radius),
+                    height: Math.max(6, radius),
+                    borderRadius: "999px",
+                    background: "#FF5353",
+                    opacity: zoneStyle.opacity,
+                    border: "1px solid #FF8D8D",
+                    display: "inline-block",
+                  }}
+                />
+                <span>{formatCount(value)}</span>
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </div>
