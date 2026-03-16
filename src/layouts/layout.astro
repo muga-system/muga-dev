@@ -194,13 +194,26 @@ try {
           }
         };
 
+        const openConsentBanner = () => {
+          banner?.classList.remove("hidden");
+        };
+
         const existingConsent = readConsent();
         if (!existingConsent) {
-          banner?.classList.remove("hidden");
+          openConsentBanner();
         }
 
         acceptButton?.addEventListener("click", () => applyConsent("granted"));
         rejectButton?.addEventListener("click", () => applyConsent("denied"));
+
+        document.addEventListener("click", (event) => {
+          const target = event.target as Element | null;
+          const trigger = target?.closest("[data-open-consent-preferences]");
+          if (!trigger) return;
+          openConsentBanner();
+        });
+
+        window.addEventListener("muga:open-analytics-consent", openConsentBanner as EventListener);
       })();
     </script>
     <script>

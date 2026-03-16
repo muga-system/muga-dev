@@ -67,6 +67,17 @@ const isExternalLink = (href: string) => href.startsWith("http://") || href.star
         {legalLinks.map((link) => (
           <a href={link.href} class="inline-flex min-h-10 items-center transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" data-analytics-event="footer_link_click" data-analytics-label={link.label.toLowerCase()} data-analytics-location="footer" data-analytics-destination={link.href}>{link.label}</a>
         ))}
+        <button
+          type="button"
+          data-open-consent-preferences
+          class="inline-flex min-h-10 items-center transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure"
+          data-analytics-event="footer_link_click"
+          data-analytics-label="preferencias_analitica"
+          data-analytics-location="footer"
+          data-analytics-destination="#preferencias-analitica"
+        >
+          Preferencias analitica
+        </button>
       </div>
       <div class="flex flex-wrap items-center gap-4">
         <a href="https://muga.studio" class="inline-flex min-h-10 items-center transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" data-analytics-event="footer_link_click" data-analytics-label="muga_studio" data-analytics-location="footer" data-analytics-destination="https://muga.studio">MUGA Studio</a>
