@@ -1039,7 +1039,16 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
             <div class={`border px-4 py-3 text-sm ${statusUpdateFeedback.className}`}>{statusUpdateFeedback.text}</div>
           ) : null}
 
-          <div class="flex justify-end">
+          <div class="flex justify-end gap-2">
+            <button
+              type="button"
+              data-open-metricas-help
+              class="inline-flex h-9 w-9 items-center justify-center border border-white/20 text-sm font-semibold text-white hover:border-white/40"
+              aria-label="Abrir guia rapida de metricas"
+              title="Guia rapida"
+            >
+              ?
+            </button>
             <form method="POST">
               <input type="hidden" name="action" value="logout" />
               <button type="submit" class="inline-flex items-center justify-center border border-white/20 px-4 py-2 text-sm font-semibold text-white hover:border-white/40">
@@ -1047,6 +1056,48 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
               </button>
             </form>
           </div>
+
+          <dialog
+            data-metricas-help-modal
+            class="w-full max-w-xl border border-white/20 bg-obscure p-0 text-white backdrop:bg-black/70"
+          >
+            <div class="border-b border-white/10 px-5 py-4">
+              <div class="flex items-center justify-between gap-3">
+                <h3 class="text-base font-semibold">Guia rapida del panel</h3>
+                <button
+                  type="button"
+                  data-close-metricas-help
+                  class="inline-flex h-8 w-8 items-center justify-center border border-white/20 text-sm text-white hover:border-white/40"
+                  aria-label="Cerrar guia"
+                >
+                  x
+                </button>
+              </div>
+              <p class="mt-2 text-sm text-graylight">Resumen corto de las metricas clave para lectura operativa diaria.</p>
+            </div>
+            <div class="space-y-4 px-5 py-4 text-sm leading-7 text-graylight">
+              <p>
+                <span class="font-semibold text-white">Conv. a lead:</span>
+                porcentaje estimado de conversion de visitas a lead en el periodo.
+                Formula: <span class="font-semibold text-white">leads filtrados / page views * 100</span>.
+              </p>
+              <p>
+                <span class="font-semibold text-white">Bounce aprox.:</span>
+                porcentaje de sesiones con solo una pagina vista.
+                Formula: <span class="font-semibold text-white">sesiones con 1 page view / sesiones totales * 100</span>.
+              </p>
+              <p>
+                <span class="font-semibold text-white">Top referers:</span>
+                dominios desde donde llegaron visitas.
+                <span class="font-semibold text-white">directo</span> significa sin referer detectable.
+                <span class="font-semibold text-white">muga.dev</span> es navegacion interna entre paginas del sitio.
+              </p>
+              <p>
+                <span class="font-semibold text-white">Nota:</span>
+                algunos navegadores y apps recortan referer por privacidad, por eso puede subir "directo".
+              </p>
+            </div>
+          </dialog>
 
           <form method="GET" class="grid gap-4 border border-white/10 bg-muga-dark-800/35 p-4 sm:grid-cols-2 lg:grid-cols-6">
             <label class="space-y-2">
@@ -1562,6 +1613,27 @@ const mapProvinceCounts = metrics.provincesMap.reduce((acc, item) => {
   </section>
 
   <script>
+    const metricasHelpModal = document.querySelector("[data-metricas-help-modal]");
+    const openMetricasHelpButton = document.querySelector("[data-open-metricas-help]");
+    const closeMetricasHelpButton = document.querySelector("[data-close-metricas-help]");
+
+    if (metricasHelpModal instanceof HTMLDialogElement) {
+      openMetricasHelpButton?.addEventListener("click", () => {
+        metricasHelpModal.showModal();
+      });
+
+      closeMetricasHelpButton?.addEventListener("click", () => {
+        metricasHelpModal.close();
+      });
+
+      metricasHelpModal.addEventListener("click", (event) => {
+        const target = event.target as HTMLElement | null;
+        if (target === metricasHelpModal) {
+          metricasHelpModal.close();
+        }
+      });
+    }
+
     const forms = Array.from(document.querySelectorAll(".js-status-form"));
     if (forms.length) {
       const statusLabels: Record<string, string> = {
