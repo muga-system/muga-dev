@@ -43,8 +43,8 @@ const sendToCollector = (detail: MugaDataLayerEntry) => {
     const payload = JSON.stringify(detail);
     if (navigator.sendBeacon) {
       const blob = new Blob([payload], { type: "application/json" });
-      navigator.sendBeacon(COLLECT_ENDPOINT, blob);
-      return;
+      const queued = navigator.sendBeacon(COLLECT_ENDPOINT, blob);
+      if (queued) return;
     }
 
     fetch(COLLECT_ENDPOINT, {
