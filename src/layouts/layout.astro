@@ -2,6 +2,7 @@
 // Importar estilos globales
 import "../styles/global.css";
 import Footer from "../components/ui/Footer/Footer.astro";
+import Analytics from "@vercel/analytics/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
 import { readFileSync } from "node:fs";
 
@@ -207,19 +208,21 @@ try {
         rejectButton?.addEventListener("click", () => applyConsent("denied"));
 
         document.addEventListener("click", (event) => {
-          const target = event.target as Element | null;
+          const target = event.target;
+          if (!(target instanceof Element)) return;
           const trigger = target?.closest("[data-open-consent-preferences]");
           if (!trigger) return;
           openConsentBanner();
         });
 
-        window.addEventListener("muga:open-analytics-consent", openConsentBanner as EventListener);
+        window.addEventListener("muga:open-analytics-consent", openConsentBanner);
       })();
     </script>
     <script>
       import "../scripts/analytics.ts";
     </script>
     <Footer />
+    <Analytics />
     <SpeedInsights />
   </body>
 </html>
