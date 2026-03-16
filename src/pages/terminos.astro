@@ -1,0 +1,74 @@
+---
+import Layout from "../layouts/layout.astro";
+import Navigation from "../components/ui/Navigation/Navigation.astro";
+import Breadcrumb from "../components/ui/Breadcrumb/Breadcrumb.astro";
+import type { BreadcrumbItem } from "../types";
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  {
+    label: "Terminos",
+    href: "/terminos",
+    active: true,
+  },
+];
+
+const updatedAt = "16/03/2026";
+---
+
+<Layout title="Terminos de Uso | MUGA" description="Condiciones generales de uso del sitio de MUGA.">
+  <Navigation>
+    <Breadcrumb slot="mobile-breadcrumb" items={breadcrumbItems} />
+  </Navigation>
+  <div class="hidden lg:block">
+    <Breadcrumb items={breadcrumbItems} />
+  </div>
+
+  <section class="section-space section-space-after-hero">
+    <div class="page-container space-y-6">
+      <div class="space-y-2">
+        <span class="muga-badge muga-badge--sm">Legal</span>
+        <h1 class="section-title">Terminos de uso</h1>
+        <p class="section-lead">Reglas generales para navegar y utilizar este sitio.</p>
+      </div>
+
+      <div class="border border-white/10 bg-muga-dark-800/35 p-5 text-sm text-graylight">
+        Ultima actualizacion: <span class="font-semibold text-white">{updatedAt}</span>
+      </div>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">1. Uso del sitio</h2>
+        <p class="text-sm text-graylight">
+          El contenido publicado es informativo sobre servicios, enfoque y criterios de trabajo. El uso del sitio debe ser licito y de buena fe.
+        </p>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">2. Propiedad intelectual</h2>
+        <p class="text-sm text-graylight">
+          Textos, estructura, marca y recursos visuales de MUGA estan protegidos. No se permite reproduccion total o parcial sin autorizacion.
+        </p>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">3. Sin garantia absoluta</h2>
+        <p class="text-sm text-graylight">
+          Buscamos mantener informacion actualizada y funcionamiento estable, pero no garantizamos disponibilidad ininterrumpida ni ausencia total de errores.
+        </p>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">4. Enlaces externos</h2>
+        <p class="text-sm text-graylight">
+          Podemos incluir enlaces a sitios de terceros. Cada sitio externo se rige por sus propias politicas y terminos.
+        </p>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">5. Cambios</h2>
+        <p class="text-sm text-graylight">
+          Podemos actualizar estos terminos para reflejar cambios legales u operativos. La version vigente es la publicada en esta pagina.
+        </p>
+      </article>
+    </div>
+  </section>
+</Layout>

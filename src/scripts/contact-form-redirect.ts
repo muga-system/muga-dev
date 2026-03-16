@@ -201,6 +201,12 @@ const initContactFormRedirect = () => {
     event.returnValue = "";
   };
 
+  const clearNavigationGuard = () => {
+    hasUnsavedChanges = false;
+    pendingSubmit = true;
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+  };
+
   form.addEventListener("input", markAsDirty, { passive: true });
   form.addEventListener("change", markAsDirty, { passive: true });
   window.addEventListener("beforeunload", handleBeforeUnload);
@@ -335,7 +341,7 @@ const initContactFormRedirect = () => {
         throw new Error(`Supabase request failed: ${response.status}`);
       }
 
-      pendingSubmit = false;
+      clearNavigationGuard();
       if (timeoutId) {
         window.clearTimeout(timeoutId);
         timeoutId = null;

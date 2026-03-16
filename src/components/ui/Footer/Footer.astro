@@ -12,6 +12,12 @@ const primaryLinks = [
   { href: "/contacto", label: "Contacto" },
 ];
 
+const legalLinks = [
+  { href: "/privacidad", label: "Privacidad" },
+  { href: "/cookies", label: "Cookies" },
+  { href: "/terminos", label: "Terminos" },
+];
+
 const isExternalLink = (href: string) => href.startsWith("http://") || href.startsWith("https://");
 ---
 
@@ -52,15 +58,20 @@ const isExternalLink = (href: string) => href.startsWith("http://") || href.star
       </ul>
     </nav>
 
-    <div class="flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-graylight sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-graylight">
       <p>
         <span class="font-mono">{year}</span>
         <span class="ml-1 font-semibold text-accent">MUGA</span> - Arquitectura web como sistema.
       </p>
-      <div class="flex items-center gap-4">
+      <div class="flex flex-wrap items-center gap-4">
+        {legalLinks.map((link) => (
+          <a href={link.href} class="inline-flex min-h-10 items-center transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" data-analytics-event="footer_link_click" data-analytics-label={link.label.toLowerCase()} data-analytics-location="footer" data-analytics-destination={link.href}>{link.label}</a>
+        ))}
+      </div>
+      <div class="flex flex-wrap items-center gap-4">
         <a href="https://muga.studio" class="inline-flex min-h-10 items-center transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-obscure" data-analytics-event="footer_link_click" data-analytics-label="muga_studio" data-analytics-location="footer" data-analytics-destination="https://muga.studio">MUGA Studio</a>
         <span class="hidden h-3 w-px bg-white/20 sm:inline-block"></span>
-        <p class="font-mono">Versión 1.2.0</p>
+        <p class="font-mono">Version 1.2.0</p>
       </div>
     </div>
   </div>

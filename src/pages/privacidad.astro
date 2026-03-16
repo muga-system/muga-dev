@@ -1,0 +1,97 @@
+---
+import Layout from "../layouts/layout.astro";
+import Navigation from "../components/ui/Navigation/Navigation.astro";
+import Breadcrumb from "../components/ui/Breadcrumb/Breadcrumb.astro";
+import type { BreadcrumbItem } from "../types";
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  {
+    label: "Privacidad",
+    href: "/privacidad",
+    active: true,
+  },
+];
+
+const updatedAt = "16/03/2026";
+---
+
+<Layout title="Politica de Privacidad | MUGA" description="Como MUGA trata datos personales y de analitica del sitio.">
+  <Navigation>
+    <Breadcrumb slot="mobile-breadcrumb" items={breadcrumbItems} />
+  </Navigation>
+  <div class="hidden lg:block">
+    <Breadcrumb items={breadcrumbItems} />
+  </div>
+
+  <section class="section-space section-space-after-hero">
+    <div class="page-container space-y-6">
+      <div class="space-y-2">
+        <span class="muga-badge muga-badge--sm">Legal</span>
+        <h1 class="section-title">Politica de privacidad</h1>
+        <p class="section-lead">Resumen claro de que datos tratamos, para que y durante cuanto tiempo.</p>
+      </div>
+
+      <div class="border border-white/10 bg-muga-dark-800/35 p-5 text-sm text-graylight">
+        Ultima actualizacion: <span class="font-semibold text-white">{updatedAt}</span>
+      </div>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">1. Responsable</h2>
+        <p>
+          MUGA ("nosotros") es responsable del tratamiento de datos recogidos a traves de este sitio para atencion comercial,
+          analitica operativa y mejora de experiencia.
+        </p>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">2. Datos que recolectamos</h2>
+        <ul class="list-disc space-y-2 pl-6">
+          <li>Datos de contacto enviados en formularios (nombre, email, telefono, mensaje, proyecto).</li>
+          <li>Datos de atribucion comercial (utm_source, utm_medium, utm_campaign y campos relacionados).</li>
+          <li>Datos de analitica web (eventos de navegacion, pagina, referer, pais aproximado, dispositivo y navegador).</li>
+          <li>Datos tecnicos de seguridad y operacion (IP hasheada, timestamps, estado de envio).</li>
+        </ul>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">3. Finalidades</h2>
+        <ul class="list-disc space-y-2 pl-6">
+          <li>Responder consultas y gestionar oportunidades comerciales.</li>
+          <li>Medir conversion y rendimiento de canales para decisiones operativas.</li>
+          <li>Mejorar contenido, estructura y experiencia del sitio.</li>
+          <li>Prevenir abuso tecnico, spam y actividades maliciosas.</li>
+        </ul>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">4. Base y control del usuario</h2>
+        <p>
+          El tratamiento para analitica no esencial se activa segun tu eleccion en el banner de consentimiento.
+          Podes aceptar o rechazar analitica y seguir usando el sitio.
+        </p>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">5. Conservacion</h2>
+        <ul class="list-disc space-y-2 pl-6">
+          <li>Eventos web: retencion operativa de hasta 90 dias.</li>
+          <li>Leads comerciales: segun ciclo comercial y requerimientos administrativos internos.</li>
+        </ul>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">6. Comparticion</h2>
+        <p>
+          Usamos proveedores tecnicos para operar el servicio (hosting, base de datos, analitica y correo). No vendemos tus datos.
+        </p>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">7. Contacto</h2>
+        <p>
+          Para consultas sobre privacidad o ejercicio de derechos, escribinos desde la seccion de contacto del sitio.
+        </p>
+      </article>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,71 @@
+---
+import Layout from "../layouts/layout.astro";
+import Navigation from "../components/ui/Navigation/Navigation.astro";
+import Breadcrumb from "../components/ui/Breadcrumb/Breadcrumb.astro";
+import type { BreadcrumbItem } from "../types";
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  {
+    label: "Cookies y analitica",
+    href: "/cookies",
+    active: true,
+  },
+];
+
+const updatedAt = "16/03/2026";
+---
+
+<Layout title="Cookies y Analitica | MUGA" description="Como usamos almacenamiento local y eventos de analitica en MUGA.">
+  <Navigation>
+    <Breadcrumb slot="mobile-breadcrumb" items={breadcrumbItems} />
+  </Navigation>
+  <div class="hidden lg:block">
+    <Breadcrumb items={breadcrumbItems} />
+  </div>
+
+  <section class="section-space section-space-after-hero">
+    <div class="page-container space-y-6">
+      <div class="space-y-2">
+        <span class="muga-badge muga-badge--sm">Legal</span>
+        <h1 class="section-title">Cookies y analitica</h1>
+        <p class="section-lead">Explicamos de forma simple que almacenamos y como podes gestionarlo.</p>
+      </div>
+
+      <div class="border border-white/10 bg-muga-dark-800/35 p-5 text-sm text-graylight">
+        Ultima actualizacion: <span class="font-semibold text-white">{updatedAt}</span>
+      </div>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">1. Que usamos</h2>
+        <ul class="list-disc space-y-2 pl-6 text-sm text-graylight">
+          <li>Almacenamiento local para guardar tu preferencia de consentimiento de analitica.</li>
+          <li>Session storage para identificar sesion de navegacion cuando aceptas analitica.</li>
+          <li>Eventos first-party para medicion de visitas y conversion.</li>
+        </ul>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">2. Para que se usa</h2>
+        <ul class="list-disc space-y-2 pl-6 text-sm text-graylight">
+          <li>Conocer rendimiento de paginas y origen de trafico.</li>
+          <li>Medir conversion de visitas a formularios y leads.</li>
+          <li>Mejorar estructura y contenido en base a uso real.</li>
+        </ul>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">3. Consentimiento</h2>
+        <p class="text-sm text-graylight">
+          La analitica no esencial se ejecuta solo cuando aceptas en el banner. Si rechazas, el sitio sigue funcionando sin analitica de comportamiento.
+        </p>
+      </article>
+
+      <article class="space-y-4 border border-white/10 bg-muga-dark-800/35 p-6">
+        <h2 class="text-lg font-semibold text-white">4. Como cambiar tu decision</h2>
+        <p class="text-sm text-graylight">
+          Podes limpiar almacenamiento del navegador para volver a mostrar el banner y redefinir tu preferencia de analitica.
+        </p>
+      </article>
+    </div>
+  </section>
+</Layout>
