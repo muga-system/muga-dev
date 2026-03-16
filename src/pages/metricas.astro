@@ -120,14 +120,14 @@ const getReferrerBucket = (value?: string) => {
   if (!normalized || normalized === "directo") return "directo";
   if (normalized.includes("muga.dev")) return "interno";
   if (normalized.includes("l.wl.co") || normalized.includes("wa.me") || normalized.includes("whatsapp")) {
-    return "whatsapp";
+    return "redes";
   }
-  if (normalized.includes("l.instagram.com") || normalized.includes("instagram.com")) return "instagram";
-  if (normalized.includes("facebook.com") || normalized.includes("m.facebook.com")) return "facebook";
+  if (normalized.includes("l.instagram.com") || normalized.includes("instagram.com")) return "redes";
+  if (normalized.includes("facebook.com") || normalized.includes("m.facebook.com")) return "redes";
   if (normalized.includes("t.co") || normalized.includes("x.com") || normalized.includes("twitter.com")) {
-    return "x-twitter";
+    return "redes";
   }
-  if (normalized.includes("linkedin.com")) return "linkedin";
+  if (normalized.includes("linkedin.com")) return "redes";
   if (normalized.includes("google.")) return "google";
   return normalized;
 };
@@ -136,11 +136,7 @@ const humanizeReferrerHost = (value?: string) => {
   const bucket = getReferrerBucket(value);
   if (bucket === "directo") return "Directo";
   if (bucket === "interno") return "Interno";
-  if (bucket === "whatsapp") return "WhatsApp";
-  if (bucket === "instagram") return "Instagram";
-  if (bucket === "facebook") return "Facebook";
-  if (bucket === "x-twitter") return "X / Twitter";
-  if (bucket === "linkedin") return "LinkedIn";
+  if (bucket === "redes") return "Redes";
   if (bucket === "google") return "Google";
   return bucket;
 };
